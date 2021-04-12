@@ -19,6 +19,8 @@ def convert_all_files(path):
     
     # removing dubs
     populations = list(populations)
+    #for i in populations:
+        #Zieldirectory angeben!!!
     # Path anhängen
 
 def convert_data(path_lact, path_class, name):
