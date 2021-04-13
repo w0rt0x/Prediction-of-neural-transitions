@@ -4,7 +4,7 @@ from scipy.io import loadmat
 import os
 from os.path import isfile, join
 
-def convert_all_files(path):
+def convert_all_files(path, dest_direc):
     """
     converts all given .mat files into csv-files
     """
@@ -19,11 +19,15 @@ def convert_all_files(path):
     
     # removing dubs
     populations = list(populations)
-    #for i in populations:
-        #Zieldirectory angeben!!!
-    # Path anhängen
 
-def convert_data(path_lact, path_class, name):
+    # Converting all to csv
+    for i in populations:
+        path_lact = path + "\\" + i + "_lact.mat"
+        path_class = path + "\\" + i + "_class.mat"
+        convert_data(path_lact, path_class, i, dest_direc)
+
+
+def convert_data(path_lact, path_class, name, dest):
     # Extracting Header Info: (day, trial)
     mat = loadmat(path_class)
     days = mat['class_all_days'][0]
@@ -42,7 +46,7 @@ def convert_data(path_lact, path_class, name):
 
     # Saving it to csv-file
     data.insert(0, header)
-    with open(name, "w") as f:
+    with open(dest + "\\" + name + ".csv", "w") as f:
         writer = csv.writer(f)
         writer.writerows(data)
     
@@ -60,5 +64,5 @@ def del_files(path):
                 os.remove(onlyfiles[i])
 
 if __name__ == "__main__":
-    convert_all_files(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Skripte\Daten")
-    #convert_data(r"Daten/bl691-2_no_white_Pop03_lact.mat", r"Daten/bl691-2_no_white_Pop03_class.mat", "bl691-2_no_white_Pop03.csv")
+    convert_all_files(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten", r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten_CSV")
+    
