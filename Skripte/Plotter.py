@@ -40,9 +40,13 @@ def replace_nan(data, replacement):
             if math.isnan(data[i][j]):
                 data[i][j] = replacement
 
+def plot_2D_PCA():
+#inner function??
+# Dimension als parameter??
+
 
 if __name__ == "__main__":
     header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_class.mat",
                             r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_lact.mat")
     replace_nan(data, 0)
-    
+
