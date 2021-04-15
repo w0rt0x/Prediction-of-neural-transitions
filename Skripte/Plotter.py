@@ -7,7 +7,8 @@ from scipy.io import loadmat
 import math
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from mpl_toolkits.mplot3d import Axes3D
+import plotly.express as px
+#from mpl_toolkits.mplot3d import Axes3D
 
 def get_data(path_class, path_lact):
     """
@@ -47,7 +48,7 @@ def plot2D(data, title):
     Plots 2D Scatter Plot for PCA
     Same tone, for all 4 days
     """
-    #plt.style.use('dark_background')
+    plt.style.use('dark_background')
     plt.scatter(data[0][0], data[0][1], color= "aqua", label = "Day 1")
     plt.scatter(data[1][0], data[1][1], color= "lime", label = "Day 2")
     plt.scatter(data[2][0], data[2][1], color= "deeppink", label = "Day 3")
@@ -61,28 +62,11 @@ def plot2D(data, title):
           fancybox=True, shadow=True, ncol=4)
     plt.show()
 
-def plot3D():
-    """
-    Code used from Tutorial:
-    https://pythonprogramming.net/matplotlib-3d-scatterplot-tutorial/
-    """
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+def plot3D2(data):
+    # https://plotly.com/python/3d-scatter-plots/
+    fig = px.scatter_3d(x=data[0], y=data[1], z=data[2], color="red")
+    fig.show()
 
-    x =[1,2,3,4,5,6,7,8,9,10]
-    y =[5,6,2,3,13,4,1,2,4,8]
-    z =[2,3,3,3,5,7,9,11,9,10]
-
-
-
-    ax.scatter(x, y, z, c='r', marker='o')
-
-    ax.set_xlabel('Principle Component 1')
-    ax.set_ylabel('Principle Component 2')
-    ax.set_zlabel('Principle Component 3')
-    plt.title("title")
-    plt.show()
-    
 
 def do_PCA(X, components, label, scaler=False):
     """
@@ -117,12 +101,13 @@ if __name__ == "__main__":
     header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_class.mat",
                             r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_lact.mat")
     replace_nan(data, 0)
-    points, title = do_PCA(data[0:30].T, 2, header[0], True)
-    d, title = do_PCA(data[30:60].T, 2, header[1], True)
-    d2, title = do_PCA(data[60:90].T, 2, header[2], True)
-    d3, title = do_PCA(data[90:120].T, 2, header[13], True)
-    plot2D([points, d, d2, d3], "PCA for Day 1-4, Stimulus 1")
-    plot3D()
+    points, title = do_PCA(data[0:30].T, 3, header[0])
+    d, title = do_PCA(data[30:60].T, 3, header[1])
+    d2, title = do_PCA(data[60:90].T, 3, header[2])
+    d3, title = do_PCA(data[90:120].T, 3, header[3])
+    #plot2D([points, d, d2, d3], "2D-PCA for Day 1-4, Stimulus 1")
+    plot3D2(points)
+    #plot3D([points, d, d2, d3], "3D-PCA for Day 1-4, Stimulus 1")
     
     
 # Sortieren: Days und Trials in Dict - (day, Trial) als Key
