@@ -5,14 +5,12 @@ def myFun(*argv):
         for j in arg:
             print (j)
     
-myFun([[2],[2],[4]]) 
 
 """
 def plot3D(data, title):
-    """
-    Code used from Tutorial:
-    https://pythonprogramming.net/matplotlib-3d-scatterplot-tutorial/
-    """
+    #Code used from Tutorial:
+    #https://pythonprogramming.net/matplotlib-3d-scatterplot-tutorial/
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
@@ -28,3 +26,14 @@ def plot3D(data, title):
     plt.legend()
     plt.show()
 """
+
+import pandas as pd
+  
+# initialize list of lists
+data = [['tom', 10], ['nick', 15], ['juli', 14]]
+  
+# Create the pandas DataFrame
+df = pd.DataFrame(data, columns = ['Name', 'Age'])
+  
+# print dataframe.
+print(df)

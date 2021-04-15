@@ -8,7 +8,6 @@ import math
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import plotly.express as px
-#from mpl_toolkits.mplot3d import Axes3D
 
 def get_data(path_class, path_lact):
     """
@@ -30,7 +29,7 @@ def get_data(path_class, path_lact):
 
     # Swapping x and y coordinats in data so that one trial is in one list (x-axis)
     # Swapping is done with .T from numpy: https://note.nkmk.me/en/python-list-transpose/
-    return np.array(header), np.array(data).T 
+    return np.array(header), np.array(data).T
 
 
 def replace_nan(data, replacement):
@@ -42,6 +41,23 @@ def replace_nan(data, replacement):
         for j in range(len(data[i])):
             if math.isnan(data[i][j]):
                 data[i][j] = replacement
+
+def data_to_dict(data, header):
+    """
+    Returns Dictionary with headers as keys that hold corresponding data,
+    e.g. "(Day 4, Trial 7)": [Neuron Activity Arrays of that Day/Trial]
+    """
+    d = dict()
+
+    for i in range(len(header)):
+        if tuple(header[i]) in d:
+            # Tuple conversion because numpy-arrays can't be hashed in a dictionary
+            d[tuple(header[i])] = d[tuple(header[i])] + [data[i]]
+
+        else:
+            d[tuple(header[i])] = [data[i]]
+
+    return d
 
 def plot2D(data, title):
     """
@@ -62,9 +78,13 @@ def plot2D(data, title):
           fancybox=True, shadow=True, ncol=4)
     plt.show()
 
-def plot3D2(data):
+def plot3D(df, text):
     # https://plotly.com/python/3d-scatter-plots/
-    fig = px.scatter_3d(x=data[0], y=data[1], z=data[2], color="red")
+    fig = px.scatter_3d(df, x='PC1', y='PC2', z='PC3',
+              color='label', )
+
+    # Label
+    # https://stackoverflow.com/questions/26941135/show-legend-and-label-axes-in-plotly-3d-scatter-plots
     fig.show()
 
 
@@ -93,7 +113,7 @@ def do_PCA(X, components, label, scaler=False):
     # Getting Variance, Title and data-points
     var = sum(pca.explained_variance_ratio_)
     title = "{}: {} components have {}% of the variance ({} Standard-Scaler)".format(label, components, round(var * 100, 2), used)
-    return pca.components_, title
+    return pca.components_.T.tolist(), title
     
 
 if __name__ == "__main__":
@@ -101,13 +121,31 @@ if __name__ == "__main__":
     header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_class.mat",
                             r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_lact.mat")
     replace_nan(data, 0)
-    points, title = do_PCA(data[0:30].T, 3, header[0])
-    d, title = do_PCA(data[30:60].T, 3, header[1])
-    d2, title = do_PCA(data[60:90].T, 3, header[2])
-    d3, title = do_PCA(data[90:120].T, 3, header[3])
+    df = data_to_dict(data, header)
+    
+    keys = list(df.keys())
+    s=0
+    for key in keys:
+        s += len(df[key])
+    print(s)
+
+    points, title = do_PCA(df[(1,1)], 3, header[0])
+    d, title = do_PCA(df[(2,1)], 3, header[0])
+    d2, title = do_PCA(df[(3,1)], 3, header[0])
+    d3, title = do_PCA(df[(4,1)], 3, header[0])
+
+    l = [(1, 1),(2, 1),(3, 1),(4, 1)]
+    df = [points, d, d2, d3]
+    
+    for i in range(len(df)):
+        for j in range(len(df[i])):
+            df[i][j].insert(0, l[i])
+    df = df[0] + df[1] + df[2] + df[3] 
+    print(len(df))
+    df = pd.DataFrame(df, columns = ['label', 'PC1', 'PC2', 'PC3'])
+
     #plot2D([points, d, d2, d3], "2D-PCA for Day 1-4, Stimulus 1")
-    plot3D2(points)
-    #plot3D([points, d, d2, d3], "3D-PCA for Day 1-4, Stimulus 1")
+    plot3D(df, "3D-PCA for Day 1-4, Stimulus 1")
     
     
 # Sortieren: Days und Trials in Dict - (day, Trial) als Key
