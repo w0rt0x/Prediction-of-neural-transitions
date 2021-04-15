@@ -5,6 +5,7 @@ import pandas as pd
 import csv
 from scipy.io import loadmat
 import math
+from sklearn.decomposition import PCA
 
 
 def get_data(path_class, path_lact):
@@ -27,7 +28,7 @@ def get_data(path_class, path_lact):
 
     # Swapping x and y coordinats in data so that one trial is in one list (x-axis)
     # Swapping is done with .T from numpy: https://note.nkmk.me/en/python-list-transpose/
-    return header, np.array(data).T.tolist()
+    return np.array(header), np.array(data).T #.tolist()
 
 
 def replace_nan(data, replacement):
@@ -40,13 +41,20 @@ def replace_nan(data, replacement):
             if math.isnan(data[i][j]):
                 data[i][j] = replacement
 
-def plot_2D_PCA():
-#inner function??
-# Dimension als parameter??
-
+def plot_2D_PCA(X, components):
+    """
+    https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
+    """
+    pca = PCA(n_components=components)
+    pca.fit(X)
+    var = sum(pca.explained_variance_ratio_)
+    print("{} components have {}% of the variance".format(components, round(var * 100, 2)))
 
 if __name__ == "__main__":
     header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_class.mat",
                             r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_lact.mat")
     replace_nan(data, 0)
+    plot_2D_PCA(data[0:30], 3)
+    
+# Sortieren: Days und Trials in Dict - (day, Trial) als Key
 
