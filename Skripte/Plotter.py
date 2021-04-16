@@ -80,7 +80,8 @@ def plot2D(df, title):
     plt.title(title)
     plt.xlabel("Principle Component 1")
     plt.ylabel("Principle Component 2")
-
+    plt.xlim([-0.5, 1])
+    plt.ylim([-0.5, 1])
     # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
           fancybox=True, shadow=True, ncol=4)
@@ -147,15 +148,14 @@ def crate_dataframe(data_dic, stimuli, dim):
     cols = ['label']
     for i in range(dim):
         cols.append('PC' + str((i+1)))
-    print(pd.DataFrame(days, columns = cols))
     return pd.DataFrame(days, columns = cols)
     
 
 
 if __name__ == "__main__":
-    stimulus = 30
+    stimulus = 1
     dimension = 2
-    population = "bl660-1_two_white_Pop01"
+    population = "bl660-1_two_white_Pop01" #"bl660-1_two_white_Pop01"
 
 
     header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
@@ -166,9 +166,10 @@ if __name__ == "__main__":
     df = crate_dataframe(dictionary, stimulus, dimension)
     
     if dimension == 2:
-        plot2D(df, "2D-PCA for Day 1-4, Stimulus {}".format(stimulus))
+        plot2D(df, "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
+    elif (dimension == 3):
+        plot3D(df, "{}: 3D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
     else:
-        plot3D(df, "3D-PCA for Day 1-4, Stimulus {}".format(stimulus))
+        print(df)
     
-     # Dateiname!!!
 
