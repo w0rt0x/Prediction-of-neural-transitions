@@ -84,7 +84,7 @@ def plot2D(df, title):
     plt.ylim([-1, 1])
     # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-          fancybox=True, shadow=True, ncol=4)
+        fancybox=True, shadow=True, ncol=4)
     plt.show()
 
 def plot3D(df, text):
@@ -150,12 +150,29 @@ def crate_dataframe(data_dic, stimuli, dim):
         cols.append('PC' + str((i+1)))
     return pd.DataFrame(days, columns = cols)
     
+def create_plots():
+    # list all files in directory
+    # Crate Plots for all stimuli of ALL populations
+
+    # Save them in a folder
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+    
+    # removing dubs
+    populations = list(populations)
+    return 0
 
 
 if __name__ == "__main__":
-    stimulus = 1
-    dimension = 3
-    population = "bl660-1_two_white_Pop01" #"bl660-1_two_white_Pop01"
+    stimulus = 34
+    dimension = 2
+    population = "bl688-1_one_white_Pop09" #"bl660-1_two_white_Pop01"
 
 
     header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
