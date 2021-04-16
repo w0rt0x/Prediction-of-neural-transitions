@@ -80,8 +80,8 @@ def plot2D(df, title):
     plt.title(title)
     plt.xlabel("Principle Component 1")
     plt.ylabel("Principle Component 2")
-    plt.xlim([-0.5, 1])
-    plt.ylim([-0.5, 1])
+    plt.xlim([-1, 1])
+    plt.ylim([-1, 1])
     # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
           fancybox=True, shadow=True, ncol=4)
@@ -154,7 +154,7 @@ def crate_dataframe(data_dic, stimuli, dim):
 
 if __name__ == "__main__":
     stimulus = 1
-    dimension = 2
+    dimension = 3
     population = "bl660-1_two_white_Pop01" #"bl660-1_two_white_Pop01"
 
 
