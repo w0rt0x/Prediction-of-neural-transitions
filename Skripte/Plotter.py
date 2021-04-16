@@ -63,16 +63,20 @@ def data_to_dict(data, header):
         d[k] = np.array(d[k]).T
     return d
 
-def plot2D(data, title):
+def plot2D(df, title):
     """
     Plots 2D Scatter Plot for PCA
-    Same tone, for all 4 days
+    Same stimulus, for all 4 days
+    Source:
+    https://www.statology.org/matplotlib-scatterplot-color-by-value/
     """
     plt.style.use('dark_background')
-    plt.scatter(data[0][0], data[0][1], color= "aqua", label = "Day 1")
-    plt.scatter(data[1][0], data[1][1], color= "lime", label = "Day 2")
-    plt.scatter(data[2][0], data[2][1], color= "deeppink", label = "Day 3")
-    plt.scatter(data[3][0], data[3][1], color= "darkorange", label = "Day 4")
+    colors = ["aqua", "lime", "deeppink", "darkorange"]
+    groups = df.groupby('label')
+    
+    for name, group in groups:
+        plt.scatter(group.PC1, group.PC2, label=name, c=colors[name[0] - 1])
+
     plt.title(title)
     plt.xlabel("Principle Component 1")
     plt.ylabel("Principle Component 2")
@@ -114,43 +118,57 @@ def do_PCA(X, components, label, scaler=False):
 
     # Starting PCA
     pca = PCA(n_components=components)
-    print("Input: ", len(X), len(X[0]))
     pca.fit(X)
+
     # Getting Variance, Title and data-points
     var = sum(pca.explained_variance_ratio_)
     title = "{}: {} components have {}% of the variance ({} Standard-Scaler)".format(label, components, round(var * 100, 2), used)
-    print("PC's: ", len(pca.components_), len(pca.components_[0]))
-    return pca.components_.tolist(), title
+
+    return pca.components_.T.tolist(), title
+
+def crate_dataframe(data_dic, stimuli, dim):
+    """
+    creates pandas dataframe with Principle Components for all 4 days for a given stimulus
+    """
+    label = [(1, stimuli),(2, stimuli),(3, stimuli),(4, stimuli)]
+
+    # Doing PCA for each day for one stimulus
+    day1, title = do_PCA(data_dic[label[0]], dim, label[0])
+    day2, title = do_PCA(data_dic[label[1]], dim, label[1])
+    day3, title = do_PCA(data_dic[label[2]], dim, label[2])
+    day4, title = do_PCA(data_dic[label[3]], dim, label[3])
+
+    days = [day1, day2, day3, day4]
+    for i in range(len(days)):
+        for j in range(len(days[i])):
+            days[i][j].insert(0, label[i])
+    days = days[0] + days[1] + days[2]+ days[3]
+
+    cols = ['label']
+    for i in range(dim):
+        cols.append('PC' + str((i+1)))
+    print(pd.DataFrame(days, columns = cols))
+    return pd.DataFrame(days, columns = cols)
     
+
 
 if __name__ == "__main__":
-    
-    header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_class.mat",
-                            r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\bl660-1_two_white_Pop01_lact.mat")
+    stimulus = 30
+    dimension = 2
+    population = "bl660-1_two_white_Pop01"
+
+
+    header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
+                            r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(population))
 
     replace_nan(data, 0)
-    df = data_to_dict(data, header)
-
-    print(len(df[(1, 1)]), len(df[(1, 1)][0]))
-    points, title = do_PCA(df[(1,1)], 2, (1,1))
-    d, title = do_PCA(df[(2,1)], 2, (2,1))
-    d2, title = do_PCA(df[(3,1)], 2, (3,1))
-    d3, title = do_PCA(df[(4,1)], 2, (4,1))
-    """
-    l = [(1, 1),(2, 1),(3, 1),(4, 1)]
-    df = [points, d, d2, d3]
+    dictionary = data_to_dict(data, header)
+    df = crate_dataframe(dictionary, stimulus, dimension)
     
-    for i in range(len(df)):
-        for j in range(len(df[i])):
-            df[i][j].insert(0, l[i])
-    df = df[0] + df[1] + df[2] + df[3] 
-    df = pd.DataFrame(df, columns = ['label', 'PC1', 'PC2', 'PC3'])
-    print(df)
-    """
-    plot2D([points, d, d2, d3], "2D-PCA for Day 1-4, Stimulus 1")
-    #plot3D(df, "3D-PCA for Day 1-4, Stimulus 1")
+    if dimension == 2:
+        plot2D(df, "2D-PCA for Day 1-4, Stimulus {}".format(stimulus))
+    else:
+        plot3D(df, "3D-PCA for Day 1-4, Stimulus {}".format(stimulus))
     
-    
-# Sortieren: Days und Trials in Dict - (day, Trial) als Key
-# Alle 4 Tage des gleichen Trials in 1 Plot
+     # Dateiname!!!
 
