@@ -11,6 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import plotly.express as px
 
+
 def get_data(path_class, path_lact):
     """
     Reads in matlab files,
@@ -44,6 +45,7 @@ def replace_nan(data, replacement):
             if math.isnan(data[i][j]):
                 data[i][j] = replacement
 
+
 def data_to_dict(data, header):
     """
     Returns Dictionary with headers as keys that hold corresponding data,
@@ -65,6 +67,7 @@ def data_to_dict(data, header):
         d[k] = np.array(d[k]).T
     return d
 
+
 def plot2D(df, title, save=False, path=None):
     """
     Plots 2D Scatter Plot for PCA
@@ -75,7 +78,7 @@ def plot2D(df, title, save=False, path=None):
     plt.style.use('dark_background')
     colors = ["aqua", "lime", "deeppink", "darkorange"]
     groups = df.groupby('label')
-    
+
     for name, group in groups:
         plt.scatter(group.PC1, group.PC2, label=name, c=colors[name[0] - 1])
 
@@ -86,17 +89,19 @@ def plot2D(df, title, save=False, path=None):
     plt.ylim([-1, 1])
     # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
-        fancybox=True, shadow=True, ncol=4)
-    
+               fancybox=True, shadow=True, ncol=4)
+
     if save:
         plt.savefig(path)
     else:
         plt.show()
+    plt.close()
+
 
 def plot3D(df, text):
     # https://plotly.com/python/3d-scatter-plots/
     fig = px.scatter_3d(df, x='PC1', y='PC2', z='PC3',
-              color='label', )
+                        color='label', )
 
     # Label
     # https://stackoverflow.com/questions/26941135/show-legend-and-label-axes-in-plotly-3d-scatter-plots
@@ -129,15 +134,17 @@ def do_PCA(X, components, label, scaler=False):
 
     # Getting Variance, Title and data-points
     var = sum(pca.explained_variance_ratio_)
-    title = "{}: {} components have {}% of the variance ({} Standard-Scaler)".format(label, components, round(var * 100, 2), used)
+    title = "{}: {} components have {}% of the variance ({} Standard-Scaler)".format(
+        label, components, round(var * 100, 2), used)
 
     return pca.components_.T.tolist(), title
+
 
 def crate_dataframe(data_dic, stimuli, dim):
     """
     creates pandas dataframe with Principle Components for all 4 days for a given stimulus
     """
-    label = [(1, stimuli),(2, stimuli),(3, stimuli),(4, stimuli)]
+    label = [(1, stimuli), (2, stimuli), (3, stimuli), (4, stimuli)]
 
     # Doing PCA for each day for one stimulus
     day1, title = do_PCA(data_dic[label[0]], dim, label[0])
@@ -149,13 +156,14 @@ def crate_dataframe(data_dic, stimuli, dim):
     for i in range(len(days)):
         for j in range(len(days[i])):
             days[i][j].insert(0, label[i])
-    days = days[0] + days[1] + days[2]+ days[3]
+    days = days[0] + days[1] + days[2] + days[3]
 
     cols = ['label']
     for i in range(dim):
         cols.append('PC' + str((i+1)))
-    return pd.DataFrame(days, columns = cols)
-    
+    return pd.DataFrame(days, columns=cols)
+
+
 def create_plots(path, destination, dim=2):
     # list all files in directory
     # Crate Plots for all stimuli of ALL populations
@@ -169,19 +177,28 @@ def create_plots(path, destination, dim=2):
 
         if "_lact.mat" in i:
             populations.add(i[:-9])
-    
+
     # removing dubs
     populations = list(populations)
-    #path + '\\' + j
 
-    populations = [1,2,3]
     for pop in populations:
         # Create Directory for all plotted Stimuli
         new_dir = destination + '\\' + str(pop)
         os.mkdir(new_dir)
+        print(new_dir)
         # read in data
+        header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(pop),
+                                r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(pop))
 
-            # Plot for population Stimulus x
+        replace_nan(data, 0)
+        dictionary = data_to_dict(data, header)
+
+        # Plot for all possible stimuli of that population
+        for stim in range(1, 35, 1):
+            df = crate_dataframe(dictionary, stim, dim)
+            name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(pop, stim)
+            plot2D(df, name, True, new_dir + '\\' +
+                   '{}_Stimulus{}.{}'.format(pop, stim, 'png'))
 
 
 if __name__ == "__main__":
@@ -189,22 +206,20 @@ if __name__ == "__main__":
     parent_dir = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_Plots'
     stimulus = 34
     dimension = 2
-    population = "bl688-1_one_white_Pop09" #"bl660-1_two_white_Pop01"
+    population = "bl688-1_one_white_Pop09"  # "bl660-1_two_white_Pop01"
 
     create_plots(path, parent_dir)
-    
-    #header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
+
+    # header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
     #                        r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(population))
 
     #replace_nan(data, 0)
     #dictionary = data_to_dict(data, header)
     #df = crate_dataframe(dictionary, stimulus, dimension)
-    #if dimension == 2:
+    # if dimension == 2:
     #    name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus)
     #    plot2D(df, name, True, r'C:\Users\Sam\Desktop\{}_Stimulus{}.{}'.format(population, stimulus, 'png'))
-    #elif (dimension == 3):
+    # elif (dimension == 3):
     #    plot3D(df, "{}: 3D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
-    #else:
+    # else:
     #    print(df)
-    
-
