@@ -95,7 +95,9 @@ def plot2D(df, title, save=False, path=None):
         plt.savefig(path)
     else:
         plt.show()
-    plt.close()
+    
+    plt.cla()
+    #plt.close('all')
 
 
 def plot3D(df, text):
@@ -183,10 +185,11 @@ def create_plots(path, destination, dim=2):
 
     for pop in populations:
         print("{} of {} done".format(populations.index(pop), len(populations)))
+
         # Create Directory for all plotted Stimuli
         new_dir = destination + '\\' + str(pop)
         os.mkdir(new_dir)
-        print(new_dir)
+
         # read in data
         header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(pop),
                                 r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(pop))
