@@ -182,6 +182,7 @@ def create_plots(path, destination, dim=2):
     populations = list(populations)
 
     for pop in populations:
+        print("{} of {} done".format(populations.index(pop), len(populations)))
         # Create Directory for all plotted Stimuli
         new_dir = destination + '\\' + str(pop)
         os.mkdir(new_dir)
