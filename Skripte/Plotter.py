@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import csv
+import os
+from os.path import isfile, join
 from scipy.io import loadmat
 import math
 from sklearn.decomposition import PCA
@@ -63,7 +65,7 @@ def data_to_dict(data, header):
         d[k] = np.array(d[k]).T
     return d
 
-def plot2D(df, title):
+def plot2D(df, title, save=False, path=None):
     """
     Plots 2D Scatter Plot for PCA
     Same stimulus, for all 4 days
@@ -85,7 +87,11 @@ def plot2D(df, title):
     # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
         fancybox=True, shadow=True, ncol=4)
-    plt.show()
+    
+    if save:
+        plt.savefig(path)
+    else:
+        plt.show()
 
 def plot3D(df, text):
     # https://plotly.com/python/3d-scatter-plots/
@@ -150,7 +156,7 @@ def crate_dataframe(data_dic, stimuli, dim):
         cols.append('PC' + str((i+1)))
     return pd.DataFrame(days, columns = cols)
     
-def create_plots():
+def create_plots(path, destination, dim=2):
     # list all files in directory
     # Crate Plots for all stimuli of ALL populations
 
@@ -166,27 +172,39 @@ def create_plots():
     
     # removing dubs
     populations = list(populations)
-    return 0
+    #path + '\\' + j
+
+    populations = [1,2,3]
+    for pop in populations:
+        # Create Directory for all plotted Stimuli
+        new_dir = destination + '\\' + str(pop)
+        os.mkdir(new_dir)
+        # read in data
+
+            # Plot for population Stimulus x
 
 
 if __name__ == "__main__":
+    path = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
+    parent_dir = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_Plots'
     stimulus = 34
     dimension = 2
     population = "bl688-1_one_white_Pop09" #"bl660-1_two_white_Pop01"
 
-
-    header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
-                            r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(population))
-
-    replace_nan(data, 0)
-    dictionary = data_to_dict(data, header)
-    df = crate_dataframe(dictionary, stimulus, dimension)
+    create_plots(path, parent_dir)
     
-    if dimension == 2:
-        plot2D(df, "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
-    elif (dimension == 3):
-        plot3D(df, "{}: 3D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
-    else:
-        print(df)
+    #header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
+    #                        r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(population))
+
+    #replace_nan(data, 0)
+    #dictionary = data_to_dict(data, header)
+    #df = crate_dataframe(dictionary, stimulus, dimension)
+    #if dimension == 2:
+    #    name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus)
+    #    plot2D(df, name, True, r'C:\Users\Sam\Desktop\{}_Stimulus{}.{}'.format(population, stimulus, 'png'))
+    #elif (dimension == 3):
+    #    plot3D(df, "{}: 3D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
+    #else:
+    #    print(df)
     
 
