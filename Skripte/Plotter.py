@@ -208,22 +208,22 @@ def create_plots(path, destination, dim=2):
 if __name__ == "__main__":
     path = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
     parent_dir = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_Plots'
-    stimulus = 34
-    dimension = 2
-    population = "bl688-1_one_white_Pop09"  # "bl660-1_two_white_Pop01"
+    stimulus = 24
+    dimension = 3
+    population = "bl691-2_no_white_Pop09"  # "bl660-1_two_white_Pop01" oder bl691-2_no_white_Pop09
 
-    create_plots(path, parent_dir)
+    #create_plots(path, parent_dir)
 
-    # header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
-    #                        r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(population))
+    header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
+                            r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(population))
 
-    #replace_nan(data, 0)
-    #dictionary = data_to_dict(data, header)
-    #df = crate_dataframe(dictionary, stimulus, dimension)
-    # if dimension == 2:
-    #    name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus)
-    #    plot2D(df, name, True, r'C:\Users\Sam\Desktop\{}_Stimulus{}.{}'.format(population, stimulus, 'png'))
-    # elif (dimension == 3):
-    #    plot3D(df, "{}: 3D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
-    # else:
-    #    print(df)
+    replace_nan(data, 0)
+    dictionary = data_to_dict(data, header)
+    df = crate_dataframe(dictionary, stimulus, dimension)
+    if dimension == 2:
+        name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus)
+        plot2D(df, name, True, r'C:\Users\Sam\Desktop\{}_Stimulus{}.{}'.format(population, stimulus, 'png'))
+    elif (dimension == 3):
+        plot3D(df, "{}: 3D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
+    else:
+        print(df)
