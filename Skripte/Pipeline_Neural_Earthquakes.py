@@ -96,6 +96,9 @@ class NeuralEarthquake_singlePopulation():
         del data
 
     def get_single_stim(self, day, stimulus):
+        """
+        returns Array with [Neurons x Trails] of given day and stimulus
+        """
         return self.dictionary[(day, stimulus)]
 
     def do_PCA(self, X):
@@ -169,3 +172,4 @@ a = NeuralEarthquake_singlePopulation(
     "bl660-1_two_white_Pop01", "PCA", dimension=2)
 a.read_population()
 a.data_to_dictionary()
+a.get_single_stim(1,1)
