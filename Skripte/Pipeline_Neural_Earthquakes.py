@@ -137,26 +137,21 @@ class NeuralEarthquake_singlePopulation():
         PCA or tSNE has been applied beforehand
         """
         if self.reduction_method == 'PCA':
-            reduced_data = self.do_PCA(self.data)
-            data = [self.header, reduced_data[0], reduced_data[1]]
-            print(len(data[0]), len(data[1]), len(data[2]))
-            """
-            for i in range(len(data)):
-                data[i] = data[i].tolist()
-                data[i].insert(0, self.header[i])
-            print(data[0])
+            reduced_data, var = self.do_PCA(self.data)
+            data = np.array([self.header, reduced_data[0], reduced_data[1]]).T
             cols = ['label']
             for i in range(self.dimension):
                 cols.append('PC' + str((i+1)))
+
+            print(len(labels))
+            print(len(data), len(data[0]))
             self.dataframe = pd.DataFrame(data, columns=cols)
             print(self.dataframe)
-            """
+            
         elif self.reduction_method == 'tSNE':
             pass
         else:
             print('Invalid reduction Method! Try PCA or tSNE!')
-
-        
 
     def df_to_file(self, path):
         return 0
