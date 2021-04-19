@@ -190,6 +190,8 @@ def create_dataframe_pca(data_dic, stimuli, dim):
     day3, title = do_PCA(data_dic[label[2]], dim, label[2])
     day4, title = do_PCA(data_dic[label[3]], dim, label[3])
 
+    print(type(day1), type(day1[0]))
+
     days = [day1, day2, day3, day4]
     for i in range(len(days)):
         for j in range(len(days[i])):
@@ -278,8 +280,8 @@ if __name__ == "__main__":
     replace_nan(data, 0)
     dictionary = data_to_dict(data, header)
     
-    df = create_dataframe_tSNE(dictionary, stimulus, dimension)
-    plot_tSNE(df, "t-SNE for {}, stimulus {}".format(population, stimulus))
+    df = create_dataframe_pca(dictionary, stimulus, dimension)
+    #plot_tSNE(df, "t-SNE for {}, stimulus {}".format(population, stimulus))
     #if dimension == 2:
         #name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus)
         #plot2D(df, name, True, r'C:\Users\Sam\Desktop\{}_Stimulus{}.{}'.format(population, stimulus, 'png'))

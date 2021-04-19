@@ -66,9 +66,6 @@ class NeuralEarthquake_singlePopulation():
                     data[i][j] = self.replacement
 
         self.data, self.header = data.T, header
-        print(len(header))
-        print(len(data), len(data[0]))
-        #return data, header
 
     def data_to_dictionary(self):
         """
@@ -104,13 +101,11 @@ class NeuralEarthquake_singlePopulation():
     def do_PCA(self, X):
         """
         does PCA on given data-set,
-        returns list of coordinates [[All x-values],[All y-values],...]
-        and 
+        returns list of coordinates [[x-values],[y-values],...] 
         """
         pca = PCA(n_components=self.dimension)
         pca.fit(X)
-
-        return pca.components_.T.tolist(), sum(pca.explained_variance_ratio_)
+        return pca.components_.tolist(), sum(pca.explained_variance_ratio_)
 
     def create_df_singlestim(self, stimuli):
         """
@@ -138,9 +133,30 @@ class NeuralEarthquake_singlePopulation():
 
     def create_full_df(self):
         """
-        creates a pandas dataframe for all stimuli
+        creates a pandas dataframe for all stimuli 
+        PCA or tSNE has been applied beforehand
         """
-        return 0
+        if self.reduction_method == 'PCA':
+            reduced_data = self.do_PCA(self.data)
+            data = [self.header, reduced_data[0], reduced_data[1]]
+            print(len(data[0]), len(data[1]), len(data[2]))
+            """
+            for i in range(len(data)):
+                data[i] = data[i].tolist()
+                data[i].insert(0, self.header[i])
+            print(data[0])
+            cols = ['label']
+            for i in range(self.dimension):
+                cols.append('PC' + str((i+1)))
+            self.dataframe = pd.DataFrame(data, columns=cols)
+            print(self.dataframe)
+            """
+        elif self.reduction_method == 'tSNE':
+            pass
+        else:
+            print('Invalid reduction Method! Try PCA or tSNE!')
+
+        
 
     def df_to_file(self, path):
         return 0
@@ -171,5 +187,4 @@ class NeuralEarthquake_singlePopulation():
 a = NeuralEarthquake_singlePopulation(
     "bl660-1_two_white_Pop01", "PCA", dimension=2)
 a.read_population()
-a.data_to_dictionary()
-a.get_single_stim(1,1)
+a.create_full_df()
