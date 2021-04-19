@@ -9,6 +9,7 @@ from scipy.io import loadmat
 import math
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import TSNE
 import plotly.express as px
 
 
@@ -67,10 +68,9 @@ def data_to_dict(data, header):
         d[k] = np.array(d[k]).T
     return d
 
-
 def plot2D(df, title, save=False, path=None):
     """
-    Plots 2D Scatter Plot for PCA
+    Plots 2D Scatter Plot for tSNE
     Same stimulus, for all 4 days
     Source:
     https://www.statology.org/matplotlib-scatterplot-color-by-value/
@@ -87,6 +87,37 @@ def plot2D(df, title, save=False, path=None):
     plt.ylabel("Principle Component 2")
     plt.xlim([-1, 1])
     plt.ylim([-1, 1])
+    # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+               fancybox=True, shadow=True, ncol=4)
+
+    if save:
+        plt.savefig(path)
+    else:
+        plt.show()
+    
+    plt.cla()
+
+
+def plot_tSNE(df, title, save=False, path=None):
+    """
+    Plots 2D Scatter Plot for PCA
+    Same stimulus, for all 4 days
+    Source:
+    https://www.statology.org/matplotlib-scatterplot-color-by-value/
+    """
+    plt.style.use('dark_background')
+    colors = ["aqua", "lime", "deeppink", "darkorange"]
+    groups = df.groupby('label')
+
+    for name, group in groups:
+        plt.scatter(group.tSNE_1, group.tSNE_2, label=name, c=colors[name[0] - 1])
+
+    plt.title(title)
+    plt.xlabel("tSNE 1")
+    plt.ylabel("tSNE 2")
+    #plt.xlim([-1, 1])
+    #plt.ylim([-1, 1])
     # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
                fancybox=True, shadow=True, ncol=4)
@@ -141,8 +172,13 @@ def do_PCA(X, components, label, scaler=False):
 
     return pca.components_.T.tolist(), title
 
+def do_tSNE(X, components, perp=30.0):
+    """
+    performs t-SNE Algorithm
+    """
+    return TSNE(n_components=components, perplexity=perp).fit_transform(X.T).tolist()
 
-def crate_dataframe(data_dic, stimuli, dim):
+def create_dataframe_pca(data_dic, stimuli, dim):
     """
     creates pandas dataframe with Principle Components for all 4 days for a given stimulus
     """
@@ -163,6 +199,29 @@ def crate_dataframe(data_dic, stimuli, dim):
     cols = ['label']
     for i in range(dim):
         cols.append('PC' + str((i+1)))
+    return pd.DataFrame(days, columns=cols)
+
+def create_dataframe_tSNE(data_dic, stimuli, components, perp=30.0):
+    """
+    performs tSNE for given stimuli
+    """
+    label = [(1, stimuli), (2, stimuli), (3, stimuli), (4, stimuli)]
+
+    # Doing tSNE for each day for one stimulus do_tSNE(X, components, perp=30.0)
+    day1 = do_tSNE(data_dic[label[0]], components, perp)
+    day2 = do_tSNE(data_dic[label[1]], components, perp)
+    day3 = do_tSNE(data_dic[label[2]], components, perp)
+    day4 = do_tSNE(data_dic[label[3]], components, perp)
+
+    days = [day1, day2, day3, day4]
+    for i in range(len(days)):
+        for j in range(len(days[i])):
+            days[i][j].insert(0, label[i])
+    days = days[0] + days[1] + days[2] + days[3]
+
+    cols = ['label']
+    for i in range(components):
+        cols.append('tSNE_' + str((i+1)))
     return pd.DataFrame(days, columns=cols)
 
 
@@ -199,7 +258,7 @@ def create_plots(path, destination, dim=2):
 
         # Plot for all possible stimuli of that population
         for stim in range(1, 35, 1):
-            df = crate_dataframe(dictionary, stim, dim)
+            df = create_dataframe_pca(dictionary, stim, dim)
             name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(pop, stim)
             plot2D(df, name, True, new_dir + '\\' +
                    '{}_Stimulus{}.{}'.format(pop, stim, 'png'))
@@ -208,22 +267,23 @@ def create_plots(path, destination, dim=2):
 if __name__ == "__main__":
     path = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
     parent_dir = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_Plots'
-    stimulus = 24
-    dimension = 3
-    population = "bl691-2_no_white_Pop09"  # "bl660-1_two_white_Pop01" oder bl691-2_no_white_Pop09
-
-    #create_plots(path, parent_dir)
+     #create_plots(path, parent_dir)
+    stimulus = 1
+    dimension = 2
+    population = "bl660-1_two_white_Pop01"  # "bl660-1_two_white_Pop01" oder bl691-2_no_white_Pop09
 
     header, data = get_data(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(population),
                             r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(population))
 
     replace_nan(data, 0)
     dictionary = data_to_dict(data, header)
-    df = crate_dataframe(dictionary, stimulus, dimension)
-    if dimension == 2:
-        name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus)
-        plot2D(df, name, True, r'C:\Users\Sam\Desktop\{}_Stimulus{}.{}'.format(population, stimulus, 'png'))
-    elif (dimension == 3):
-        plot3D(df, "{}: 3D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
-    else:
-        print(df)
+    
+    df = create_dataframe_tSNE(dictionary, stimulus, dimension)
+    plot_tSNE(df, "t-SNE for {}, stimulus {}".format(population, stimulus))
+    #if dimension == 2:
+        #name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus)
+        #plot2D(df, name, True, r'C:\Users\Sam\Desktop\{}_Stimulus{}.{}'.format(population, stimulus, 'png'))
+    #elif (dimension == 3):
+        #plot3D(df, "{}: 3D-PCA for Day 1-4, Stimulus {}".format(population, stimulus))
+    #else:
+        #print(df)
