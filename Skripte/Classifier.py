@@ -20,6 +20,12 @@ def SVM_preprocessing():
 
     return 0
 
+def prepare_data_PCA():
+    return 0
+
+def prepare_data_tSNE():
+    return 0
+
 if __name__ == "__main__":
     path = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
     dimension = 20

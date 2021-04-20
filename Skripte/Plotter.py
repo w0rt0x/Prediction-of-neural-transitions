@@ -281,6 +281,7 @@ if __name__ == "__main__":
     dictionary = data_to_dict(data, header)
     
     df = create_dataframe_pca(dictionary, stimulus, dimension)
+    print(df)
     #plot_tSNE(df, "t-SNE for {}, stimulus {}".format(population, stimulus))
     #if dimension == 2:
         #name = "{}: 2D-PCA for Day 1-4, Stimulus {}".format(population, stimulus)

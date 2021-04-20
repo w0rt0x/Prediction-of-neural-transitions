@@ -65,11 +65,8 @@ def del_files(path):
 
 if __name__ == "__main__":
     #convert_all_files(r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten", r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten_CSV")
-    import numpy as np
-    from sklearn.decomposition import PCA
-    X = np.array([[-1, -1, 1], [-2, -1, 2], [-3, -2, 5], [1, 1, 1], [2, 1, 8], [3, 2, 4]])
-    pca = PCA(n_components=2)
-    pca.fit(X)
-
-    print(pca.components_)
+    mat = loadmat(r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\data_for_sam\bl687-1_no_white_Pop02.mat')
+    act = mat['cl_id']
+    print(len(act))
+    print(act)
 

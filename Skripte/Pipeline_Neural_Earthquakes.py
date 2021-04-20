@@ -57,7 +57,7 @@ class NeuralEarthquake_singlePopulation():
             data.append(mat['vecs_all_days'][i])
 
         # Swapping x and y coordinats in data so that one trial is in one list (x-axis)
-        header, data = np.array(header), np.array(data).T
+        header, data = header, np.array(data).T
 
         # replacing NaN-values with replacement
         for i in range(len(data)):
@@ -105,7 +105,7 @@ class NeuralEarthquake_singlePopulation():
         """
         pca = PCA(n_components=self.dimension)
         pca.fit(X)
-        return pca.components_.tolist(), sum(pca.explained_variance_ratio_)
+        return pca.components_.T.tolist(), sum(pca.explained_variance_ratio_)
 
     def create_df_singlestim(self, stimuli):
         """
@@ -138,36 +138,86 @@ class NeuralEarthquake_singlePopulation():
         """
         if self.reduction_method == 'PCA':
             reduced_data, var = self.do_PCA(self.data)
-            data = np.array([self.header, reduced_data[0], reduced_data[1]]).T
+            for i in range(len(reduced_data)):
+                reduced_data[i].insert(0, self.header[i])
             cols = ['label']
             for i in range(self.dimension):
                 cols.append('PC' + str((i+1)))
 
-            print(len(labels))
-            print(len(data), len(data[0]))
-            self.dataframe = pd.DataFrame(data, columns=cols)
-            print(self.dataframe)
+            self.dataframe = pd.DataFrame(reduced_data, columns=cols)
             
         elif self.reduction_method == 'tSNE':
             pass
         else:
             print('Invalid reduction Method! Try PCA or tSNE!')
 
+    def add_activity_to_df(self, path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\data_for_sam'):
+        """
+        Adds another column to the dataframe: response
+        response-class is day/stimulux specific, 0 means no response
+        """
+        mat = loadmat(path + '\\' + self.population + '.mat')
+        array = mat['cl_id']
+        print(array)
+        response = []
+        for i in range(len(self.dataframe['label'])):
+            day, stimulus = self.dataframe['label'][i][0], self.dataframe['label'][i][1]
+            response.append(array[stimulus - 1, day - 1])
+
+        self.dataframe['response'] = response
+
     def df_to_file(self, path):
-        return 0
+        """
+        writes Dataframe to .csv file
+        """
+        self.dataframe.to_csv(path + '\\{}.csv'.format(self.population))
 
     def read_in_df(self, path):
-        return 0
+        self.dataframe = pd.read_csv(path)
 
+    def get_df(self):
+        return self.dataframe
 
-    def plot2D(self):
-        # Cluster!!!
-        # del plot am ende
-        # https://towardsdatascience.com/visualizing-clusters-with-pythons-matplolib-35ae03d87489
-        return 0
+    def plot2D(self, save=False, path=None):
+        """
+        Plots 2D Scatter Plot, Plot can be saved to path
+        or just be shown
+        """
+        # Source:
+        # https://www.statology.org/matplotlib-scatterplot-color-by-value/
+        
+        plt.style.use('dark_background')
+        marker = ['o', 'v', 's', 'x']  # Marker for each Day
+        colors = ["aqua", "lime", "deeppink", "darkorange"]
+        groups = self.dataframe.groupby('label')
+        print(len(groups))
+        for name, group in groups:
+            plt.scatter(group.PC1, group.PC2, label=name, c=colors[name[0] - 1], s=1)
+        # Für jeden Stimulus andere Farbe
+        # Für jeden Tag anderen marker
+        # Cluster machen für Maren
+
+        plt.title(self.population)
+        plt.xlabel("Principle Component 1")
+        plt.ylabel("Principle Component 2")
+        #plt.xlim([-1, 1])
+        #plt.ylim([-1, 1])
+        # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                fancybox=True, shadow=True, ncol=4)
+
+        if save:
+            plt.savefig(path)
+        else:
+            plt.show()
+        
+        plt.cla()
 
     def plot3D(self):
-        return 0
+        fig = px.scatter_3d(self.dataframe, x='PC1', y='PC2', z='PC3',
+                        color='label')
+
+        fig.show()
 
     def minmax_scaler(self):
         return 0
@@ -180,6 +230,8 @@ class NeuralEarthquake_singlePopulation():
 
 
 a = NeuralEarthquake_singlePopulation(
-    "bl660-1_two_white_Pop01", "PCA", dimension=2)
+    "bl687-1_no_white_Pop02", "PCA", dimension=2)
 a.read_population()
 a.create_full_df()
+a.add_activity_to_df()
+a.df_to_file(r"C:\Users\Sam\Desktop")
