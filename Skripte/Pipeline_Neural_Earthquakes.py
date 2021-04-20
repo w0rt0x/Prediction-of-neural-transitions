@@ -158,8 +158,8 @@ class NeuralEarthquake_singlePopulation():
         """
         mat = loadmat(path + '\\' + self.population + '.mat')
         array = mat['cl_id']
-        print(array)
         response = []
+        
         for i in range(len(self.dataframe['label'])):
             day, stimulus = self.dataframe['label'][i][0], self.dataframe['label'][i][1]
             response.append(array[stimulus - 1, day - 1])
@@ -230,8 +230,8 @@ class NeuralEarthquake_singlePopulation():
 
 
 a = NeuralEarthquake_singlePopulation(
-    "bl687-1_no_white_Pop02", "PCA", dimension=2)
+    "bl660-1_two_white_Pop01", "PCA", dimension=2)
 a.read_population()
 a.create_full_df()
 a.add_activity_to_df()
-a.df_to_file(r"C:\Users\Sam\Desktop")
+#a.df_to_file(r"C:\Users\Sam\Desktop")
