@@ -12,7 +12,6 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import TSNE
 import plotly.express as px
-from IPython import display
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 matplotlib_axes_logger.setLevel('ERROR')
 
@@ -184,15 +183,13 @@ class NeuralEarthquake_singlePopulation():
 
     def plot2D_anim(self, day):
         """
-        Plots 2D Scatter Plot, Plot can be saved to path
-        or just be shown
+        Plots 2D animated Scatter Plot
         """
         # Sources:
         # https://www.statology.org/matplotlib-scatterplot-color-by-value/
         # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
-        # Bessere Colormap
-        # Aufnahme
-        
+        # https://www.programcreek.com/python/example/102361/matplotlib.pyplot.pause
+  
         plt.style.use('dark_background')
         plt.ion()
         plt.title("{}, Day {}".format(self.population, day))
@@ -214,10 +211,7 @@ class NeuralEarthquake_singlePopulation():
 
     def plot2D(self, day, save=False, path=None):
         """
-        Plots 2D Scatter Plot for tSNE
-        Same stimulus, for all 4 days
-        Source:
-        https://www.statology.org/matplotlib-scatterplot-color-by-value/
+        Plots 2D Scatter Plot, can be saved to path
         """
         plt.style.use('dark_background')
         plt.title("{}, Day {}".format(self.population, day))
@@ -243,7 +237,6 @@ class NeuralEarthquake_singlePopulation():
         
         plt.cla()
 
-
     def plot3D(self):
         fig = px.scatter_3d(self.dataframe, x='PC1', y='PC2', z='PC3',
                         color='label')
@@ -260,10 +253,38 @@ class NeuralEarthquake_singlePopulation():
         return 0
 
 
+def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_AllStimInOne', dim=2):
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+
+    # removing dubs
+    populations = list(populations)
+
+    for pop in populations:
+        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
+
+        # Create Directory for all plotted Stimuli
+        new_dir = destination + '\\' + str(pop)
+        os.mkdir(new_dir)
+
+        # read in data
+        a = NeuralEarthquake_singlePopulation(pop, "PCA", dimension=dim)
+        a.read_population()
+        a.create_full_df()
+        for day in range(1, 5):
+            a.plot2D(day, True, new_dir + '\\' +'{}, Day {}.{}'.format(pop, day, 'png'))
+
 a = NeuralEarthquake_singlePopulation(
     "bl684_no_white_Pop11", "PCA", dimension=2)
 a.read_population()
 a.create_full_df()
 a.add_activity_to_df()
-a.plot2D(4, True, r'C:\Users\Sam\Desktop\bl684_no_white_Pop11.png')
+a.plot2D_anim(4)
+#a.plot2D(4, True, r'C:\Users\Sam\Desktop\bl684_no_white_Pop11.png')
 #a.df_to_file(r"C:\Users\Sam\Desktop")
