@@ -1,5 +1,6 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import numpy as np
 import pandas as pd
 import csv
@@ -11,6 +12,9 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import TSNE
 import plotly.express as px
+from IPython import display
+from matplotlib.axes._axes import _log as matplotlib_axes_logger
+matplotlib_axes_logger.setLevel('ERROR')
 
 
 class NeuralEarthquake_singlePopulation():
@@ -178,40 +182,36 @@ class NeuralEarthquake_singlePopulation():
     def get_df(self):
         return self.dataframe
 
-    def plot2D(self, save=False, path=None):
+    def plot2D(self, day, save=False, path=None):
         """
         Plots 2D Scatter Plot, Plot can be saved to path
         or just be shown
         """
-        # Source:
+        # Sources:
         # https://www.statology.org/matplotlib-scatterplot-color-by-value/
+        # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
+        # Bessere Colormap
+        # Aufnahme
         
         plt.style.use('dark_background')
-        marker = ['o', 'v', 's', 'x']  # Marker for each Day
-        colors = ["aqua", "lime", "deeppink", "darkorange"]
-        groups = self.dataframe.groupby('label')
-        print(len(groups))
-        for name, group in groups:
-            plt.scatter(group.PC1, group.PC2, label=name, c=colors[name[0] - 1], s=1)
-        # Für jeden Stimulus andere Farbe
-        # Für jeden Tag anderen marker
-        # Cluster machen für Maren
-
-        plt.title(self.population)
+        plt.ion()
+        plt.title("{}, Day {}".format(self.population, day))
         plt.xlabel("Principle Component 1")
         plt.ylabel("Principle Component 2")
-        #plt.xlim([-1, 1])
-        #plt.ylim([-1, 1])
-        # https://stackoverflow.com/questions/17411940/matplotlib-scatter-plot-legend
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+        #plt.xlim([-0.1, 0.3])
+        #plt.ylim([-0.1, 0.3])
+        plt.draw()
+        colors = cm.plasma(np.linspace(0, 1, 34))
+        for i in range(34):
+            df = self.dataframe[self.dataframe.isin([(day, i)]).any(axis=1)]
+            groups = df.groupby('label')
+            for name, group in groups:
+                plt.scatter(group.PC1, group.PC2, label=name, c=colors[i])
+                plt.pause(0.5)
+                plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
                 fancybox=True, shadow=True, ncol=4)
+        plt.waitforbuttonpress()
 
-        if save:
-            plt.savefig(path)
-        else:
-            plt.show()
-        
-        plt.cla()
 
     def plot3D(self):
         fig = px.scatter_3d(self.dataframe, x='PC1', y='PC2', z='PC3',
@@ -230,8 +230,9 @@ class NeuralEarthquake_singlePopulation():
 
 
 a = NeuralEarthquake_singlePopulation(
-    "bl660-1_two_white_Pop01", "PCA", dimension=2)
+    "bl684_no_white_Pop11", "PCA", dimension=2)
 a.read_population()
 a.create_full_df()
 a.add_activity_to_df()
+a.plot2D(4)
 #a.df_to_file(r"C:\Users\Sam\Desktop")
