@@ -182,7 +182,7 @@ class NeuralEarthquake_singlePopulation():
     def get_df(self):
         return self.dataframe
 
-    def plot2D(self, day, save=False, path=None):
+    def plot2D_anim(self, day):
         """
         Plots 2D Scatter Plot, Plot can be saved to path
         or just be shown
@@ -198,8 +198,8 @@ class NeuralEarthquake_singlePopulation():
         plt.title("{}, Day {}".format(self.population, day))
         plt.xlabel("Principle Component 1")
         plt.ylabel("Principle Component 2")
-        #plt.xlim([-0.1, 0.3])
-        #plt.ylim([-0.1, 0.3])
+        plt.xlim([-0.05, 0.25])
+        plt.ylim([-0.05, 0.25])
         plt.draw()
         colors = cm.plasma(np.linspace(0, 1, 34))
         for i in range(34):
@@ -207,10 +207,41 @@ class NeuralEarthquake_singlePopulation():
             groups = df.groupby('label')
             for name, group in groups:
                 plt.scatter(group.PC1, group.PC2, label=name, c=colors[i])
-                plt.pause(0.5)
+                plt.pause(0.3)
                 plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
                 fancybox=True, shadow=True, ncol=4)
         plt.waitforbuttonpress()
+
+    def plot2D(self, day, save=False, path=None):
+        """
+        Plots 2D Scatter Plot for tSNE
+        Same stimulus, for all 4 days
+        Source:
+        https://www.statology.org/matplotlib-scatterplot-color-by-value/
+        """
+        plt.style.use('dark_background')
+        plt.title("{}, Day {}".format(self.population, day))
+        plt.xlabel("Principle Component 1")
+        plt.ylabel("Principle Component 2")
+        plt.xlim([-0.05, 0.25])
+        plt.ylim([-0.05, 0.25])
+        colors = cm.plasma(np.linspace(0, 1, 34))
+        for i in range(34):
+            df = self.dataframe[self.dataframe.isin([(day, i)]).any(axis=1)]
+            groups = df.groupby('label')
+            for name, group in groups:
+                plt.scatter(group.PC1, group.PC2, label=name, c=colors[i], s=5)
+                plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                fancybox=True, shadow=True, ncol=4)
+
+        plt.subplots_adjust(bottom = 0.2)
+
+        if save:
+            plt.savefig(path, bbox_inches='tight', dpi=100)
+        else:
+            plt.show()
+        
+        plt.cla()
 
 
     def plot3D(self):
@@ -234,5 +265,5 @@ a = NeuralEarthquake_singlePopulation(
 a.read_population()
 a.create_full_df()
 a.add_activity_to_df()
-a.plot2D(4)
+a.plot2D(4, True, r'C:\Users\Sam\Desktop\bl684_no_white_Pop11.png')
 #a.df_to_file(r"C:\Users\Sam\Desktop")
