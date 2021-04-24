@@ -60,7 +60,7 @@ class NeuralEarthquake_singlePopulation():
             data.append(mat['vecs_all_days'][i])
 
         # Swapping x and y coordinats in data so that one trial is in one list (x-axis)
-        header, data = header, np.array(data).T
+        data = np.array(data).T
 
         # replacing NaN-values with replacement
         for i in range(len(data)):
@@ -281,10 +281,10 @@ def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\
             a.plot2D(day, True, new_dir + '\\' +'{}, Day {}.{}'.format(pop, day, 'png'))
 
 a = NeuralEarthquake_singlePopulation(
-    "bl684_no_white_Pop11", "PCA", dimension=2)
+    "bl687-1_no_white_Pop02", "PCA", dimension=20)
 a.read_population()
 a.create_full_df()
 a.add_activity_to_df()
-a.plot2D_anim(4)
+#a.plot2D_anim(4)
 #a.plot2D(4, True, r'C:\Users\Sam\Desktop\bl684_no_white_Pop11.png')
-#a.df_to_file(r"C:\Users\Sam\Desktop")
+a.df_to_file(r"C:\Users\Sam\Desktop")
