@@ -252,7 +252,6 @@ class NeuralEarthquake_singlePopulation():
     def standard_scaler(self):
         return 0
 
-
 def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_AllStimInOne', dim=2):
     populations = set()
     files = [f for f in os.listdir(path) if isfile(join(path, f))]
@@ -277,14 +276,41 @@ def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\
         a = NeuralEarthquake_singlePopulation(pop, "PCA", dimension=dim)
         a.read_population()
         a.create_full_df()
+
         for day in range(1, 5):
             a.plot2D(day, True, new_dir + '\\' +'{}, Day {}.{}'.format(pop, day, 'png'))
 
+def create_all_df(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\2PCs', dim=2):
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+
+    # removing dubs
+    populations = list(populations)
+
+    for pop in populations:
+        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
+
+        # read in data
+        a = NeuralEarthquake_singlePopulation(pop, "PCA", dimension=dim)
+        a.read_population()
+        a.create_full_df()
+        a.add_activity_to_df()
+        a.df_to_file(destination)
+        a = None
+
 a = NeuralEarthquake_singlePopulation(
     "bl687-1_no_white_Pop02", "PCA", dimension=20)
+
 a.read_population()
 a.create_full_df()
 a.add_activity_to_df()
-#a.plot2D_anim(4)
-#a.plot2D(4, True, r'C:\Users\Sam\Desktop\bl684_no_white_Pop11.png')
-a.df_to_file(r"C:\Users\Sam\Desktop")
+a.plot2D_anim(1)
+#a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
+#a.df_to_file(r"C:\Users\Sam\Desktop")
+#a.df_to_file(r"C:\Users\Sam\Desktop")

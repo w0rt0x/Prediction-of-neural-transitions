@@ -90,9 +90,9 @@ class NeuralEarthquake_Classifier():
 
 
 a = NeuralEarthquake_Classifier(
-    r"C:\Users\Sam\Desktop\bl687-1_no_white_Pop02.csv", 'bl687-1_no_white_Pop02')
+    r"D:\Dataframes\20PCs\bl684_no_white_Pop06.csv", 'bl687-1_no_white_Pop02')
 a.prepare_binary_labels()
 a.do_Logistic_Regression(penality='none')
-a.plot_CM(norm='true')
+a.plot_CM()
 a.do_SVM(kernel='poly', c=5)
-a.plot_CM(norm='true')
+a.plot_CM()
