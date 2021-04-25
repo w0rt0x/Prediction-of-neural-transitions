@@ -15,6 +15,13 @@ import plotly.express as px
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 matplotlib_axes_logger.setLevel('ERROR')
 
+"""
+This Class/Script is mostly for data-preprocessing. The Data is given in matlab-files, which are converted to
+pandas dataframes after performing a dimensionality reduction (PCA) on it. The Class also offers the Option
+to plot the data, if the dimensions (d=2) are right.
+"""
+
+
 
 class NeuralEarthquake_singlePopulation():
 
@@ -176,9 +183,15 @@ class NeuralEarthquake_singlePopulation():
         self.dataframe.to_csv(path + '\\{}.csv'.format(self.population))
 
     def read_in_df(self, path):
+        """
+        reads in dataframe from .csv file
+        """
         self.dataframe = pd.read_csv(path)
 
     def get_df(self):
+        """
+        returns dataframe
+        """
         return self.dataframe
 
     def plot2D_anim(self, day):
@@ -253,6 +266,9 @@ class NeuralEarthquake_singlePopulation():
         return 0
 
 def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_AllStimInOne', dim=2):
+    """
+    Creates Plots for all given matlab files after performing PCA on them
+    """
     populations = set()
     files = [f for f in os.listdir(path) if isfile(join(path, f))]
     for i in files:
@@ -281,6 +297,10 @@ def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\
             a.plot2D(day, True, new_dir + '\\' +'{}, Day {}.{}'.format(pop, day, 'png'))
 
 def create_all_df(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\2PCs', dim=2):
+    """
+    Uses neuralEarthquake class to transform all matlab files into pandas dataframes,
+    which are savind in .csv files
+    """
     populations = set()
     files = [f for f in os.listdir(path) if isfile(join(path, f))]
     for i in files:
@@ -304,13 +324,20 @@ def create_all_df(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten',
         a.df_to_file(destination)
         a = None
 
-a = NeuralEarthquake_singlePopulation(
-    "bl687-1_no_white_Pop02", "PCA", dimension=20)
+def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes\merged_20PCs.csv'):
+    files = [os.path.join(directory, f) for f in os.listdir(directory)]
+    final_df = pd.concat([pd.read_csv(f) for f in files])
+    final_df.to_csv(destination, index=False)
 
-a.read_population()
-a.create_full_df()
-a.add_activity_to_df()
-a.plot2D_anim(1)
+merge_all_df()
+
+#a = NeuralEarthquake_singlePopulation(
+#    "bl687-1_no_white_Pop02", "PCA", dimension=20)
+
+#a.read_population()
+#a.create_full_df()
+#a.add_activity_to_df()
+#a.plot2D_anim(1)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
