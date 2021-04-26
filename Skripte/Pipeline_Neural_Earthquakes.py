@@ -332,12 +332,12 @@ def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes
 merge_all_df()
 
 #a = NeuralEarthquake_singlePopulation(
-#    "bl687-1_no_white_Pop02", "PCA", dimension=20)
+#    "bl693_no_white_Pop06", "PCA", dimension=2)
 
 #a.read_population()
 #a.create_full_df()
 #a.add_activity_to_df()
-#a.plot2D_anim(1)
+#a.plot2D_anim(4)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
 #a.df_to_file(r"C:\Users\Sam\Desktop")

@@ -32,19 +32,24 @@ class NeuralEarthquake_Classifier():
         """
         X = []
         y = []
-
+        ac = 0
+        na = 0
         for index, row in self.dataframe.iterrows():
             X.append(row[2:-1].tolist())
             # Binary Labels for activity
             if row[-1] > 0:
                 y.append(1)
+                ac += 1
             else:
                 y.append(0)
+                na+=1
+        print(ac, na)
 
         self.dataframe = None
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=split_ratio, random_state=randomState, stratify=strat)
         X, y = None, None
+
 
     def do_Logistic_Regression(self, penality='l2', c=1.0):
         """
@@ -88,11 +93,12 @@ class NeuralEarthquake_Classifier():
         else:
             plt.savefig(path)
 
-
+#D:\Dataframes\merged_20PCs.csv
 a = NeuralEarthquake_Classifier(
-    r"D:\Dataframes\20PCs\bl684_no_white_Pop06.csv", 'bl687-1_no_white_Pop02')
+    r"D:\Dataframes\merged_20PCs.csv", 'merged_20PCs')
+#bl693_no_white_Pop06
 a.prepare_binary_labels()
 a.do_Logistic_Regression(penality='none')
 a.plot_CM()
-a.do_SVM(kernel='poly', c=5)
+a.do_SVM(kernel='poly', c=1)
 a.plot_CM()
