@@ -39,6 +39,7 @@ class NeuralEarthquake_singlePopulation():
         self.trials = None
         self.dataframe = None
         self.replacement = replacement  # replacement for NaN
+        self.loading_matrix = None
 
     def set_dim(self, new):
         self.dimension = new
@@ -115,6 +116,10 @@ class NeuralEarthquake_singlePopulation():
         """
         pca = PCA(n_components=self.dimension)
         pca.fit(X)
+        # also calculating loadings, Source:
+        # https://scentellegher.github.io/machine-learning/2020/01/27/pca-loadings-sklearn.html
+        self.loading_matrix = pca.components_.T * np.sqrt(pca.explained_variance_)
+
         return pca.components_.T.tolist(), sum(pca.explained_variance_ratio_)
 
     def create_df_singlestim(self, stimuli):
@@ -256,24 +261,18 @@ class NeuralEarthquake_singlePopulation():
 
         fig.show()
 
-    def plot2D_loadings(self, day,  save=False, path=None):
+    def plot2D_loadings(self, save=False, path=None):
         """
         Plots PC's per stimulus with loadings and activity
         """
         plt.style.use('dark_background')
-        plt.title("{}, Day {}".format(self.population, day))
-        plt.xlabel("stimulus")
-        plt.ylabel("Principle Component Value")
-        plt.xticks(range(1,35))
-        for i in self.dataframe.iterrows():
-            ls = i[1].tolist()
-            if ls[0][0] == day:
-                for j in ls[1:2]:
-                # Giving neurons with response different marker
-                    if ls[-1] > 0:
-                        plt.scatter(x=ls[0][1], y=j, c='red', marker='x')
-                    else:
-                        plt.scatter(x=ls[0][1], y=j, c='cyan', marker='o')
+        plt.title("Loadings of {}".format(self.population))
+        #plt.xlabel("PC's")
+        #plt.ylabel("(Day, Stimulus)")
+        #plt.xticks(range(1, 22))
+        #plt.yticks(len(self.loading_matrix[0]))
+        plt.imshow(self.loading_matrix[:721].T, cmap='plasma')
+        plt.colorbar()
 
         if save:
             plt.savefig(path)
@@ -357,12 +356,12 @@ def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes
     final_df.to_csv(destination, index=False)
 
 a = NeuralEarthquake_singlePopulation(
-    "bl693_no_white_Pop06", "PCA", dimension=2)
+    "bl693_no_white_Pop06", "PCA", dimension=20)
 
 a.read_population()
 a.create_full_df()
 a.add_activity_to_df()
-a.plot2D_loadings(1)
+a.plot2D_loadings()
 #a.plot2D_anim(4)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
