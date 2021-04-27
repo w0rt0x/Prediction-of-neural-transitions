@@ -256,6 +256,33 @@ class NeuralEarthquake_singlePopulation():
 
         fig.show()
 
+    def plot2D_loadings(self, day,  save=False, path=None):
+        """
+        Plots PC's per stimulus with loadings and activity
+        """
+        plt.style.use('dark_background')
+        plt.title("{}, Day {}".format(self.population, day))
+        plt.xlabel("stimulus")
+        plt.ylabel("Principle Component Value")
+        plt.xticks(range(1,35))
+        for i in self.dataframe.iterrows():
+            ls = i[1].tolist()
+            if ls[0][0] == day:
+                for j in ls[1:2]:
+                # Giving neurons with response different marker
+                    if ls[-1] > 0:
+                        plt.scatter(x=ls[0][1], y=j, c='red', marker='x')
+                    else:
+                        plt.scatter(x=ls[0][1], y=j, c='cyan', marker='o')
+
+        if save:
+            plt.savefig(path)
+        else:
+            plt.show()
+        
+        plt.cla()
+
+
     def minmax_scaler(self):
         return 0
 
@@ -329,14 +356,13 @@ def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes
     final_df = pd.concat([pd.read_csv(f) for f in files])
     final_df.to_csv(destination, index=False)
 
-merge_all_df()
+a = NeuralEarthquake_singlePopulation(
+    "bl693_no_white_Pop06", "PCA", dimension=2)
 
-#a = NeuralEarthquake_singlePopulation(
-#    "bl693_no_white_Pop06", "PCA", dimension=2)
-
-#a.read_population()
-#a.create_full_df()
-#a.add_activity_to_df()
+a.read_population()
+a.create_full_df()
+a.add_activity_to_df()
+a.plot2D_loadings(1)
 #a.plot2D_anim(4)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
