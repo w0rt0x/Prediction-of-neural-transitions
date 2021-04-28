@@ -122,6 +122,17 @@ class NeuralEarthquake_singlePopulation():
 
         return pca.components_.T.tolist(), sum(pca.explained_variance_ratio_)
 
+    def get_min_max(self):
+        """
+        saves max and min loading for plotting
+        """
+        vals = []
+        for k in self.loading_matrix:
+            for i in k:
+                vals.append(i)
+        self.max = max(vals)
+        self.min = min(vals)
+
     def create_df_singlestim(self, stimuli):
         """
         creates a pandas dataframe for single stimulus,
@@ -272,16 +283,16 @@ class NeuralEarthquake_singlePopulation():
         plt.ylabel("Trials of Day{}, Stimulus {}".format(day, stim))
         plt.xticks(range(1, 22))
         plt.yticks(range(1, len(indices)))
-        plt.pcolor(self.loading_matrix[indices[0]:indices[-1]], cmap='plasma')
-        plt.colorbar()
+        plt.pcolor(self.loading_matrix[indices[0]:indices[-1]], cmap='plasma', vmax=self.max, vmin=self.min)
+        cb = plt.colorbar()
 
         if save:
-            plt.savefig(path + '\\.{},Day{},stim{}.png'.format(self.population, day, stim))
+            plt.savefig(path)
         else:
             plt.show()
         
         plt.cla()
-
+        cb.remove()
 
     def minmax_scaler(self):
         return 0
@@ -378,10 +389,11 @@ def plot_all_loadings(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Dat
         a = NeuralEarthquake_singlePopulation(pop, "PCA", dimension=dim)
         a.read_population()
         a.create_full_df()
+        a.get_min_max()
 
         for day in range(1, 5):
             for stim in range(1, 35):
-                a.plot2D_loadings(4, 3, True, r'C:\Users\Sam\Desktop')
+                a.plot2D_loadings(day, stim, True, new_dir + '\\{},Day{},stim{}.png'.format(pop, day, stim))
 
 
 def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes\merged_20PCs.csv'):
@@ -389,13 +401,15 @@ def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes
     final_df = pd.concat([pd.read_csv(f) for f in files])
     final_df.to_csv(destination, index=False)
 
-a = NeuralEarthquake_singlePopulation(
-    "bl693_no_white_Pop06", "PCA", dimension=20)
+plot_all_loadings()
 
-a.read_population()
-a.create_full_df()
+#a = NeuralEarthquake_singlePopulation(
+#    "bl693_no_white_Pop06", "PCA", dimension=20)
+
+#a.read_population()
+#a.create_full_df()
 #a.add_activity_to_df()
-a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
+#a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
 #a.plot2D_anim(4)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
