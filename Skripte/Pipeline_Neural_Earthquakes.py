@@ -261,21 +261,22 @@ class NeuralEarthquake_singlePopulation():
 
         fig.show()
 
-    def plot2D_loadings(self, save=False, path=None):
+    def plot2D_loadings(self, day, stim, save=False, path=None):
         """
         Plots PC's per stimulus with loadings and activity
         """
+        indices = [i for i, x in enumerate(self.header) if x == (day, stim)]
         plt.style.use('dark_background')
-        plt.title("Loadings of {}".format(self.population))
-        #plt.xlabel("PC's")
-        #plt.ylabel("(Day, Stimulus)")
-        #plt.xticks(range(1, 22))
-        #plt.yticks(len(self.loading_matrix[0]))
-        plt.imshow(self.loading_matrix[:721].T, cmap='plasma')
+        plt.title("Loadings of {}, Day {}, Stimulus {}".format(self.population, day, stim))
+        plt.xlabel("PC's")
+        plt.ylabel("Trials of Day{}, Stimulus {}".format(day, stim))
+        plt.xticks(range(1, 22))
+        plt.yticks(range(1, len(indices)))
+        plt.pcolor(self.loading_matrix[indices[0]:indices[-1]], cmap='plasma')
         plt.colorbar()
 
         if save:
-            plt.savefig(path)
+            plt.savefig(path + '\\.{},Day{},stim{}.png'.format(self.population, day, stim))
         else:
             plt.show()
         
@@ -350,6 +351,39 @@ def create_all_df(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten',
         a.df_to_file(destination)
         a = None
 
+def plot_all_loadings(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Loading_Plots', dim=20):
+    """
+    Creates Loadings plots for all files
+    """
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+
+    # removing dubs
+    populations = list(populations)
+
+    for pop in populations:
+        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
+
+        # Create Directory for all plotted Stimuli
+        new_dir = destination + '\\' + str(pop)
+        os.mkdir(new_dir)
+
+        # read in data
+        a = NeuralEarthquake_singlePopulation(pop, "PCA", dimension=dim)
+        a.read_population()
+        a.create_full_df()
+
+        for day in range(1, 5):
+            for stim in range(1, 35):
+                a.plot2D_loadings(4, 3, True, r'C:\Users\Sam\Desktop')
+
+
 def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes\merged_20PCs.csv'):
     files = [os.path.join(directory, f) for f in os.listdir(directory)]
     final_df = pd.concat([pd.read_csv(f) for f in files])
@@ -360,8 +394,8 @@ a = NeuralEarthquake_singlePopulation(
 
 a.read_population()
 a.create_full_df()
-a.add_activity_to_df()
-a.plot2D_loadings()
+#a.add_activity_to_df()
+a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
 #a.plot2D_anim(4)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
