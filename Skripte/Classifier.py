@@ -1,5 +1,5 @@
 from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 import matplotlib.pyplot as plt
@@ -32,24 +32,22 @@ class NeuralEarthquake_Classifier():
         """
         X = []
         y = []
-        ac = 0
-        na = 0
+
         for index, row in self.dataframe.iterrows():
             X.append(row[2:-1].tolist())
             # Binary Labels for activity
             if row[-1] > 0:
                 y.append(1)
-                ac += 1
             else:
                 y.append(0)
-                na+=1
-        print(ac, na)
 
         self.dataframe = None
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=split_ratio, random_state=randomState, stratify=strat)
         X, y = None, None
 
+    def get_accuracy(self):
+        return self.accuracy
 
     def do_Logistic_Regression(self, penality='l2', c=1.0):
         """
@@ -58,11 +56,42 @@ class NeuralEarthquake_Classifier():
         # Sources:
         # https://towardsdatascience.com/logistic-regression-using-python-sklearn-numpy-mnist-handwriting-recognition-matplotlib-a6b31e2b166a
         # https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
-        LR = LogisticRegression(penalty=penality, C=c).fit(
+        LR = LogisticRegression(penalty=penality,  C=c).fit(
             self.X_train, self.y_train)
         self.accuracy = LR.score(self.X_test, self.y_test)
-        #self.cm = metrics.confusion_matrix(self.y_test, LR.predict(self.X_test))
         self.classifier = LR
+
+    def do_LR_CV(self, Cs=10, fit_intercept=True, cv=None, dual=False, penalty='l2', solver='lbfgs', class_weight=None):
+        """Logistic Regression CV (aka logit, MaxEnt) classifier.
+        Taken/Copied From official Doku:
+        https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/linear_model/_logistic.py#L1502
+        ---------------------------------------------------------
+        Cs: int or list of floats, default=10
+            describes the inverse of regularization strength
+
+        fit_intercept: Bool, default=True
+            Specifies if a constant (a.k.a. bias or intercept) 
+            should be added to the decision function.
+
+        cv : int or cross-validation generator, default=None
+            cross-validation generator used is Stratified K-Folds
+
+        dual: bool, default=False
+            Dual or primal formulation. Dual formulation is only implemented for
+            l2 penalty with liblinear solver. Prefer dual=False when
+            n_samples > n_features.
+
+        penalty: {'l1', 'l2', 'elasticnet'}, default='l2'
+            'elasticnet' is only supported by the 'saga' solver.
+
+        solver : {'newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'}, default='lbfgs'
+
+        class_weight : dict or 'balanced', default=None
+        """
+        LRCV = LogisticRegressionCV(Cs=Cs, fit_intercept=fit_intercept, cv=cv, penalty=penalty, solver=solver, class_weight=class_weight).fit(
+            self.X_train, self.y_train)
+        self.accuracy = LRCV.score(self.X_test, self.y_test)
+        self.classifier = LRCV
 
     def do_SVM(self, kernel="linear", c=1):
         """
@@ -86,19 +115,20 @@ class NeuralEarthquake_Classifier():
                                              normalize=norm,
                                              values_format='.3f')
         title = "Confusion Matrix of {}:\n {} with {} Dimensions, total accuracy: {}".format(
-            str(self.classifier),self.population, len(self.X_train[0]), str(round(self.accuracy, 4)))
+            str(self.classifier), self.population, len(self.X_train[0]), str(round(self.accuracy, 4)))
         disp.ax_.set_title(title)
         if path == None:
             plt.show()
         else:
             plt.savefig(path)
 
-#D:\Dataframes\merged_20PCs.csv
+
+# bl693_no_white_Pop06
 a = NeuralEarthquake_Classifier(
-    r"D:\Dataframes\merged_20PCs.csv", 'merged_20PCs')
-#bl693_no_white_Pop06
-a.prepare_binary_labels()
-a.do_Logistic_Regression(penality='none')
+    r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
+# a.test()
+a.prepare_binary_labels(split_ratio=0.8)
+a.do_LR_CV(Cs=5, fit_intercept=False, cv=10, class_weight={0: 0.01, 1: 0.01})
 a.plot_CM()
-a.do_SVM(kernel='poly', c=1)
-a.plot_CM()
+#a.do_SVM(kernel='poly', c=1)
+# a.plot_CM()
