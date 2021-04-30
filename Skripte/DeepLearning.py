@@ -2,19 +2,24 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense
+from sklearn.metrics import classification_report
+
+import warnings
+warnings.filterwarnings('ignore')
 
 path = r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv"
 dataframe = pd.read_csv(path)
 X = []
 y = []
 
-for index, row in self.dataframe.iterrows():
+for index, row in dataframe.iterrows():
     X.append(row[2:-1].tolist())
     # Binary Labels for activity
     if row[-1] > 0:
         y.append(1)
     else:
         y.append(0)
+
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
@@ -60,6 +65,9 @@ print('Evaluating model:')
 _ , accuracy = dl.evaluate(X_test, y_test)
 print('Accuracy %.2f' % (accuracy*100))
 
+print(' ')
+y_pred = dl.predict_classes(X_test)
+print(classification_report(y_test, y_pred))
 
 # Evaluation
 # https://machinelearningmastery.com/evaluate-skill-deep-learning-models/
