@@ -93,14 +93,22 @@ class NeuralEarthquake_Classifier():
         self.accuracy = LRCV.score(self.X_test, self.y_test)
         self.classifier = LRCV
 
-    def do_SVM(self, kernel="linear", c=1):
+    def do_SVM(self, kernel="linear",degree=3, c=1):
         """
         performs Support Vectors Machine on dataset
         """
-        svm = SVC(kernel=kernel, C=c).fit(self.X_train, self.y_train)
+        svm = SVC(kernel=kernel, C=c, degree=degree).fit(self.X_train, self.y_train)
         self.accuracy = svm.score(self.X_test, self.y_test)
-        #self.cm = metrics.confusion_matrix(self.y_test, svm.predict(self.X_test))
+        self.cm = metrics.confusion_matrix(self.y_test, svm.predict(self.X_test), normalize='true')
         self.classifier = svm
+
+    def get_cm(self):
+        """ returns Confusion matrix"""
+        return self.cm
+
+    def get_accuracy(self):
+        """ returns accuracy"""
+        return self.accuracy
 
     def plot_CM(self, norm=None, title=None, path=None):
         """
@@ -122,13 +130,23 @@ class NeuralEarthquake_Classifier():
         else:
             plt.savefig(path)
 
-
-# bl693_no_white_Pop06
-a = NeuralEarthquake_Classifier(
+def test_SVM():
+    a = NeuralEarthquake_Classifier(
     r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
-# a.test()
-a.prepare_binary_labels(split_ratio=0.8)
-a.do_LR_CV(Cs=5, fit_intercept=False, cv=10, class_weight={0: 0.01, 1: 0.01})
-a.plot_CM()
+    a.prepare_binary_labels()
+    a.do_SVM(kernel='sigmoid', degree=3, c=1)
+    cm = a.get_cm()
+    acc = a.get_accuracy()
+    print(cm)
+    print(acc)
+
+
+test_SVM()
+# bl693_no_white_Pop06
+#a = NeuralEarthquake_Classifier(
+#    r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
+#a.prepare_binary_labels(split_ratio=0.8)
+#a.do_LR_CV(Cs=5, fit_intercept=False, cv=10, class_weight={0: 0.01, 1: 0.01})
+#a.plot_CM()
 #a.do_SVM(kernel='poly', c=1)
 # a.plot_CM()
