@@ -25,7 +25,7 @@ def get_PCA_data(pop):
 
     return train_test_split(X, y, test_size=0.2)
 
-X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop06')
+X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop03')
 
 dim = 20
 
@@ -42,9 +42,7 @@ dl = Sequential()
 # activation-function is set to relu
 # final layer has sigmoid so that the result is in [0,1]
 dl.add(Dense(12, input_dim=dim, activation='relu'))
-dl.add(Dense(12, activation='relu'))
-dl.add(Dense(12, activation='relu'))
-dl.add(Dense(12, activation='relu'))
+dl.add(Dense(8, activation='relu'))
 dl.add(Dense(1,activation='sigmoid'))
 
 # most confusing thing:
