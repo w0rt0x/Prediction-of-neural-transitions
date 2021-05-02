@@ -3,25 +3,31 @@ from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.metrics import classification_report
+from scipy.io import loadmat
+import numpy as np
 
 import warnings
 warnings.filterwarnings('ignore')
 
-path = r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv"
-dataframe = pd.read_csv(path)
-X = []
-y = []
+def get_PCA_data(pop):
+    path = r"D:\Dataframes\20PCs\{}.csv".format(pop)
+    dataframe = pd.read_csv(path)
+    X = []
+    y = []
 
-for index, row in dataframe.iterrows():
-    X.append(row[2:-1].tolist())
-    # Binary Labels for activity
-    if row[-1] > 0:
-        y.append(1)
-    else:
-        y.append(0)
+    for index, row in dataframe.iterrows():
+        X.append(row[2:-1].tolist())
+        # Binary Labels for activity
+        if row[-1] > 0:
+            y.append(1)
+        else:
+            y.append(0)
 
+    return train_test_split(X, y, test_size=0.2)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop06')
+
+dim = 20
 
 # Starting Keras Model
 # Tutorial:
@@ -35,8 +41,10 @@ dl = Sequential()
 # first number defines number of neurons
 # activation-function is set to relu
 # final layer has sigmoid so that the result is in [0,1]
-dl.add(Dense(12, input_dim=20, activation='relu'))
-dl.add(Dense(8, activation='relu'))
+dl.add(Dense(12, input_dim=dim, activation='relu'))
+dl.add(Dense(12, activation='relu'))
+dl.add(Dense(12, activation='relu'))
+dl.add(Dense(12, activation='relu'))
 dl.add(Dense(1,activation='sigmoid'))
 
 # most confusing thing:

@@ -164,6 +164,7 @@ class NeuralEarthquake_singlePopulation():
         """
         if self.reduction_method == 'PCA':
             reduced_data, var = self.do_PCA(self.data)
+
             for i in range(len(reduced_data)):
                 reduced_data[i].insert(0, self.header[i])
             cols = ['label']
@@ -232,7 +233,11 @@ class NeuralEarthquake_singlePopulation():
             df = self.dataframe[self.dataframe.isin([(day, i)]).any(axis=1)]
             groups = df.groupby('label')
             for name, group in groups:
-                plt.scatter(group.PC1, group.PC2, label=name, c=colors[i])
+                response = list(df[df['label']==name]['response'])
+                if response[0] > 0:
+                    plt.scatter(group.PC1, group.PC2, label=name, c=colors[i], marker='x')
+                else:
+                    plt.scatter(group.PC1, group.PC2, label=name, c=colors[i], marker='o')
                 plt.pause(0.3)
                 plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
                 fancybox=True, shadow=True, ncol=4)
@@ -401,16 +406,15 @@ def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes
     final_df = pd.concat([pd.read_csv(f) for f in files])
     final_df.to_csv(destination, index=False)
 
-plot_all_loadings()
 
-#a = NeuralEarthquake_singlePopulation(
-#    "bl693_no_white_Pop06", "PCA", dimension=20)
+a = NeuralEarthquake_singlePopulation(
+    "bl693_no_white_Pop06", "PCA", dimension=15)
 
-#a.read_population()
-#a.create_full_df()
-#a.add_activity_to_df()
+a.read_population()
+a.create_full_df()
+a.add_activity_to_df()
 #a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
-#a.plot2D_anim(4)
+a.plot2D_anim(1)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
