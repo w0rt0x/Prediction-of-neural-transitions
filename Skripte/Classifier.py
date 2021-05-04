@@ -93,11 +93,11 @@ class NeuralEarthquake_Classifier():
         self.accuracy = LRCV.score(self.X_test, self.y_test)
         self.classifier = LRCV
 
-    def do_SVM(self, kernel="linear",degree=3, c=1):
+    def do_SVM(self, kernel="linear",degree=3, c=1, gamma='scale'):
         """
         performs Support Vectors Machine on dataset
         """
-        svm = SVC(kernel=kernel, C=c, degree=degree).fit(self.X_train, self.y_train)
+        svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma).fit(self.X_train, self.y_train)
         self.accuracy = svm.score(self.X_test, self.y_test)
         self.cm = metrics.confusion_matrix(self.y_test, svm.predict(self.X_test), normalize='true')
         self.classifier = svm
@@ -153,6 +153,6 @@ a.prepare_binary_labels(split_ratio=0.8)
 a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 print(a.get_f1())
 a.plot_CM()
-a.do_SVM(kernel='rbf', c=1)
+a.do_SVM(kernel='rbf', c=10, gamma=50)
 a.plot_CM()
 print(a.get_f1())
