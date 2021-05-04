@@ -148,5 +148,5 @@ a = NeuralEarthquake_Classifier(
 a.prepare_binary_labels(split_ratio=0.8)
 a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 a.plot_CM()
-a.do_SVM(kernel='rbf', c=1)
-a.plot_CM()
+#a.do_SVM(kernel='rbf', c=1)
+a#.plot_CM()
