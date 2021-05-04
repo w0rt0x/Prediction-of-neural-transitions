@@ -9,7 +9,7 @@ from os.path import isfile, join
 from scipy.io import loadmat
 import math
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
 from sklearn.manifold import TSNE
 import plotly.express as px
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
@@ -300,13 +300,13 @@ class NeuralEarthquake_singlePopulation():
         cb.remove()
 
     def minmax_scaler(self):
-        return 0
+        self.data = MinMaxScaler().fit_transform(self.data)
 
     def normalization(self):
-        return 0
+        self.data = Normalizer().fit_transform(self.data)
 
     def standard_scaler(self):
-        return 0
+        self.data = StandardScaler().fit_transform(self.data)
 
 def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_AllStimInOne', dim=2):
     """
@@ -408,13 +408,14 @@ def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes
 
 
 a = NeuralEarthquake_singlePopulation(
-    "bl693_no_white_Pop06", "PCA", dimension=15)
+    "bl693_no_white_Pop03", "PCA", dimension=20)
 
 a.read_population()
+a.standard_scaler()
 a.create_full_df()
 a.add_activity_to_df()
 #a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
-a.plot2D_anim(1)
+#a.plot2D_anim(1)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
-#a.df_to_file(r"C:\Users\Sam\Desktop")
+a.df_to_file(r"C:\Users\Sam\Desktop")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
