@@ -122,6 +122,28 @@ class NeuralEarthquake_singlePopulation():
 
         return pca.components_.T.tolist(), sum(pca.explained_variance_ratio_)
 
+    def get_loading_data(self, path=r'D:\Dataframes\Loadings'):
+        """
+        Calculates each Loading matrix (Trial x PCs) and their mean/total-sum value,
+        saves dataframe to path
+        """
+        data = []
+        loadings_sum = []
+        loadings_mean = []
+        response = []
+        for day in range(1, 5):
+            for stim in range(1, 35):
+                # Getting indices for loading-matrix
+                indices = [i for i, x in enumerate(self.header) if x == (day, stim)]
+                data.append((day, stim))
+                # Calculating mean and sum
+                loadings_sum.append(self.loading_matrix[indices[0]:indices[-1]].sum())
+                loadings_mean.append(self.loading_matrix[indices[0]:indices[-1]].mean())
+                response.append(self.dataframe.response[indices[0]])
+
+        df = pd.DataFrame(list(zip(data, loadings_mean, loadings_sum, response)), columns =['day,stim', 'loadings_mean', 'loadings_sum', 'response'])
+        df.to_csv(path + '\\Loadings_{}.csv'.format(self.population))
+
     def get_min_max(self):
         """
         saves max and min loading for plotting
@@ -408,14 +430,15 @@ def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes
 
 
 a = NeuralEarthquake_singlePopulation(
-    "bl693_no_white_Pop03", "PCA", dimension=20)
+    "bl693_no_white_Pop06", "PCA", dimension=20)
 
 a.read_population()
 a.standard_scaler()
 a.create_full_df()
 a.add_activity_to_df()
+a.get_loading_data()
 #a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
 #a.plot2D_anim(1)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
-a.df_to_file(r"C:\Users\Sam\Desktop")
+#a.df_to_file(r"C:\Users\Sam\Desktop")
 #a.df_to_file(r"C:\Users\Sam\Desktop")

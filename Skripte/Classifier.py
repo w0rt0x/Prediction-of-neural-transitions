@@ -148,11 +148,11 @@ def test_SVM():
 #test_SVM()
 # bl693_no_white_Pop06
 a = NeuralEarthquake_Classifier(
-    r"D:\Dataframes\20PCs\bl693_no_white_Pop03.csv", 'bl693_no_white_Pop03')
-a.prepare_binary_labels(split_ratio=0.8)
+    r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
+a.prepare_binary_labels()
 a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 print(a.get_f1())
 a.plot_CM()
-a.do_SVM(kernel='rbf', c=10, gamma=50)
+a.do_SVM(kernel='rbf', c=1, gamma=100)
 a.plot_CM()
 print(a.get_f1())

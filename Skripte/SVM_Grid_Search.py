@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from sklearn import metrics
 
-path = r"D:\Dataframes\20PCs\bl693_no_white_Pop03.csv"
+path = r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv"
 dataframe = pd.read_csv(path)
 
 X = []
