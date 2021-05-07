@@ -426,17 +426,43 @@ def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes
     final_df = pd.concat([pd.read_csv(f) for f in files])
     final_df.to_csv(destination, index=False)
 
+def create_all_loadings(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\Loadings', dim=20):
+    """
+    Creates all files that hold the mean and total sum of loadings for all populations
+    """
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+
+    # removing dubs
+    populations = list(populations)
+
+    for pop in populations:
+        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
+
+        # read in data
+        a = NeuralEarthquake_singlePopulation(pop, "PCA", dimension=dim)
+        a.read_population()
+        a.create_full_df()
+        a.add_activity_to_df()
+        a.get_loading_data()
 
 a = NeuralEarthquake_singlePopulation(
     "bl693_no_white_Pop06", "PCA", dimension=20)
 
+#create_all_loadings()
 a.read_population()
-a.standard_scaler()
+#a.standard_scaler()
 a.create_full_df()
 a.add_activity_to_df()
 #a.get_loading_data()
 #a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
-#a.plot2D_anim(1)
+a.plot2D_anim(1)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
