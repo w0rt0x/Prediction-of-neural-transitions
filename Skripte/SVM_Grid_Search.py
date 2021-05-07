@@ -30,10 +30,8 @@ c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 parameters = {'kernel':['rbf'], 'C':c, 'gamma': c}
 clf = GridSearchCV(SVC(), parameters, scoring = 'f1', cv = 5)
 clf.fit(X_train, y_train)
-#results = clf.cv_results_
 
 print(clf.best_estimator_)
-#print(clf.best_params_)
 print(clf.score(X_test, y_test))
 
 """

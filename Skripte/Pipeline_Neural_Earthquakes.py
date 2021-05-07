@@ -296,7 +296,6 @@ class NeuralEarthquake_singlePopulation():
     def plot3D(self):
         fig = px.scatter_3d(self.dataframe, x='PC1', y='PC2', z='PC3',
                         color='label')
-
         fig.show()
 
     def plot2D_loadings(self, day, stim, save=False, path=None):
@@ -422,7 +421,6 @@ def plot_all_loadings(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Dat
             for stim in range(1, 35):
                 a.plot2D_loadings(day, stim, True, new_dir + '\\{},Day{},stim{}.png'.format(pop, day, stim))
 
-
 def merge_all_df(directory = r'D:\Dataframes\20PCs', destination=r'D:\Dataframes\merged_20PCs.csv'):
     files = [os.path.join(directory, f) for f in os.listdir(directory)]
     final_df = pd.concat([pd.read_csv(f) for f in files])
@@ -436,7 +434,7 @@ a.read_population()
 a.standard_scaler()
 a.create_full_df()
 a.add_activity_to_df()
-a.get_loading_data()
+#a.get_loading_data()
 #a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
 #a.plot2D_anim(1)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")

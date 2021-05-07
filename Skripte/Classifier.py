@@ -134,6 +134,14 @@ class NeuralEarthquake_Classifier():
         else:
             plt.savefig(path)
 
+    def add_dataframes(self, lst, path = r"D:\Dataframes\20PCs"):
+        """Takes in list of other populations, adds them to dataframe"""
+        dfs = []
+        for i in lst:
+            dfs.append(pd.read_csv(path + '\\' + i + '.csv'))
+        self.dataframe = pd.concat([self.dataframe] + dfs, axis=0, ignore_index=True)
+        self.dataframe.to_csv(r'C:\Users\Sam\Desktop\test.csv')
+
 def test_SVM():
     a = NeuralEarthquake_Classifier(
     r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
@@ -149,10 +157,11 @@ def test_SVM():
 # bl693_no_white_Pop06
 a = NeuralEarthquake_Classifier(
     r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
-a.prepare_binary_labels()
-a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
-print(a.get_f1())
-a.plot_CM()
-a.do_SVM(kernel='rbf', c=1, gamma=100)
-a.plot_CM()
-print(a.get_f1())
+a.add_dataframes(['bl693_no_white_Pop03', 'bl693_no_white_Pop04'])
+#a.prepare_binary_labels()
+#a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
+#print(a.get_f1())
+#a.plot_CM()
+#a.do_SVM(kernel='rbf', c=1, gamma=100)
+#a.plot_CM()
+#print(a.get_f1())
