@@ -5,6 +5,7 @@ from sklearn import metrics
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import GridSearchCV
 
 
 class NeuralEarthquake_Classifier():
@@ -83,6 +84,27 @@ class NeuralEarthquake_Classifier():
         self.y_train = y_train
         self.X_test = X_test
         self.y_test = y_test
+
+    def grid_search(self, parameters, score='f1', cv=5, classifier=SVC()):
+        """
+        Performs Grid-Search on given classifier
+        ------------------------------------------
+        parameters must be dictionary, like:
+        c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
+        parameters = {'kernel':['rbf'], 'C':c, 'gamma': c}
+
+        score can be f1 or accuracy etc, must be string
+
+        cv is number of cross validation steps
+
+        classifier must be a class-type classifer
+        """
+        clf = GridSearchCV(classifier, parameters, scoring = score, cv = cv)
+        clf.fit(self.X_train, self.y_train)
+
+        print(clf.best_estimator_)
+        print(clf.score(self.X_test, self.y_test))
+
                     
     def balance_trainingdata(self):
         """modifies X_train and y_train so that both classes have the same size"""
@@ -211,12 +233,15 @@ def test_SVM():
 # bl693_no_white_Pop06
 a = NeuralEarthquake_Classifier(
     r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
-#a.add_dataframes(['bl693_no_white_Pop03', 'bl693_no_white_Pop04'])
+a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop04'])
 a.splitter_for_multiple_dataframes()
 #a.prepare_binary_labels()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 #print(a.get_f1())
 #a.plot_CM()
-a.do_SVM(kernel='rbf', c=1, gamma=100)
-a.plot_CM()
-print(a.get_f1())
+#a.do_SVM(kernel='rbf', c=1, gamma=100)
+#a.plot_CM()
+#print(a.get_f1())
+c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
+parameters = {'kernel':['rbf'], 'C':c, 'gamma': c}
+a.grid_search(parameters)
