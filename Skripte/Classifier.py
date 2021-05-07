@@ -47,6 +47,47 @@ class NeuralEarthquake_Classifier():
             X, y, test_size=split_ratio, random_state=randomState, stratify=strat)
         X, y = None, None
 
+    def splitter_for_multiple_dataframes(self, ratio=0.8):
+        """ 
+        The given list of dataframes will be used to set the class attributes
+        X_train, X_test, etc by taking from all trials the same ratio of data.
+        """ 
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = []      
+
+        for df in self.dataframes:
+            header = set(df['label'].tolist())
+            for trial in header:
+                # geting rows with (day, Trail)-label
+                rows = df.loc[df['label'] == trial].to_numpy()
+                # getting binary response label
+                response = 1 if (rows[0][-1] > 0) else 0
+                # getting PC-Matrix and shuffeling PC-Arrays randomly
+                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+                # shuffle PC-Matrix
+                np.random.shuffle(rows)
+                # Adding first part to training data, rest is test-data
+                cut = int(ratio*len(rows))
+                for i in range(len(rows)):
+                    if i < cut:
+                        X_train.append(rows[i])
+                        y_train.append(response)
+                    else:
+                        X_test.append(rows[i])
+                        y_test.append(response)
+
+        # Now each training/test part contains data from all trails
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_test = X_test
+        self.y_test = y_test
+                    
+    def balance_trainingdata(self):
+        """modifies X_train and y_train so that both classes have the same size"""
+        return 0
+
     def get_accuracy(self):
         return self.accuracy
 
@@ -170,11 +211,12 @@ def test_SVM():
 # bl693_no_white_Pop06
 a = NeuralEarthquake_Classifier(
     r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
-a.add_dataframes(['bl693_no_white_Pop03', 'bl693_no_white_Pop04'])
+#a.add_dataframes(['bl693_no_white_Pop03', 'bl693_no_white_Pop04'])
+a.splitter_for_multiple_dataframes()
 #a.prepare_binary_labels()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 #print(a.get_f1())
 #a.plot_CM()
-#a.do_SVM(kernel='rbf', c=1, gamma=100)
-#a.plot_CM()
-#print(a.get_f1())
+a.do_SVM(kernel='rbf', c=1, gamma=100)
+a.plot_CM()
+print(a.get_f1())
