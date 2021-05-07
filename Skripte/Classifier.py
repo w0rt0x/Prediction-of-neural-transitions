@@ -136,11 +136,17 @@ class NeuralEarthquake_Classifier():
 
     def add_dataframes(self, lst, path = r"D:\Dataframes\20PCs"):
         """Takes in list of other populations, adds them to dataframe"""
+        #removing index column
+        # Source: https://stackoverflow.com/questions/43983622/remove-unnamed-columns-in-pandas-dataframe
+        self.dataframe = self.dataframe.drop(self.dataframe.columns[self.dataframe.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
         dfs = []
         for i in lst:
-            dfs.append(pd.read_csv(path + '\\' + i + '.csv'))
-        self.dataframe = pd.concat([self.dataframe] + dfs, axis=0, ignore_index=True)
-        self.dataframe.to_csv(r'C:\Users\Sam\Desktop\test.csv')
+            # Reading new dataframes and removing index column
+            df = pd.read_csv(path + '\\' + i + '.csv')
+            df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
+            dfs.append(df)
+        # merging dataframes
+        self.dataframe = pd.concat([self.dataframe] + dfs, axis=0)
 
 def test_SVM():
     a = NeuralEarthquake_Classifier(
