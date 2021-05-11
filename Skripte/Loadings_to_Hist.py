@@ -49,4 +49,6 @@ def create_Histos(path=r'D:\Dataframes\Loadings'):
     plot_histo(sums_active, sums_not_active, 'Sum of Loadings with response,\n {} in total'.format(len(sums_active)), 'Sum of Loadings without response,\n {} in total'.format(len(sums_not_active)))    
 
 if __name__ == '__main__':
-    create_Histos()
+    #create_Histos(r'D:\Dataframes\Loadings_StandardScaler')
+    #create_Histos(r'D:\Dataframes\Loadings_MinMax')
+    create_Histos(r'D:\Dataframes\Loadings_Norm')

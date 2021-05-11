@@ -2,6 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
+from numpy import log as ln
 import pandas as pd
 import csv
 import os
@@ -329,6 +330,11 @@ class NeuralEarthquake_singlePopulation():
     def standard_scaler(self):
         self.data = StandardScaler().fit_transform(self.data)
 
+    def apply_log(self):
+        """applys log on data"""
+        self.data = ln(self.data)
+
+
 def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\2D_PCA_AllStimInOne', dim=2):
     """
     Creates Plots for all given matlab files after performing PCA on them
@@ -360,7 +366,7 @@ def plot_all_populations(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\
         for day in range(1, 5):
             a.plot2D(day, True, new_dir + '\\' +'{}, Day {}.{}'.format(pop, day, 'png'))
 
-def create_all_df(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\2PCs', dim=2):
+def create_all_df(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\20PCs', dim=20):
     """
     Uses neuralEarthquake class to transform all matlab files into pandas dataframes,
     which are savind in .csv files
@@ -448,21 +454,21 @@ def create_all_loadings(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
         # read in data
         a = NeuralEarthquake_singlePopulation(pop, "PCA", dimension=dim)
         a.read_population()
+        a.normalization()
         a.create_full_df()
         a.add_activity_to_df()
-        a.get_loading_data()
+        a.get_loading_data(destination)
 
-a = NeuralEarthquake_singlePopulation(
-    "bl693_no_white_Pop06", "PCA", dimension=20)
-
-#create_all_loadings()
-a.read_population()
+#a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop06", "PCA", dimension=20)
+#a.read_population()
 #a.standard_scaler()
-a.create_full_df()
-a.add_activity_to_df()
+#a.create_full_df()
+#a.add_activity_to_df()
 #a.get_loading_data()
 #a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
-a.plot2D_anim(1)
+#a.plot2D_anim(1)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
+create_all_loadings(destination=r'D:\Dataframes\Loadings_Norm')
+#create_all_df(destination=r"D:\Dataframes\20PCs_withLog")
