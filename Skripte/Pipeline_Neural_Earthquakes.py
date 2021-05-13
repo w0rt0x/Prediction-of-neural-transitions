@@ -26,7 +26,7 @@ to plot the data, if the dimensions (d=2) are right.
 
 class NeuralEarthquake_singlePopulation():
 
-    def __init__(self, population, reduction_method, dimension=20, path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', replacement=0):
+    def __init__(self, population, reduction_method='PCA', dimension=20, path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', replacement=0):
         self.dimension = dimension
         self.population = population
         self.reduction_method = reduction_method
@@ -78,6 +78,24 @@ class NeuralEarthquake_singlePopulation():
                     data[i][j] = self.replacement
 
         self.data, self.header = data.T, header
+
+    def get_most_active_neurons(self, n=30, path=r'D:\Dataframes\30_mostActive_Neurons'):
+        """gets the n most active neurons and saves them in a dataframe"""
+        matrix = self.data.T
+        neurons = []
+        for i in range(len(matrix)):
+            k = np.sort(matrix[i])
+            k = np.flip(k)
+            neurons.append(k[0:n].tolist())
+
+        for i in range(len(neurons)):
+            neurons[i].insert(0, self.header[i])
+            cols = ['label']
+            for i in range(n):
+                cols.append('N' + str((i+1)))
+
+        self.dataframe = pd.DataFrame(neurons, columns=cols)
+
 
     def data_to_dictionary(self):
         """
@@ -459,8 +477,34 @@ def create_all_loadings(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
         a.add_activity_to_df()
         a.get_loading_data(destination)
 
+def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\30_mostActive_Neurons'):
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+
+    # removing dubs
+    populations = list(populations)
+
+    for pop in populations:
+        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
+
+        # read in data
+        a = NeuralEarthquake_singlePopulation(pop)
+        a.read_population()
+        a.get_most_active_neurons()
+        a.add_activity_to_df()
+        a.df_to_file(destination)
+        a = None
+
+extract_all_neurons()
 #a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop06", "PCA", dimension=20)
 #a.read_population()
+#a.get_most_active_neurons()
 #a.standard_scaler()
 #a.create_full_df()
 #a.add_activity_to_df()
@@ -469,6 +513,5 @@ def create_all_loadings(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
 #a.plot2D_anim(1)
 #a.plot2D(4, True, r"C:\Users\Sam\Desktop\bl684_no_white_Pop11.png")
 #a.df_to_file(r"C:\Users\Sam\Desktop")
-#a.df_to_file(r"C:\Users\Sam\Desktop")
-create_all_loadings(destination=r'D:\Dataframes\Loadings_Norm')
+#create_all_loadings(destination=r'D:\Dataframes\Loadings_Norm')
 #create_all_df(destination=r"D:\Dataframes\20PCs_withLog")

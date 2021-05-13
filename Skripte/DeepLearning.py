@@ -9,8 +9,8 @@ import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
 
-def get_PCA_data(pop):
-    path = r"D:\Dataframes\20PCs\{}.csv".format(pop)
+def get_PCA_data(pop, path=r'r"D:\Dataframes\20PCs'):
+    path = path + "\\{}.csv".format(pop)
     dataframe = pd.read_csv(path)
     X = []
     y = []
@@ -25,9 +25,9 @@ def get_PCA_data(pop):
 
     return train_test_split(X, y, test_size=0.2)
 
-X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop03')
-
-dim = 20
+X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop05', path=r'D:\Dataframes\30_mostActive_Neurons')
+print(len(X_train[0]))
+dim = 30
 
 # Starting Keras Model
 # Tutorial:
