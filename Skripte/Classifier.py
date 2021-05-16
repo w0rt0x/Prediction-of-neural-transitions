@@ -235,17 +235,17 @@ def test_SVM():
 
 
 
-a = NeuralEarthquake_Classifier(r"D:\Dataframes\30_mostActive_Neurons\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
+a = NeuralEarthquake_Classifier(r"D:\Dataframes\30_mostActive_log\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
 #a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'])
 a.splitter_for_multiple_dataframes()
-#a.shuffle_labels()
+a.shuffle_labels()
 #a.prepare_binary_labels()
-a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
+#a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
+#print(a.get_f1())
+#a.plot_CM()
+a.do_SVM(kernel='rbf', c=10000, gamma=0.01, class_weight='balanced')
 print(a.get_f1())
-a.plot_CM()
-a.do_SVM(kernel='rbf', c=100, gamma=100, class_weight='balanced')
-print(a.get_f1())
-a.plot_CM()
+#a.plot_CM()
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-#parameters = {'kernel':['rbf'], 'C':c, 'gamma': c}
+#parameters = {'kernel':['rbf'], 'C':c, 'gamma': c} #'class_weight':['balanced']
 #a.grid_search(parameters)

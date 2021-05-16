@@ -96,6 +96,24 @@ class NeuralEarthquake_singlePopulation():
 
         self.dataframe = pd.DataFrame(neurons, columns=cols)
 
+    def get_most_active_neurons_log(self, n=30, path=r'D:\Dataframes\30_mostActive_Neurons'):
+        """gets the n most active neurons and saves them in a dataframe, applies log on data"""
+        matrix = self.data.T
+        neurons = []
+        for i in range(len(matrix)):
+            k = np.sort(matrix[i])
+            k = np.flip(k)
+            k = ln(k[0:n])
+            neurons.append(k.tolist())
+
+        for i in range(len(neurons)):
+            neurons[i].insert(0, self.header[i])
+            cols = ['label']
+            for i in range(n):
+                cols.append('N' + str((i+1)))
+
+        self.dataframe = pd.DataFrame(neurons, columns=cols)
+
 
     def data_to_dictionary(self):
         """
@@ -496,12 +514,12 @@ def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
         # read in data
         a = NeuralEarthquake_singlePopulation(pop)
         a.read_population()
-        a.get_most_active_neurons()
+        a.get_most_active_neurons_log()
         a.add_activity_to_df()
         a.df_to_file(destination)
         a = None
 
-extract_all_neurons()
+extract_all_neurons(destination=r'D:\Dataframes\30_mostActive_log')
 #a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop06", "PCA", dimension=20)
 #a.read_population()
 #a.get_most_active_neurons()
