@@ -168,6 +168,7 @@ class NeuralEarthquake_Classifier():
         """
         performs Support Vectors Machine on dataset
         """
+        print(self.X_train)
         svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight).fit(self.X_train, self.y_train)
         self.accuracy = svm.score(self.X_test, self.y_test)
         self.cm = metrics.confusion_matrix(self.y_test, svm.predict(self.X_test), normalize='true')
@@ -237,18 +238,18 @@ def test_SVM():
 
 
 
-a = NeuralEarthquake_Classifier(r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
-a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'])
+a = NeuralEarthquake_Classifier(r"D:\Dataframes\30_most_active\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
+#a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'])
 a.splitter_for_multiple_dataframes()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 #print(a.get_f1())
 #a.plot_CM()
-#a.do_SVM(kernel='rbf', c=10000, gamma=0.01, class_weight='balanced')
-#print(a.get_f1())
-#a.plot_CM()
-c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-parameters = {'kernel':['rbf'], 'C':c, 'gamma': c} #'class_weight':['balanced']
-a.grid_search(parameters)
+a.do_SVM(kernel='rbf', c=10, gamma=1, class_weight='balanced')
+print(a.get_f1())
+a.plot_CM()
+#c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
+#parameters = {'kernel':['rbf'], 'C':c, 'gamma': c} #'class_weight':['balanced']
+#a.grid_search(parameters)
 

@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from copy import deepcopy
 
-dataframe = pd.read_csv(r'C:\Users\Sam\Desktop\grid3Pop.csv')
+dataframe = pd.read_csv(r'C:\Users\Sam\Desktop\grid_noBalance.csv')
 means = dataframe['mean_test_score']
 stds = dataframe['std_test_score']
 params = dataframe['params']

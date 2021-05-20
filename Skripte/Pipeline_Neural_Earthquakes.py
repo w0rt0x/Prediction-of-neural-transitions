@@ -4,7 +4,6 @@ from matplotlib import cm
 import numpy as np
 from numpy import log as ln
 import pandas as pd
-import csv
 import os
 from os.path import isfile, join
 from scipy.io import loadmat
@@ -81,12 +80,19 @@ class NeuralEarthquake_singlePopulation():
 
     def get_most_active_neurons(self, n=30, path=r'D:\Dataframes\30_mostActive_Neurons'):
         """gets the n most active neurons and saves them in a dataframe"""
-        matrix = self.data.T
+        matrix = self.data
+        sums = []
         neurons = []
         for i in range(len(matrix)):
-            k = np.sort(matrix[i])
-            k = np.flip(k)
-            neurons.append(k[0:n].tolist())
+            sums.append(matrix[i].sum())
+            # Getting indices:
+            # https://www.geeksforgeeks.org/python-indices-of-n-largest-elements-in-list/
+        indices = sorted(range(len(sums)), key = lambda sub: sums[sub])[-n:]
+        for i in indices:
+            neurons.append(matrix[i])
+
+        neurons = np.array(neurons).T
+        neurons = neurons.tolist()
 
         for i in range(len(neurons)):
             neurons[i].insert(0, self.header[i])
@@ -95,25 +101,6 @@ class NeuralEarthquake_singlePopulation():
                 cols.append('N' + str((i+1)))
 
         self.dataframe = pd.DataFrame(neurons, columns=cols)
-
-    def get_most_active_neurons_log(self, n=30, path=r'D:\Dataframes\30_mostActive_Neurons'):
-        """gets the n most active neurons and saves them in a dataframe, applies log on data"""
-        matrix = self.data.T
-        neurons = []
-        for i in range(len(matrix)):
-            k = np.sort(matrix[i])
-            k = np.flip(k)
-            k = ln(k[0:n])
-            neurons.append(k.tolist())
-
-        for i in range(len(neurons)):
-            neurons[i].insert(0, self.header[i])
-            cols = ['label']
-            for i in range(n):
-                cols.append('N' + str((i+1)))
-
-        self.dataframe = pd.DataFrame(neurons, columns=cols)
-
 
     def data_to_dictionary(self):
         """
@@ -514,13 +501,13 @@ def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
         # read in data
         a = NeuralEarthquake_singlePopulation(pop)
         a.read_population()
-        a.get_most_active_neurons_log()
+        a.get_most_active_neurons()
         a.add_activity_to_df()
         a.df_to_file(destination)
         a = None
 
-extract_all_neurons(destination=r'D:\Dataframes\30_mostActive_log')
-#a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop06", "PCA", dimension=20)
+extract_all_neurons(destination=r'D:\Dataframes\30_most_active')
+#a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop05", "PCA", dimension=20)
 #a.read_population()
 #a.get_most_active_neurons()
 #a.standard_scaler()
