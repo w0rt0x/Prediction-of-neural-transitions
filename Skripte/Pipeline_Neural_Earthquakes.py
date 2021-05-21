@@ -85,7 +85,7 @@ class NeuralEarthquake_singlePopulation():
         neurons = []
         for i in range(len(matrix)):
             sums.append(matrix[i].sum())
-            
+
         # Getting indices:
         # https://www.geeksforgeeks.org/python-indices-of-n-largest-elements-in-list/
         indices = sorted(range(len(sums)), key = lambda sub: sums[sub])[-n:]
@@ -502,12 +502,13 @@ def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
         # read in data
         a = NeuralEarthquake_singlePopulation(pop)
         a.read_population()
+        a.normalization()
         a.get_most_active_neurons()
         a.add_activity_to_df()
         a.df_to_file(destination)
         a = None
 
-extract_all_neurons(destination=r'D:\Dataframes\30_most_active')
+extract_all_neurons(destination=r'D:\Dataframes\30_Norm')
 #a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop05", "PCA", dimension=20)
 #a.read_population()
 #a.get_most_active_neurons()

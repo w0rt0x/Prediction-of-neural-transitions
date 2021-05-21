@@ -25,7 +25,7 @@ def get_PCA_data(pop, path=r'r"D:\Dataframes\20PCs'):
 
     return train_test_split(X, y, test_size=0.2)
 
-X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop05', path=r'D:\Dataframes\30_most_active')
+X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop05', path=r'D:\Dataframes\30_Norm')
 dim = 30
 
 # Starting Keras Model
