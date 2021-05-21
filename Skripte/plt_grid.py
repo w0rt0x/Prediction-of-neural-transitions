@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from copy import deepcopy
 
-dataframe = pd.read_csv(r'C:\Users\Sam\Desktop\grid_noBalance.csv')
+dataframe = pd.read_csv(r'C:\Users\Sam\Desktop\grid1Pop.csv')
 means = dataframe['mean_test_score']
 stds = dataframe['std_test_score']
 params = dataframe['params']
@@ -29,5 +29,5 @@ y.reverse()
 ax = sns.heatmap(x, annot=True, vmin=0, vmax=1, xticklabels=c, yticklabels=c)
 plt.xlabel('Gamma')
 plt.ylabel('C')
-plt.title("Grid Search for bl693_no_white_Pop05, bl693_no_white_Pop02, bl693_no_white_Pop03:\n 'kernel':['rbf'], 'C':c, 'gamma': c")
+plt.title("Grid Search for bl693_no_white_Pop05:\n 'kernel':['rbf'], 'C':c, 'gamma': c, 'class_weight':['balanced']")
 plt.show()

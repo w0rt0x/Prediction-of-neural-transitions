@@ -25,7 +25,7 @@ def get_PCA_data(pop, path=r'r"D:\Dataframes\20PCs'):
 
     return train_test_split(X, y, test_size=0.2)
 
-X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop05', path=r'D:\Dataframes\30_mostActive_standard')
+X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop05', path=r'D:\Dataframes\30_most_active')
 dim = 30
 
 # Starting Keras Model
@@ -40,7 +40,7 @@ dl = Sequential()
 # first number defines number of neurons
 # activation-function is set to relu
 # final layer has sigmoid so that the result is in [0,1]
-dl.add(Dense(12, input_dim=dim, activation='relu'))
+dl.add(Dense(12, input_dim=30, activation='relu'))
 dl.add(Dense(8, activation='relu'))
 dl.add(Dense(1,activation='sigmoid'))
 

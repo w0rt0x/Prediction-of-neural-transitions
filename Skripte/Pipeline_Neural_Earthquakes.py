@@ -85,8 +85,9 @@ class NeuralEarthquake_singlePopulation():
         neurons = []
         for i in range(len(matrix)):
             sums.append(matrix[i].sum())
-            # Getting indices:
-            # https://www.geeksforgeeks.org/python-indices-of-n-largest-elements-in-list/
+            
+        # Getting indices:
+        # https://www.geeksforgeeks.org/python-indices-of-n-largest-elements-in-list/
         indices = sorted(range(len(sums)), key = lambda sub: sums[sub])[-n:]
         for i in indices:
             neurons.append(matrix[i])

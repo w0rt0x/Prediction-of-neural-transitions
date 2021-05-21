@@ -81,6 +81,7 @@ class NeuralEarthquake_Classifier():
                         y_test.append(response)
 
         # Now each training/test part contains data from all trails
+
         self.X_train = X_train
         self.y_train = y_train
         self.X_test = X_test
@@ -110,7 +111,7 @@ class NeuralEarthquake_Classifier():
         print(clf.best_estimator_)
         print(clf.score(self.X_test, self.y_test))
         df = pd.DataFrame.from_dict(clf.cv_results_)
-        df.to_csv(r'C:\Users\Sam\Desktop\grid3Pop.csv')
+        df.to_csv(r'C:\Users\Sam\Desktop\grid1Pop.csv')
 
                     
     def balance_trainingdata(self):
@@ -168,7 +169,6 @@ class NeuralEarthquake_Classifier():
         """
         performs Support Vectors Machine on dataset
         """
-        print(self.X_train)
         svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight).fit(self.X_train, self.y_train)
         self.accuracy = svm.score(self.X_test, self.y_test)
         self.cm = metrics.confusion_matrix(self.y_test, svm.predict(self.X_test), normalize='true')
@@ -198,7 +198,7 @@ class NeuralEarthquake_Classifier():
                                              cmap=plt.cm.OrRd,
                                              normalize=norm,
                                              values_format='.3f')
-        title = "Confusion Matrix of {}:\n {} with {} Dimensions, total accuracy: {}".format(
+        title = "Confusion Matrix of {},:\n {}'bl693_no_white_Pop02', 'bl693_no_white_Pop03'\n with {} Dimensions, total accuracy: {}".format(
             str(self.classifier), self.population, len(self.X_train[0]), str(round(self.accuracy, 4)))
         disp.ax_.set_title(title)
         if path == None:
@@ -239,17 +239,17 @@ def test_SVM():
 
 
 a = NeuralEarthquake_Classifier(r"D:\Dataframes\30_most_active\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
-#a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'])
+a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\30_most_active')
 a.splitter_for_multiple_dataframes()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
-#a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
-#print(a.get_f1())
-#a.plot_CM()
-a.do_SVM(kernel='rbf', c=10, gamma=1, class_weight='balanced')
+a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 print(a.get_f1())
 a.plot_CM()
+#a.do_SVM(kernel='rbf', c=50, gamma=1, class_weight='balanced')
+#print(a.get_f1())
+#a.plot_CM()
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-#parameters = {'kernel':['rbf'], 'C':c, 'gamma': c} #'class_weight':['balanced']
+#parameters = {'kernel':['rbf'], 'C':c, 'gamma': c, 'class_weight':['balanced']} #'class_weight':['balanced']
 #a.grid_search(parameters)
 
