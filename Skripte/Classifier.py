@@ -87,7 +87,11 @@ class NeuralEarthquake_Classifier():
         self.X_test = X_test
         self.y_test = y_test
 
+
     def shuffle_labels(self):
+        """
+        shuffles y-labels to have a f1-Score Benchamrk
+        """
         random.shuffle(self.y_train)
         random.shuffle(self.y_test)
 
@@ -241,7 +245,7 @@ def test_SVM():
     print(acc)
 
 
-p = r'D:\Dataframes\30_Norm'
+p = r'D:\Dataframes\30_Transitions'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
 #a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
 a.splitter_for_multiple_dataframes()
@@ -250,10 +254,10 @@ a.splitter_for_multiple_dataframes()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 #print(a.get_f1())
 #a.plot_CM()
-#a.do_SVM(kernel='rbf', c=0.00001, gamma=0.00001, class_weight='balanced')
-#print(a.get_f1())
-#a.plot_CM()
+a.do_SVM(kernel='rbf', c=1, gamma=10, class_weight='balanced')
+print(a.get_f1())
+a.plot_CM()
 
-c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-a.grid_search(C=c, Y=c)
+#c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
+#a.grid_search(C=c, Y=c)
 

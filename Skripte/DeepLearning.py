@@ -9,23 +9,38 @@ import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
 
-def get_PCA_data(pop, path=r'r"D:\Dataframes\20PCs'):
-    path = path + "\\{}.csv".format(pop)
-    dataframe = pd.read_csv(path)
-    X = []
-    y = []
+def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
+    X_test = []
+    X_train = []   
+    y_test = []   
+    y_train = []      
 
-    for index, row in dataframe.iterrows():
-        X.append(row[2:-1].tolist())
-        # Binary Labels for activity
-        if row[-1] > 0:
-            y.append(1)
-        else:
-            y.append(0)
+    for pop in pops:
+        df = pd.read_csv(path + '\\' + pop + '.csv')
+        header = set(df['label'].tolist())
+        for trial in header:
+            # geting rows with (day, Trail)-label
+            rows = df.loc[df['label'] == trial].to_numpy()
+            # getting binary response label
+            response = 1 if (rows[0][-1] > 0) else 0
+            # getting PC-Matrix and shuffeling PC-Arrays randomly
+            rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+            # shuffle PC-Matrix
+            np.random.shuffle(rows)
+            # Adding first part to training data, rest is test-data
+            cut = int(ratio*len(rows))
+            for i in range(len(rows)):
+                if i < cut:
+                    X_train.append(rows[i].tolist())
+                    y_train.append(response)
+                else:
+                    X_test.append(rows[i].tolist())
+                    y_test.append(response)
+    
+    return X_train, X_test, y_train, y_test
+    
 
-    return train_test_split(X, y, test_size=0.2)
-
-X_train, X_test, y_train, y_test = get_PCA_data('bl693_no_white_Pop05', path=r'D:\Dataframes\30_Norm')
+X_train, X_test, y_train, y_test = get_PCA_data(['bl693_no_white_Pop05'], path=r'D:\Dataframes\30_Transitions')
 dim = 30
 
 # Starting Keras Model
@@ -41,6 +56,7 @@ dl = Sequential()
 # activation-function is set to relu
 # final layer has sigmoid so that the result is in [0,1]
 dl.add(Dense(12, input_dim=30, activation='relu'))
+dl.add(Dense(12, activation='relu'))
 dl.add(Dense(8, activation='relu'))
 dl.add(Dense(1,activation='sigmoid'))
 

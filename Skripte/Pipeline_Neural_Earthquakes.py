@@ -240,6 +240,30 @@ class NeuralEarthquake_singlePopulation():
 
         self.dataframe['response'] = response
 
+    def make_transition_labels(self):
+        """
+        changes the Response labels for binary transitions
+        """
+        response = []
+        neurons = []
+        trails = []
+        matrix = self.dataframe.to_numpy()
+        for i in range(len(matrix)):
+            trails.append(matrix[i][0])
+            response.append(1 if (matrix[i][-1] > 0) else 0)
+            neurons.append(matrix[i][1:-1])
+
+        transistions = [0] * len(response)
+        for i in range(1, len(response)):
+            if response[i-1] == 0 and response[i]== 1: # response[i-1] != response[i]
+            
+                trail = trails[i-1]
+                indices = [i for i in range(len(trails)) if trails[i] == trail]
+                for j in indices:
+                    transistions[j] = 1
+
+        self.dataframe['response'] = transistions
+
     def df_to_file(self, path):
         """
         writes Dataframe to .csv file
@@ -497,18 +521,18 @@ def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
     populations = list(populations)
 
     for pop in populations:
-        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
         # read in data
         a = NeuralEarthquake_singlePopulation(pop)
         a.read_population()
-        a.normalization()
         a.get_most_active_neurons()
         a.add_activity_to_df()
+        a.make_transition_labels()
         a.df_to_file(destination)
         a = None
+        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-extract_all_neurons(destination=r'D:\Dataframes\30_Norm')
+extract_all_neurons(destination=r'D:\Dataframes\30_Transitions')
 #a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop05", "PCA", dimension=20)
 #a.read_population()
 #a.get_most_active_neurons()
