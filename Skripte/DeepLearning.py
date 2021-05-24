@@ -40,7 +40,7 @@ def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
     return X_train, X_test, y_train, y_test
     
 
-X_train, X_test, y_train, y_test = get_PCA_data(['bl693_no_white_Pop05'], path=r'D:\Dataframes\30_Transitions')
+X_train, X_test, y_train, y_test = get_PCA_data(['bl693_no_white_Pop05'], path=r'D:\Dataframes\30_Standard')
 dim = 30
 
 # Starting Keras Model

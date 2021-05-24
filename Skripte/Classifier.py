@@ -247,17 +247,16 @@ def test_SVM():
 
 p = r'D:\Dataframes\30_Transitions'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
-#a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
+a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
 a.splitter_for_multiple_dataframes()
-#a.shuffle_labels()
+a.shuffle_labels()
 #a.prepare_binary_labels()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 #print(a.get_f1())
 #a.plot_CM()
-a.do_SVM(kernel='rbf', c=1, gamma=10, class_weight='balanced')
-print(a.get_f1())
-a.plot_CM()
-
-#c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-#a.grid_search(C=c, Y=c)
+#a.do_SVM(kernel='rbf', c=1, gamma=10, class_weight='balanced')
+#print(a.get_f1())
+#a.plot_CM()
+c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
+a.grid_search(C=c, Y=c)
 
