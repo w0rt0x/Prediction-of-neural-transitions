@@ -8,6 +8,7 @@ import numpy as np
 import random
 from sklearn.model_selection import GridSearchCV
 import seaborn as sns
+from imblearn.over_sampling import ADASYN, SMOTE
 
 class NeuralEarthquake_Classifier():
 
@@ -94,6 +95,18 @@ class NeuralEarthquake_Classifier():
         """
         random.shuffle(self.y_train)
         random.shuffle(self.y_test)
+
+    def use_SMOTE(self):
+        """performs SMOTE on training data"""
+        smote = SMOTE()
+        self.X_train, self.y_train = smote.fit_resample(self.X_train, self.y_train)
+        #self.X_test, self.y_test = smote.fit_resample(self.X_test, self.y_test)
+
+    def use_ADASYN(self):
+        """performs ADASYN on training data"""
+        ada = ADASYN()
+        self.X_train, self.y_train = ada.fit_resample(self.X_train, self.y_train)
+        self.X_test, self.y_test = ada.fit_resample(self.X_test, self.y_test)
 
     def grid_search(self, C, Y = [1], kernel='rbf', degree=3, class_weight='balanced'):
         """
@@ -245,18 +258,21 @@ def test_SVM():
     print(acc)
 
 
-p = r'D:\Dataframes\30_Transitions'
+p = r'D:\Dataframes\30_most_active'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
-a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
+#a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
 a.splitter_for_multiple_dataframes()
-a.shuffle_labels()
+a.use_SMOTE()
+#a.use_ADASYN()
+#a.shuffle_labels()
 #a.prepare_binary_labels()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 #print(a.get_f1())
 #a.plot_CM()
-#a.do_SVM(kernel='rbf', c=1, gamma=10, class_weight='balanced')
-#print(a.get_f1())
-#a.plot_CM()
-c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-a.grid_search(C=c, Y=c)
+a.do_SVM(kernel='rbf', c=1, gamma=10, class_weight='balanced')
+#a.do_SVM(kernel='rbf', c=1, gamma=10)
+print(a.get_f1())
+a.plot_CM()
+#c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
+#a.grid_search(C=c, Y=c)
 
