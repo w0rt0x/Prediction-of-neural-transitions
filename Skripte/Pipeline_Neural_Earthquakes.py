@@ -33,7 +33,6 @@ class NeuralEarthquake_singlePopulation():
             self.population)
         self.path_lact = r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_lact.mat".format(
             self.population)
-        self.dictionary = None
         self.data = None
         self.header = None
         self.trials = None
@@ -125,14 +124,7 @@ class NeuralEarthquake_singlePopulation():
         for k in trials:
             d[k] = np.array(d[k]).T
 
-        self.dictionary = d
-        del data
-
-    def get_single_stim(self, day, stimulus):
-        """
-        returns Array with [Neurons x Trails] of given day and stimulus
-        """
-        return self.dictionary[(day, stimulus)]
+        return d
 
     def do_PCA(self, X):
         """
@@ -179,30 +171,6 @@ class NeuralEarthquake_singlePopulation():
                 vals.append(i)
         self.max = max(vals)
         self.min = min(vals)
-
-    def create_df_singlestim(self, stimuli):
-        """
-        creates a pandas dataframe for single stimulus,
-        !!! data needs to be converted into dicionary before that !!!
-        """
-        label = [(1, stimuli), (2, stimuli), (3, stimuli), (4, stimuli)]
-
-        # Doing PCA for each day for one stimulus
-        day1, var1 = self.do_PCA(self.dictionary[label[0]])
-        day2, var2 = self.do_PCA(self.dictionary[label[1]])
-        day3, var3 = self.do_PCA(self.dictionary[label[2]])
-        day4, var4 = self.do_PCA(self.dictionary[label[3]])
-
-        days = [day1, day2, day3, day4]
-        for i in range(len(days)):
-            for j in range(len(days[i])):
-                days[i][j].insert(0, label[i])
-        days = days[0] + days[1] + days[2] + days[3]
-
-        cols = ['label']
-        for i in range(self.dimension):
-            cols.append('PC' + str((i+1)))
-        self.dataframe = pd.DataFrame(days, columns=cols)
 
     def create_full_df(self):
         """
@@ -254,13 +222,18 @@ class NeuralEarthquake_singlePopulation():
             neurons.append(matrix[i][1:-1])
 
         transistions = [0] * len(response)
-        for i in range(1, len(response)):
-            if response[i-1] == 0 and response[i]== 1: # response[i-1] != response[i]
-            
-                trail = trails[i-1]
-                indices = [i for i in range(len(trails)) if trails[i] == trail]
-                for j in indices:
-                    transistions[j] = 1
+        labels = set(trails)
+        for trail in labels:
+            # Skipping Day 4
+            if trail[0] == 4:
+                pass
+            else:
+                next_day = (trail[0] + 1, trail[1])
+                # Binary Transition: from 0 to response
+                if response[trails.index(next_day)] > 0 and response[trails.index(trail)] == 0:
+                    indices = [i for i in range(len(trails)) if trails[i] == trail]
+                    for j in indices:
+                        transistions[j] = 1
 
         self.dataframe['response'] = transistions
 
@@ -532,13 +505,14 @@ def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
         a = None
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-extract_all_neurons(destination=r'D:\Dataframes\30_Transitions')
+extract_all_neurons(destination=r'D:\Dataframes\30_Transition')
 #a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop05", "PCA", dimension=20)
 #a.read_population()
 #a.get_most_active_neurons()
 #a.standard_scaler()
 #a.create_full_df()
 #a.add_activity_to_df()
+#a.make_transition_labels()
 #a.get_loading_data()
 #a.plot2D_loadings(2, 5, True, r'C:\Users\Sam\Desktop')
 #a.plot2D_anim(1)

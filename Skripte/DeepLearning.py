@@ -5,7 +5,8 @@ from keras.layers import Dense
 from sklearn.metrics import classification_report
 from scipy.io import loadmat
 import numpy as np
-
+from sklearn import metrics
+from imblearn.over_sampling import ADASYN, SMOTE
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -36,11 +37,13 @@ def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
                 else:
                     X_test.append(rows[i].tolist())
                     y_test.append(response)
-    
+    smote = SMOTE()
+    X_train, y_train = smote.fit_resample(X_train, y_train)
+    X_test, y_test = smote.fit_resample(X_test, y_test)
     return X_train, X_test, y_train, y_test
     
 
-X_train, X_test, y_train, y_test = get_PCA_data(['bl693_no_white_Pop05'], path=r'D:\Dataframes\30_Standard')
+X_train, X_test, y_train, y_test = get_PCA_data(['bl693_no_white_Pop03'], path=r'D:\Dataframes\30_Transition')
 dim = 30
 
 # Starting Keras Model
@@ -88,6 +91,7 @@ print('Accuracy %.2f' % (accuracy*100))
 
 print(' ')
 y_pred = dl.predict_classes(X_test)
+print("F1-Score: ", metrics.f1_score(y_test, y_pred))
 print(classification_report(y_test, y_pred))
 
 # Evaluation
