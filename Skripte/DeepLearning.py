@@ -87,11 +87,10 @@ def use_adasyn(X_train, X_test, y_train, y_test):
     X_test, y_test = ada.fit_resample(X_test, y_test)
     return X_train, X_test, y_train, y_test
 
-X_train, X_test, y_train, y_test = get_data(['bl693_no_white_Pop05'], path=r'D:\Dataframes\30_Transition')
-X_train, X_test, y_train, y_test = use_smote(X_train, X_test, y_train, y_test)
-#X_train, X_test, y_train, y_test = use_adasyn(X_train, X_test, y_train, y_test)
+X_train, X_test, y_train, y_test = get_data(['bl693_no_white_Pop03'], path=r'D:\Dataframes\30_Transition')
+#X_train, X_test, y_train, y_test = use_smote(X_train, X_test, y_train, y_test)
+X_train, X_test, y_train, y_test = use_adasyn(X_train, X_test, y_train, y_test)
 dim = 150
-print(len(X_train), len(X_train[0]))
 
 # Starting Keras Model
 # Tutorial:
