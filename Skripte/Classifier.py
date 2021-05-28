@@ -88,6 +88,49 @@ class NeuralEarthquake_Classifier():
         self.X_test = X_test
         self.y_test = y_test
 
+    def split_data(self, n=10, ratio=0.8):
+        """ 
+        The given list of dataframes will be used to set the class attributes
+        X_train, X_test, etc by taking from all trials the same ratio of data.
+        """ 
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = []      
+
+        for df in self.dataframes:
+            header = set(df['label'].tolist())
+            for trial in header:
+                # geting rows with (day, Trail)-label
+                rows = df.loc[df['label'] == trial].to_numpy()
+                # getting binary response label
+                response = 1 if (rows[0][-1] > 0) else 0
+                # getting PC-Matrix and shuffeling PC-Arrays randomly
+                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+
+                data = []
+                for i in range(n):
+                    np.random.shuffle(rows)
+                    for j in range(int(len(rows) / 5)):
+                        a = rows[j*5: j*5+5]
+                        data.append(np.concatenate(a))
+
+                # Adding first part to training data, rest is test-data
+                cut = int(ratio*len(data))
+                for i in range(len(data)):
+                    if i < cut:
+                        X_train.append(data[i])
+                        y_train.append(response)
+                    else:
+                        X_test.append(data[i])
+                        y_test.append(response)
+
+
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_test = X_test
+        self.y_test = y_test
+
 
     def shuffle_labels(self):
         """
@@ -261,18 +304,18 @@ def test_SVM():
 p = r'D:\Dataframes\30_Transition'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
 a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
-a.splitter_for_multiple_dataframes()
-a.use_SMOTE()
+#a.splitter_for_multiple_dataframes()
+a.split_data()
+#a.use_SMOTE()
 #a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 #print(a.get_f1())
 #a.plot_CM()
-#a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-#a.do_SVM(kernel='rbf', c=1, gamma=0.5)
-#print(a.get_f1())
-#a.plot_CM()
-c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-a.grid_search(C=c, Y=c)
+a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+print(a.get_f1())
+a.plot_CM()
+#c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
+#a.grid_search(C=c, Y=c)
 

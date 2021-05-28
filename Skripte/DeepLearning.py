@@ -10,6 +10,41 @@ from imblearn.over_sampling import ADASYN, SMOTE
 import warnings
 warnings.filterwarnings('ignore')
 
+def get_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8, n=10):
+    X_test = []
+    X_train = []   
+    y_test = []   
+    y_train = []      
+
+    for pop in pops:
+        df = pd.read_csv(path + '\\' + pop + '.csv')
+        header = set(df['label'].tolist())
+        for trial in header:
+            # geting rows with (day, Trail)-label
+            rows = df.loc[df['label'] == trial].to_numpy()
+            # getting binary response label
+            response = 1 if (rows[0][-1] > 0) else 0
+            # getting PC-Matrix and shuffeling PC-Arrays randomly
+            rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+            data = []
+            for i in range(n):
+                np.random.shuffle(rows)
+                for j in range(int(len(rows) / 5)):
+                    a = rows[j*5: j*5+5]
+                    data.append(np.concatenate(a))
+
+            # Adding first part to training data, rest is test-data
+            cut = int(ratio*len(data))
+            for i in range(len(data)):
+                if i < cut:
+                    X_train.append(data[i].tolist())
+                    y_train.append(response)
+                else:
+                    X_test.append(data[i].tolist())
+                    y_test.append(response)
+
+    return X_train, X_test, y_train, y_test
+
 def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
     X_test = []
     X_train = []   
@@ -37,14 +72,26 @@ def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
                 else:
                     X_test.append(rows[i].tolist())
                     y_test.append(response)
+
+    return X_train, X_test, y_train, y_test
+    
+def use_smote(X_train, X_test, y_train, y_test):
     smote = SMOTE()
     X_train, y_train = smote.fit_resample(X_train, y_train)
     X_test, y_test = smote.fit_resample(X_test, y_test)
     return X_train, X_test, y_train, y_test
-    
 
-X_train, X_test, y_train, y_test = get_PCA_data(['bl693_no_white_Pop03'], path=r'D:\Dataframes\30_Transition')
-dim = 30
+def use_adasyn(X_train, X_test, y_train, y_test):
+    ada = ADASYN()
+    X_train, y_train = ada.fit_resample(X_train, y_train)
+    X_test, y_test = ada.fit_resample(X_test, y_test)
+    return X_train, X_test, y_train, y_test
+
+X_train, X_test, y_train, y_test = get_data(['bl693_no_white_Pop05'], path=r'D:\Dataframes\30_Transition')
+X_train, X_test, y_train, y_test = use_smote(X_train, X_test, y_train, y_test)
+#X_train, X_test, y_train, y_test = use_adasyn(X_train, X_test, y_train, y_test)
+dim = 150
+print(len(X_train), len(X_train[0]))
 
 # Starting Keras Model
 # Tutorial:
@@ -58,7 +105,7 @@ dl = Sequential()
 # first number defines number of neurons
 # activation-function is set to relu
 # final layer has sigmoid so that the result is in [0,1]
-dl.add(Dense(12, input_dim=30, activation='relu'))
+dl.add(Dense(12, input_dim=dim, activation='relu'))
 dl.add(Dense(12, activation='relu'))
 dl.add(Dense(8, activation='relu'))
 dl.add(Dense(1,activation='sigmoid'))
