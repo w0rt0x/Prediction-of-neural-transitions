@@ -208,7 +208,7 @@ class NeuralEarthquake_singlePopulation():
 
         self.dataframe['response'] = response
 
-    def make_transition_labels(self):
+    def make_transition_labels(self, binary=True):
         """
         changes the Response labels for binary transitions
         """
@@ -228,12 +228,29 @@ class NeuralEarthquake_singlePopulation():
             if trail[0] == 4:
                 pass
             else:
-                next_day = (trail[0] + 1, trail[1])
-                # Binary Transition: from 0 to response
-                if response[trails.index(next_day)] > 0 and response[trails.index(trail)] == 0:
+                if binary:
+                    next_day = (trail[0] + 1, trail[1])
+                    # Binary Transition: from 0 to response
+                    if response[trails.index(next_day)] > 0 and response[trails.index(trail)] == 0:
+                        indices = [i for i in range(len(trails)) if trails[i] == trail]
+                        for j in indices:
+                            transistions[j] = 1
+                else:
+                    #Multiclass
+                    next_day = (trail[0] + 1, trail[1])
                     indices = [i for i in range(len(trails)) if trails[i] == trail]
+                    # Binary Transition: from 0 to response
+                    label = '-'
+                    if response[trails.index(next_day)] == 0 and response[trails.index(trail)] == 0:
+                        label = '0->0'
+                    if response[trails.index(next_day)] > 0 and response[trails.index(trail)] > 0:
+                        label = '1->1'
+                    if response[trails.index(next_day)] > 0 and response[trails.index(trail)] == 0:
+                        label = '0->1'
+                    if response[trails.index(next_day)] == 0 and response[trails.index(trail)] > 0:
+                        label = '1->0'
                     for j in indices:
-                        transistions[j] = 1
+                        transistions[j] = label
 
         self.dataframe['response'] = transistions
 
@@ -480,7 +497,7 @@ def create_all_loadings(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
         a.add_activity_to_df()
         a.get_loading_data(destination)
 
-def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\30_mostActive_Neurons'):
+def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\30_mostActive_Neurons', binary=True):
     populations = set()
     files = [f for f in os.listdir(path) if isfile(join(path, f))]
     for i in files:
@@ -500,12 +517,12 @@ def extract_all_neurons(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\D
         a.read_population()
         a.get_most_active_neurons()
         a.add_activity_to_df()
-        a.make_transition_labels()
+        a.make_transition_labels(binary=binary)
         a.df_to_file(destination)
         a = None
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-extract_all_neurons(destination=r'D:\Dataframes\30_Transition')
+extract_all_neurons(destination=r'D:\Dataframes\30_Transition_multiclass', binary=False)
 #a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop05", "PCA", dimension=20)
 #a.read_population()
 #a.get_most_active_neurons()

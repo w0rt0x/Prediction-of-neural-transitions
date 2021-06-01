@@ -1,4 +1,6 @@
 from sklearn.svm import SVC
+import os
+from os.path import isfile, join
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
@@ -26,10 +28,9 @@ class NeuralEarthquake_Classifier():
     def read_in_df(self, path):
         self.dataframe = pd.read_csv(path)
 
-    def prepare_binary_labels(self, split_ratio=0.2, randomState=None, strat=None):
+    def random_split(self, split_ratio=0.2, randomState=None, strat=None):
         """
         Converts dataframe into list with PC's and labels,
-        labels are 0 (no activity) or 1 (aktivity > 0).
         saves X_train, y_train, X_test, y_test as class attributes and sets dataframe to None after.
         Optional variable split_ratio sets ratio for training/test split, bist be between 0 and 1.
         randomState must be int, for reproducable outcomes
@@ -37,18 +38,107 @@ class NeuralEarthquake_Classifier():
         X = []
         y = []
 
-        for index, row in self.dataframe.iterrows():
-            X.append(row[2:-1].tolist())
-            # Binary Labels for activity
-            if row[-1] > 0:
-                y.append(1)
-            else:
-                y.append(0)
+        for df in self.dataframes:
+            for index, row in df.iterrows():
+                if eval(row[1])[0] != 4:
+                    X.append(row[2:-1].tolist())
+                    y.append(row[-1])
 
-        self.dataframe = None
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=split_ratio, random_state=randomState, stratify=strat)
         X, y = None, None
+
+    def split_transitions(self, remove_day4=True):
+        """
+        Splits dataframes into test and training, while test only contains day 3 transitions
+        """
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = []      
+
+        for df in self.dataframes:
+            header = set(df['label'].tolist())
+            trails = set()
+            if remove_day4:
+                # Removing Day 4 Trails
+                for i in header:
+                    trail = eval(i)
+                    if trail[0] != 4:
+                        trails.add(i)
+                header = trails
+            for trial in header:
+                # geting rows with (day, Trail)-label
+                rows = df.loc[df['label'] == trial].to_numpy()
+                # getting binary response label
+                response = 1 if (rows[0][-1] > 0) else 0
+                # getting PC-Matrix and shuffeling PC-Arrays randomly
+                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+                # shuffle PC-Matrix
+                np.random.shuffle(rows)
+
+                # Spliiting in Training/Test depending on transition
+                for i in range(len(rows)):
+                    if eval(trial)[0] != 3:
+                        X_train.append(rows[i])
+                        y_train.append(response)
+                    else:
+                        X_test.append(rows[i])
+                        y_test.append(response)
+
+        # Now each training/test part contains data from all trails
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_test = X_test
+        self.y_test = y_test
+
+    def population_splitter(self, test_df, path = r'D:\Dataframes\30_Transition'):
+        """
+        Uses self. dataframes for training-data, and the list of populations from the parameter as training
+        """
+        self.X_train, self.y_train = self.__split_df(self.dataframes)
+
+        for i in range(len(test_df)):
+            test_df[i] = pd.read_csv(path + '\\' + test_df[i] + '.csv')
+
+        self.X_test, self.y_test = self.__split_df(self.dataframes)
+
+    def __split_df(self, dataframes, n=10, remove_day4 = True):
+        """
+        Takes in List of dataframes, returns X_train and y-train
+        """
+        X = []
+        y = []
+        for df in dataframes:
+            header = set(df['label'].tolist())
+            trails = set()
+            if remove_day4:
+                # Removing Day 4 Trails
+                for i in header:
+                    trail = eval(i)
+                    if trail[0] != 4:
+                        trails.add(i)
+                header = trails
+
+            for trial in header:
+                # geting rows with (day, Trail)-label
+                rows = df.loc[df['label'] == trial].to_numpy()
+                # getting binary response label
+                response = 1 if (rows[0][-1] > 0) else 0
+                # getting PC-Matrix and shuffeling PC-Arrays randomly
+                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+
+                data = []
+                for i in range(n):
+                    np.random.shuffle(rows)
+                    for j in range(int(len(rows) / 5)):
+                        a = rows[j*5: j*5+5]
+                        data.append(np.concatenate(a))
+                    for i in range(len(data)):
+                            X.append(data[i])
+                            y.append(response)
+
+        return X, y
 
     def splitter_for_multiple_dataframes(self, ratio=0.8):
         """ 
@@ -88,7 +178,7 @@ class NeuralEarthquake_Classifier():
         self.X_test = X_test
         self.y_test = y_test
 
-    def split_data(self, n=10, ratio=0.8):
+    def split_data(self, n=10, ratio=0.8, remove_day4=True):
         """ 
         The given list of dataframes will be used to set the class attributes
         X_train, X_test, etc by taking from all trials the same ratio of data.
@@ -100,11 +190,21 @@ class NeuralEarthquake_Classifier():
 
         for df in self.dataframes:
             header = set(df['label'].tolist())
+
+            trails = set()
+            if remove_day4:
+                # Removing Day 4 Trails
+                for i in header:
+                    trail = eval(i)
+                    if trail[0] != 4:
+                        trails.add(i)
+                header = trails
+
             for trial in header:
                 # geting rows with (day, Trail)-label
                 rows = df.loc[df['label'] == trial].to_numpy()
                 # getting binary response label
-                response = 1 if (rows[0][-1] > 0) else 0
+                response = rows[0][-1]#1 if (rows[0][-1] > 0) else 0
                 # getting PC-Matrix and shuffeling PC-Arrays randomly
                 rows = np.delete(rows, np.s_[0,1,-1], axis=1)
 
@@ -300,21 +400,33 @@ def test_SVM():
     print(cm)
     print(acc)
 
+def get_n_random(n, remove=None, path=r'D:\Dataframes\30_Transition'):
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in range(len(files)):
+        files[i] = files[i][:-4]
+    for i in remove:
+        if i in files: files.remove(i)
+    test = random.sample(files, n)
+    print(test)
+    return test
 
-p = r'D:\Dataframes\30_Transition'
+p = r'D:\Dataframes\30_Transition_multiclass'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
 a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
-#a.splitter_for_multiple_dataframes()
+#a.random_split()
+#a.split_transitions()
+#a.population_splitter(['bl684_no_white_Pop03', 'bl689-1_one_white_Pop09', 'bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07'])
 a.split_data()
 #a.use_SMOTE()
-#a.use_ADASYN()
+a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
 #print(a.get_f1())
 #a.plot_CM()
-a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-print(a.get_f1())
+a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
+#print(a.get_f1())
+print(a.get_accuracy())
 a.plot_CM()
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 #a.grid_search(C=c, Y=c)
