@@ -1,0 +1,155 @@
+from imblearn.over_sampling import ADASYN, SMOTE
+import numpy as np
+import random
+import pandas as pd
+from copy import deepcopy
+
+def get_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8, n=10, remove_day4=True):
+    X_test = []
+    X_train = []   
+    y_test = []   
+    y_train = []      
+
+    for pop in pops:
+        df = pd.read_csv(path + '\\' + pop + '.csv')
+        header = set(df['label'].tolist())
+        trails = set()
+        if remove_day4:
+        # Removing Day 4 Trails
+            for i in header:
+                trail = eval(i)
+                if trail[0] != 4:
+                    trails.add(i)
+            header = trails
+        for trial in header:
+            # geting rows with (day, Trail)-label
+            rows = df.loc[df['label'] == trial].to_numpy()
+            # getting binary response label
+            response = rows[0][-1]  # 1 if (rows[0][-1] > 0) else 0
+            # getting PC-Matrix and shuffeling PC-Arrays randomly
+            rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+            data = []
+            for i in range(n):
+                np.random.shuffle(rows)
+                for j in range(int(len(rows) / 5)):
+                    a = rows[j*5: j*5+5]
+                    data.append(np.concatenate(a))
+
+            # Adding first part to training data, rest is test-data
+            cut = int(ratio*len(data))
+            for i in range(len(data)):
+                if i < cut:
+                    X_train.append(data[i].tolist())
+                    y_train.append(response)
+                else:
+                    X_test.append(data[i].tolist())
+                    y_test.append(response)
+
+    return X_train, X_test, y_train, y_test
+
+def get_matrix_data(pops, path=r'D:\Dataframes\30_Transition_multiclass', balanced=True, ratio=0.8, n=10, remove_day4=True):
+    """
+    Gets trails matrices, upsampling by shuffleing the rows with balanced-parameter
+    """
+    X_test = []
+    X_train = []   
+    y_test = []   
+    y_train = []    
+
+    for pop in pops:
+        df = pd.read_csv(path + '\\' + pop + '.csv')
+        header = set(df['label'].tolist())
+        trails = set()
+        if remove_day4:
+        # Removing Day 4 Trails
+            for i in header:
+                trail = eval(i)
+                if trail[0] != 4:
+                    trails.add(i)
+            header = trails
+        for trial in header:
+            # geting rows with (day, Trail)-label => Matrix 20 x 30
+            rows = df.loc[df['label'] == trial].to_numpy()
+            matrix=[]
+            for i in rows:
+                matrix.append(i[2:-1])
+            #print(matrix)
+            # matrix needs 20 rows, up or downsampling if this is not the case
+            if len(matrix) < 20:
+                while len(matrix)<20:
+                    matrix.append(random.choice(matrix))
+            if len(matrix) > 20:
+                matrix = matrix[0:20]
+
+            # splitting data into training and test
+            data = []
+            label = []
+            for i in range(n):
+                m = deepcopy(matrix)
+                random.shuffle(m)
+                if i < int(n*ratio):
+                    X_train.append(m)
+                    y_train.append(rows[0][-1])
+                else:
+                    X_test.append(m)
+                    y_test.append(rows[0][-1])
+    
+    return X_train, X_test, y_train, y_test
+
+def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
+    X_test = []
+    X_train = []   
+    y_test = []   
+    y_train = []      
+
+    for pop in pops:
+        df = pd.read_csv(path + '\\' + pop + '.csv')
+        header = set(df['label'].tolist())
+        for trial in header:
+            # geting rows with (day, Trail)-label
+            rows = df.loc[df['label'] == trial].to_numpy()
+            # getting binary response label
+            response = 1 if (rows[0][-1] > 0) else 0
+            # getting PC-Matrix and shuffeling PC-Arrays randomly
+            rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+            # shuffle PC-Matrix
+            np.random.shuffle(rows)
+            # Adding first part to training data, rest is test-data
+            cut = int(ratio*len(rows))
+            for i in range(len(rows)):
+                if i < cut:
+                    X_train.append(rows[i].tolist())
+                    y_train.append(response)
+                else:
+                    X_test.append(rows[i].tolist())
+                    y_test.append(response)
+
+    return X_train, X_test, y_train, y_test
+    
+def use_smote(X_train, X_test, y_train, y_test):
+    smote = SMOTE()
+    X_train, y_train = smote.fit_resample(X_train, y_train)
+    X_test, y_test = smote.fit_resample(X_test, y_test)
+    return X_train, X_test, y_train, y_test
+
+def use_adasyn(X_train, X_test, y_train, y_test):
+    ada = ADASYN()
+    X_train, y_train = ada.fit_resample(X_train, y_train)
+    X_test, y_test = ada.fit_resample(X_test, y_test)
+    return X_train, X_test, y_train, y_test
+
+def encode_labels(y):
+    """ Encodes string labels"""
+    y_hot = []
+    table = {"0->0":[1,0,0,0], "0->1":[0,1,0,0], "1->0":[0,0,1,0], "1->1":[0,0,0,1]}
+    for i in range(len(y)):
+        y_hot.append(table[y[i]])
+    return y_hot
+
+def decode_labels(y):
+    """ Encodes string labels"""
+    y_hot = []
+    table = {0:"0->0", 1:"0->1", 2:"1->0", 3:"1->1"}
+    for i in range(len(y)):
+        y_hot.append(table[y[i]])
+    return y_hot

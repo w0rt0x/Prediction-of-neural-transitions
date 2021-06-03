@@ -346,9 +346,9 @@ class NeuralEarthquake_Classifier():
         """ returns accuracy"""
         return self.accuracy
 
-    def get_f1(self):
+    def get_f1(self, avg='binary'):
         """ returns f1-Score"""
-        return metrics.f1_score(self.y_test, self.classifier.predict(self.X_test))
+        return metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average=avg)
 
     def plot_CM(self, norm=None, title=None, path=None):
         """
@@ -356,12 +356,13 @@ class NeuralEarthquake_Classifier():
         """
         # Source:
         # https://stackoverflow.com/questions/57043260/how-change-the-color-of-boxes-in-confusion-matrix-using-sklearn
-        class_names = set(self.y_train)
+        class_names = ['0->1', '0->0', '1->0', '1->1']
         disp = metrics.plot_confusion_matrix(self.classifier, self.X_test, self.y_test,
                                              display_labels=class_names,
                                              cmap=plt.cm.OrRd,
                                              normalize=norm,
-                                             values_format='.3f')
+                                             values_format='.3f',
+                                             labels=class_names)
         title = "Confusion Matrix of {},:\n {}'bl693_no_white_Pop02', 'bl693_no_white_Pop03'\n with {} Dimensions, total accuracy: {}".format(
             str(self.classifier), self.population, len(self.X_train[0]), str(round(self.accuracy, 4)))
         disp.ax_.set_title(title)
@@ -426,8 +427,8 @@ a.use_ADASYN()
 #a.plot_CM()
 a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
 #print(a.get_f1())
-print(a.get_accuracy())
-a.plot_CM()
+print(a.get_f1(avg="micro"))
+#a.plot_CM()
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 #a.grid_search(C=c, Y=c)
 
