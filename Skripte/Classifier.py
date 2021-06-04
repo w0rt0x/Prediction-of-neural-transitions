@@ -348,6 +348,8 @@ class NeuralEarthquake_Classifier():
 
     def get_f1(self, avg='binary'):
         """ returns f1-Score"""
+        print(self.classifier.coef0)
+        print(len(self.classifier.coef0))
         return metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average=avg)
 
     def plot_CM(self, norm=None, title=None, path=None):
@@ -419,7 +421,7 @@ a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
 #a.population_splitter(['bl684_no_white_Pop03', 'bl689-1_one_white_Pop09', 'bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07'])
 a.split_data()
 #a.use_SMOTE()
-a.use_ADASYN()
+#a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
 #a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)

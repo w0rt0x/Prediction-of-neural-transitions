@@ -16,11 +16,7 @@ X_train, X_test, y_train, y_test = get_matrix_data(['bl693_no_white_Pop05', 'bl6
 y_train = encode_labels(y_train)
 y_test_en = encode_labels(y_test)
 
-print(type(X_train))
-print(type(X_train[0]))
-print(type(X_train[0][0]))
-print(type(y_train))
-print(type(y_train[0]))
+
 
 model = Sequential() 
 # 32 = Output Filter, (3,3) = Kernel Size, (20,30,1) Höhe Breite Tiefe

@@ -80,7 +80,8 @@ def get_matrix_data(pops, path=r'D:\Dataframes\30_Transition_multiclass', balanc
                     matrix.append(random.choice(matrix))
             if len(matrix) > 20:
                 matrix = matrix[0:20]
-
+            for i in range(len(matrix)):
+                matrix[i] = matrix[i].tolist()
             # splitting data into training and test
             data = []
             label = []
@@ -88,13 +89,16 @@ def get_matrix_data(pops, path=r'D:\Dataframes\30_Transition_multiclass', balanc
                 m = deepcopy(matrix)
                 random.shuffle(m)
                 if i < int(n*ratio):
-                    X_train.append(np.array(m))
+                    #X_train.append(np.array(m))
+                    X_train.append(m)
                     y_train.append(rows[0][-1])
                 else:
-                    X_test.append(np.array(m))
+                    #X_test.append(np.array(m))
+                    X_test.append(m)
                     y_test.append(rows[0][-1])
-    
-    return np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
+
+    return X_train, X_test, y_train, y_test
+    #return np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
 
 def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
     X_test = []
@@ -144,7 +148,7 @@ def encode_labels(y):
     table = {"0->0":[1,0,0,0], "0->1":[0,1,0,0], "1->0":[0,0,1,0], "1->1":[0,0,0,1]}
     for i in range(len(y)):
         y_hot.append(table[y[i]])
-    return np.array(y_hot)
+    return y_hot
 
 def decode_labels(y):
     """ Encodes string labels"""
