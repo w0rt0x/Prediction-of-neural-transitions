@@ -8,10 +8,55 @@ from sklearn import metrics
 import warnings
 from sklearn.preprocessing import LabelBinarizer
 warnings.filterwarnings('ignore')
-from get_data_for_DL import get_data, use_adasyn, use_adasyn, use_smote, encode_labels, decode_labels
+from get_data_for_DL import get_data, use_adasyn, use_smote, encode_labels, decode_labels
+from keras import backend as K
+import tensorflow as tf
+
+def f1_weighted(true, pred): #shapes (batch, 4)
+    # Source for weightend f1:
+    # https://stackoverflow.com/questions/59963911/how-to-write-a-custom-f1-loss-function-with-weighted-average-for-keras
+    predLabels = K.argmax(pred, axis=-1)
+    pred = K.one_hot(predLabels, 4) 
+
+
+    ground_positives = K.sum(true, axis=0) + K.epsilon()       # = TP + FN
+    pred_positives = K.sum(pred, axis=0) + K.epsilon()         # = TP + FP
+    true_positives = K.sum(true * pred, axis=0) + K.epsilon()  # = TP
+        #all with shape (4,)
+    
+    precision = true_positives / pred_positives 
+    recall = true_positives / ground_positives
+        #both = 1 if ground_positives == 0 or pred_positives == 0
+        #shape (4,)
+
+    f1 = 2 * (precision * recall) / (precision + recall + K.epsilon())
+        #still with shape (4,)
+
+    weighted_f1 = f1 * ground_positives / K.sum(ground_positives) 
+    weighted_f1 = K.sum(weighted_f1)
+
+    
+    return weighted_f1 #for metrics, return only 'weighted_f1'
+
+def f1_m(true, pred):
+    # Source:
+    # https://www.kaggle.com/guglielmocamporese/macro-f1-score-keras
+    y_pred = K.round(pred)
+    tp = K.sum(K.cast(true*y_pred, 'float'), axis=0)
+    # tn = K.sum(K.cast((1-y_true)*(1-y_pred), 'float'), axis=0)
+    fp = K.sum(K.cast((1-true)*y_pred, 'float'), axis=0)
+    fn = K.sum(K.cast(true*(1-y_pred), 'float'), axis=0)
+
+    p = tp / (tp + fp + K.epsilon())
+    r = tp / (tp + fn + K.epsilon())
+
+    f1 = 2*p*r / (p+r+K.epsilon())
+    f1 = tf.where(tf.math.is_nan(f1), tf.zeros_like(f1), f1)
+    return K.mean(f1)
+
 
 X_train, X_test, y_train, y_test = get_data(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\30_Transition_multiclass')
-#X_train, X_test, y_train, y_test = use_smote(X_train, X_test, y_train, y_test)
+X_train, X_test, y_train, y_test = use_smote(X_train, X_test, y_train, y_test)
 #X_train, X_test, y_train, y_test = use_adasyn(X_train, X_test, y_train, y_test)
 # Preparing numerical labels, Keras does not allow strings!
 y_train = encode_labels(y_train)
@@ -48,7 +93,7 @@ print('Compiling model ...')
 # Also choosing optimizer (stochastic gradient descent algorithm 'adam'):
 # https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/
 # Using accuracy-metric because of binary classification
-dl.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+dl.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[f1_m])
 
 print('Model compiled!')
 print('Fitting model...')
