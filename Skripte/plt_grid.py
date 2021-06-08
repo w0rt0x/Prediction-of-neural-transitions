@@ -1,33 +1,21 @@
-import pandas as pd
-import numpy as np
-import ast
 import seaborn as sns
 import matplotlib.pyplot as plt
-from copy import deepcopy
 
-dataframe = pd.read_csv(r'C:\Users\Sam\Desktop\grid1Pop.csv')
-means = dataframe['mean_test_score']
-stds = dataframe['std_test_score']
-params = dataframe['params']
+x = [15, 20, 25, 30, 35, 40, 45, 50, 100]
+macro_svm = [0.4621, 0.5135, 0.5487, 0.5883, 0.6075, 0.6185, 0.6441, 0.6511, 0.7095]
+micro_svm = [0.5259, 0.5667, 0.6122, 0.6421, 0.6624, 0.6798, 0.6997, 0.7079, 0.7686]
+weighted_svm = [0.5489, 0.5834, 0.6262, 0.6511, 0.67115, 0.6861, 0.7047, 0.7122, 0.7686]
 
+macro_keras = [0.4621, 0.5135, 0.5487, 0.5883, 0.6075, 0.6185, 0.6441, 0.6511, 0.7095]
+micro_keras = [0.5259, 0.5667, 0.6122, 0.6421, 0.6624, 0.6798, 0.6997, 0.7079, 0.7686]
+weighted_keras = [0.5489, 0.5834, 0.6262, 0.6511, 0.67115, 0.6861, 0.7047, 0.7122, 0.7686]
 
-for i in range(len(means)):
-    #print(means[i], stds[i], params[i])
-    p = ast.literal_eval(params[i])
-    c = p['C']
-    g = p['gamma']
-    print(c, g, means[i])
-
-x = np.empty((13, 13))
-for i in range(13):
-    for j in range(13):
-        x[i][j] = round(means[i * 13 + j], 4)
-
-c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-y = deepcopy(c)
-y.reverse()
-ax = sns.heatmap(x, annot=True, vmin=0, vmax=1, xticklabels=c, yticklabels=c)
-plt.xlabel('Gamma')
-plt.ylabel('C')
-plt.title("Grid Search for bl693_no_white_Pop05:\n 'kernel':['rbf'], 'C':c, 'gamma': c, 'class_weight':['balanced']")
+plt.plot(x,macro_svm, marker = 'o', color='#f70d1a', label="Macro f1")
+plt.plot(x,micro_svm, marker = 'x', color='#08088A', label="Micro f1")
+plt.plot(x,weighted_svm, marker = '+', color='#FFBF00', label="weighted f1")
+plt.xlabel("#Neurons")
+plt.xticks(x)
+plt.ylabel("F1-Scores")
+plt.ylim([0, 1])
+plt.legend(loc="upper left")
 plt.show()

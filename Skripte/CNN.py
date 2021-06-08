@@ -20,7 +20,7 @@ y_test_en = encode_labels(y_test)
 
 model = Sequential() 
 # 32 = Output Filter, (3,3) = Kernel Size, (20,30,1) Höhe Breite Tiefe
-model.add(Conv2D(32, kernel_size = (3, 3), activation = 'relu', input_shape = (20, 30, 1))) 
+model.add(Conv2D(32, kernel_size = (3, 3), activation = 'relu', input_shape = (20, 30))) 
 model.add(Conv2D(64, (3, 3), activation = 'relu')) 
 model.add(MaxPooling2D(pool_size = (2, 2))) 
 model.add(Dropout(0.25)) 

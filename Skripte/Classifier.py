@@ -243,13 +243,13 @@ class NeuralEarthquake_Classifier():
         """performs SMOTE on training data"""
         smote = SMOTE()
         self.X_train, self.y_train = smote.fit_resample(self.X_train, self.y_train)
-        self.X_test, self.y_test = smote.fit_resample(self.X_test, self.y_test)
+        #self.X_test, self.y_test = smote.fit_resample(self.X_test, self.y_test)
 
     def use_ADASYN(self):
         """performs ADASYN on training data"""
         ada = ADASYN()
         self.X_train, self.y_train = ada.fit_resample(self.X_train, self.y_train)
-        self.X_test, self.y_test = ada.fit_resample(self.X_test, self.y_test)
+        #self.X_test, self.y_test = ada.fit_resample(self.X_test, self.y_test)
 
     def grid_search(self, C, Y = [1], kernel='rbf', degree=3, class_weight='balanced'):
         """
@@ -348,8 +348,6 @@ class NeuralEarthquake_Classifier():
 
     def get_f1(self, avg='binary'):
         """ returns f1-Score"""
-        print(self.classifier.coef0)
-        print(len(self.classifier.coef0))
         return metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average=avg)
 
     def plot_CM(self, norm=None, title=None, path=None):
@@ -413,14 +411,14 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\30_Transition'):
     print(test)
     return test
 
-p = r'D:\Dataframes\30_Transition_multiclass'
+p = r'D:\Dataframes\100_Transition_multiclass'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
 a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
 #a.random_split()
 #a.split_transitions()
 #a.population_splitter(['bl684_no_white_Pop03', 'bl689-1_one_white_Pop09', 'bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07'])
 a.split_data()
-#a.use_SMOTE()
+a.use_SMOTE()
 #a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
@@ -429,8 +427,11 @@ a.split_data()
 #a.plot_CM()
 a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
 #print(a.get_f1())
-print(a.get_f1(avg="micro"))
-#a.plot_CM()
+print("Macro: ",a.get_f1(avg="macro"))
+print("Micro: ", a.get_f1(avg="micro"))
+print("Weighted: ",a.get_f1(avg="weighted"))
+#print("Accuracy: ",a.get_accuracy())
+a.plot_CM()
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 #a.grid_search(C=c, Y=c)
 

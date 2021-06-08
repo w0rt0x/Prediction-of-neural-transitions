@@ -12,31 +12,25 @@ from get_data_for_DL import get_data, use_adasyn, use_smote, encode_labels, deco
 from keras import backend as K
 import tensorflow as tf
 
-def f1_weighted(true, pred): #shapes (batch, 4)
+def f1_weighted(true, pred): 
     # Source for weightend f1:
     # https://stackoverflow.com/questions/59963911/how-to-write-a-custom-f1-loss-function-with-weighted-average-for-keras
     predLabels = K.argmax(pred, axis=-1)
     pred = K.one_hot(predLabels, 4) 
 
-
     ground_positives = K.sum(true, axis=0) + K.epsilon()       # = TP + FN
     pred_positives = K.sum(pred, axis=0) + K.epsilon()         # = TP + FP
     true_positives = K.sum(true * pred, axis=0) + K.epsilon()  # = TP
-        #all with shape (4,)
     
     precision = true_positives / pred_positives 
     recall = true_positives / ground_positives
-        #both = 1 if ground_positives == 0 or pred_positives == 0
-        #shape (4,)
 
     f1 = 2 * (precision * recall) / (precision + recall + K.epsilon())
-        #still with shape (4,)
 
     weighted_f1 = f1 * ground_positives / K.sum(ground_positives) 
     weighted_f1 = K.sum(weighted_f1)
 
-    
-    return weighted_f1 #for metrics, return only 'weighted_f1'
+    return weighted_f1 
 
 def f1_m(true, pred):
     # Source:
@@ -55,7 +49,7 @@ def f1_m(true, pred):
     return K.mean(f1)
 
 
-X_train, X_test, y_train, y_test = get_data(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\30_Transition_multiclass')
+X_train, X_test, y_train, y_test = get_data(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\100_Transition_multiclass')
 X_train, X_test, y_train, y_test = use_smote(X_train, X_test, y_train, y_test)
 #X_train, X_test, y_train, y_test = use_adasyn(X_train, X_test, y_train, y_test)
 # Preparing numerical labels, Keras does not allow strings!
@@ -76,12 +70,20 @@ dl = Sequential()
 # first number defines number of neurons
 # activation-function is set to relu
 # final layer has sigmoid so that the result is in [0,1]
+"""
 dl.add(Dense(75, input_dim=dim, activation='sigmoid')) # 'tanh', oder 'sigmoid' oder relu
 dl.add(Dense(38, activation='sigmoid'))
 dl.add(Dense(19, activation='sigmoid'))
 dl.add(Dense(10, activation='sigmoid'))
 dl.add(Dense(4,activation='softmax')) #in case of binary: Sigmoid and just one output
-
+"""
+dl.add(Dense(250, input_dim=dim, activation='sigmoid'))
+dl.add(Dense(125, input_dim=dim, activation='sigmoid'))
+dl.add(Dense(62, input_dim=dim, activation='sigmoid'))
+dl.add(Dense(31, input_dim=dim, activation='sigmoid'))
+dl.add(Dense(15, input_dim=dim, activation='sigmoid'))
+dl.add(Dense(7, input_dim=dim, activation='sigmoid'))
+dl.add(Dense(4,activation='softmax'))
 # most confusing thing:
 # Input size is given to first hidden layer!
 
@@ -93,7 +95,7 @@ print('Compiling model ...')
 # Also choosing optimizer (stochastic gradient descent algorithm 'adam'):
 # https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/
 # Using accuracy-metric because of binary classification
-dl.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[f1_m])
+dl.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[f1_weighted])
 
 print('Model compiled!')
 print('Fitting model...')
@@ -110,9 +112,9 @@ print('Accuracy %.2f' % (accuracy*100))
 
 print(' ')
 y_pred = decode_labels(dl.predict_classes(X_test))
-print("F1-Score wighted: ", metrics.f1_score(y_test, y_pred,average='weighted'))
 print("F1-Score macro: ", metrics.f1_score(y_test, y_pred,average='macro'))
 print("F1-Score micro: ", metrics.f1_score(y_test, y_pred,average='micro'))
+print("F1-Score wighted: ", metrics.f1_score(y_test, y_pred,average='weighted'))
 print(classification_report(y_test, y_pred))
 
 # Evaluation

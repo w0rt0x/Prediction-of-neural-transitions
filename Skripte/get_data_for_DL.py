@@ -133,7 +133,7 @@ def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
 def use_smote(X_train, X_test, y_train, y_test):
     smote = SMOTE()
     X_train, y_train = smote.fit_resample(X_train, y_train)
-    X_test, y_test = smote.fit_resample(X_test, y_test)
+    #X_test, y_test = smote.fit_resample(X_test, y_test)
     return X_train, X_test, y_train, y_test
 
 def use_adasyn(X_train, X_test, y_train, y_test):
