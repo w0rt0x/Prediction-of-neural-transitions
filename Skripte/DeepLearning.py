@@ -11,6 +11,7 @@ warnings.filterwarnings('ignore')
 from get_data_for_DL import get_data, use_adasyn, use_smote, encode_labels, decode_labels
 from keras import backend as K
 import tensorflow as tf
+from tensorflow.keras.optimizers import Adam
 
 def f1_weighted(true, pred): 
     # Source for weightend f1:
@@ -71,19 +72,17 @@ dl = Sequential()
 # activation-function is set to relu
 # final layer has sigmoid so that the result is in [0,1]
 """
-dl.add(Dense(75, input_dim=dim, activation='sigmoid')) # 'tanh', oder 'sigmoid' oder relu
-dl.add(Dense(38, activation='sigmoid'))
-dl.add(Dense(19, activation='sigmoid'))
-dl.add(Dense(10, activation='sigmoid'))
-dl.add(Dense(4,activation='softmax')) #in case of binary: Sigmoid and just one output
-"""
 dl.add(Dense(250, input_dim=dim, activation='sigmoid'))
-dl.add(Dense(125, input_dim=dim, activation='sigmoid'))
-dl.add(Dense(62, input_dim=dim, activation='sigmoid'))
-dl.add(Dense(31, input_dim=dim, activation='sigmoid'))
-dl.add(Dense(15, input_dim=dim, activation='sigmoid'))
-dl.add(Dense(7, input_dim=dim, activation='sigmoid'))
+dl.add(Dense(125, activation='sigmoid'))
+dl.add(Dense(62, activation='sigmoid'))
+dl.add(Dense(31, activation='sigmoid'))
+dl.add(Dense(15, activation='sigmoid'))
+dl.add(Dense(7, activation='sigmoid'))
 dl.add(Dense(4,activation='softmax'))
+"""
+dl.add(Dense(416, input_dim=dim, activation='sigmoid'))
+dl.add(Dense(352, activation='sigmoid'))
+dl.add(Dense(160, activation='sigmoid'))
 # most confusing thing:
 # Input size is given to first hidden layer!
 
@@ -95,7 +94,7 @@ print('Compiling model ...')
 # Also choosing optimizer (stochastic gradient descent algorithm 'adam'):
 # https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/
 # Using accuracy-metric because of binary classification
-dl.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[f1_weighted])
+dl.compile(loss='categorical_crossentropy', optimizer=Adam(learning_rate=0.01), metrics=['accuracy'])
 
 print('Model compiled!')
 print('Fitting model...')
