@@ -16,11 +16,15 @@ X_train, X_test, y_train, y_test = get_matrix_data(['bl693_no_white_Pop05', 'bl6
 y_train = encode_labels(y_train)
 y_test_en = encode_labels(y_test)
 
+X_train, X_test, y_train, y_test = np.asarray(X_train), np.asarray(X_test), np.asarray(y_train), np.asarray(y_test)
+print(X_train.shape)
+print(y_train.shape)
 
+# https://towardsdatascience.com/a-simple-2d-cnn-for-mnist-digit-recognition-a998dbc1e79a
 
 model = Sequential() 
 # 32 = Output Filter, (3,3) = Kernel Size, (20,30,1) Höhe Breite Tiefe
-model.add(Conv2D(32, kernel_size = (3, 3), activation = 'relu', input_shape = (20, 30))) 
+model.add(Conv2D(32, kernel_size = (3, 3), activation = 'relu', input_shape = X_train.shape)) 
 model.add(Conv2D(64, (3, 3), activation = 'relu')) 
 model.add(MaxPooling2D(pool_size = (2, 2))) 
 model.add(Dropout(0.25)) 
