@@ -10,7 +10,9 @@ warnings.filterwarnings('ignore')
 from get_data_for_DL import get_data, use_adasyn, use_smote, encode_labels, decode_labels
 from keras import backend as K
 import tensorflow as tf
-import shap
+import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 class FeedforwardNetWork():
     
@@ -21,6 +23,13 @@ class FeedforwardNetWork():
         self.y_train = None
         self.y_test = None
         self.y_test_en = None
+
+    def shuffle_labels(self):
+        """
+        shuffles y-labels to have a f1-Score Benchamrk
+        """
+        random.shuffle(self.y_train)
+        random.shuffle(self.y_test)
 
     def get_data(self, liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\100_Transition_multiclass'):
         """
@@ -135,21 +144,42 @@ class FeedforwardNetWork():
         # Saved Model to file:
         # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
 
-    def featureSelection(self):
-        # https://github.com/slundberg/shap#deep-learning-example-with-deepexplainer-tensorflowkeras-models
-        # https://eli5.readthedocs.io/en/latest/overview.html
-        explainer = shap.TreeExplainer(self.model)
-        shap_values = explainer.shap_values(self.X_train)
+    def mapMeanWeights(self, layer=0):
+        """
+        Maps Wights to heatmap
+        """
+        weights = self.model.layers[0].get_weights()[0]
+        means = np.zeros(len(weights))
+        for i in range(len(weights)):
+            means[i] = np.mean(weights[i])
+        weights =  np.array(np.array_split(means, 5))
+        plt.imshow(weights, cmap='hot', interpolation='nearest')
+        plt.colorbar()
+        plt.ylabel('Neuronen')
+        plt.xlabel('Trials')
+        plt.title('Mean of first-layer weights')
+        plt.show()
 
-        # visualize the first prediction's explanation (use matplotlib=True to avoid Javascript)
-        shap.force_plot(explainer.expected_value, shap_values[0,:], self.X_train.iloc[0,:])
-        shap.summary_plot(shap_values, self.X_train, plot_type="bar") 
+    def plotWeights(self, layer=0):
+        """
+        Plots first Layer Weights
+        """
+        weights = self.model.layers[0].get_weights()[0]
+        plt.imshow(weights, cmap='hot', interpolation='nearest')
+        plt.colorbar()
+        plt.ylabel('Input-Layer')
+        plt.xlabel('First Layer')
+        plt.title('First Layer Weights (500x250)')
+        plt.show()
+        
 
 a = FeedforwardNetWork()
 a.get_data()
 a.use_smote()
+#a.shuffle_labels()
 a.encode_labels()
 a.makeModell()
 a.fitModel()
-#a.evaluateModel()
-a.featureSelection()
+a.evaluateModel()
+a.mapMeanWeights()
+a.plotWeights()

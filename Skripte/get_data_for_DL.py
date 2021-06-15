@@ -47,6 +47,54 @@ def get_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8, n=10, remove_day4=T
 
     return X_train, X_test, y_train, y_test
 
+def getMeanAndVariance(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8, n=10, remove_day4=True):
+    """
+    returns mean and variance of matrices
+    """
+    X_test = []
+    X_train = []   
+    y_test = []   
+    y_train = []      
+
+    for pop in pops:
+        df = pd.read_csv(path + '\\' + pop + '.csv')
+        header = set(df['label'].tolist())
+        trails = set()
+        if remove_day4:
+        # Removing Day 4 Trails
+            for i in header:
+                trail = eval(i)
+                if trail[0] != 4:
+                    trails.add(i)
+            header = trails
+        for trial in header:
+            # geting rows with (day, Trail)-label
+            rows = df.loc[df['label'] == trial].to_numpy()
+            # getting binary response label
+            response = rows[0][-1]  # 1 if (rows[0][-1] > 0) else 0
+            # getting PC-Matrix and shuffeling PC-Arrays randomly
+            rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+            data = []
+            for i in range(n):
+                np.random.shuffle(rows)
+                for j in range(int(len(rows) / 5)):
+                    a = rows[j*5: j*5+5]
+                    mean = np.mean(a)
+                    var = np.var(a)
+                    data.append([mean, var])
+
+            # Adding first part to training data, rest is test-data
+            cut = int(ratio*len(data))
+            for i in range(len(data)):
+                if i < cut:
+                    X_train.append(data[i])
+                    y_train.append(response)
+                else:
+                    X_test.append(data[i])
+                    y_test.append(response)
+
+    return np.asarray(X_train), np.asarray(X_test), np.asarray(y_train), np.asarray(y_test)
+
 def get_matrix_data(pops, path=r'D:\Dataframes\30_Transition_multiclass', balanced=True, ratio=0.8, n=10, remove_day4=True):
     """
     Gets trails matrices, upsampling by shuffleing the rows with balanced-parameter
@@ -139,7 +187,7 @@ def use_smote(X_train, X_test, y_train, y_test):
 def use_adasyn(X_train, X_test, y_train, y_test):
     ada = ADASYN()
     X_train, y_train = ada.fit_resample(X_train, y_train)
-    X_test, y_test = ada.fit_resample(X_test, y_test)
+    #X_test, y_test = ada.fit_resample(X_test, y_test)
     return X_train, X_test, y_train, y_test
 
 def encode_labels(y):

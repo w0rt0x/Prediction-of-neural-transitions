@@ -11,6 +11,7 @@ import random
 from sklearn.model_selection import GridSearchCV
 import seaborn as sns
 from imblearn.over_sampling import ADASYN, SMOTE
+from get_data_for_DL import getMeanAndVariance
 
 class NeuralEarthquake_Classifier():
 
@@ -391,6 +392,13 @@ class NeuralEarthquake_Classifier():
             # Reading new dataframes and removing index column
             self.dataframes.append(pd.read_csv(path + '\\' + i + '.csv'))
 
+    def set_data(self, X, x, Y, y):
+        self.X_train = X
+        self.X_test = x
+        self.y_train = Y
+        self.X_test = y
+
+
 def test_SVM():
     a = NeuralEarthquake_Classifier(
     r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
@@ -422,10 +430,7 @@ a.use_SMOTE()
 #a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
-#a.do_LR_CV(Cs=5, fit_intercept=False, cv=10)
-#print(a.get_f1())
-#a.plot_CM()
-a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
+a.do_SVM(kernel='poly', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
 #print(a.get_f1())
 print("Macro: ",a.get_f1(avg="macro"))
 print("Micro: ", a.get_f1(avg="micro"))
@@ -434,4 +439,3 @@ print("Weighted: ",a.get_f1(avg="weighted"))
 a.plot_CM()
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 #a.grid_search(C=c, Y=c)
-
