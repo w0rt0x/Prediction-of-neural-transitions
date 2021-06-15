@@ -392,12 +392,6 @@ class NeuralEarthquake_Classifier():
             # Reading new dataframes and removing index column
             self.dataframes.append(pd.read_csv(path + '\\' + i + '.csv'))
 
-    def set_data(self, X, x, Y, y):
-        self.X_train = X
-        self.X_test = x
-        self.y_train = Y
-        self.X_test = y
-
 
 def test_SVM():
     a = NeuralEarthquake_Classifier(
