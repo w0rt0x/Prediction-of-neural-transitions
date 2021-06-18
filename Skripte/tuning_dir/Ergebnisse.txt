@@ -1,0 +1,122 @@
+Trial 10 Complete [00h 03m 46s]
+val_accuracy: 0.8837209145228068
+
+Best val_accuracy So Far: 0.8962264060974121
+Total elapsed time: 00h 48m 28s
+Results summary
+Results in tuning_dir\machinecurve_example
+Showing 10 best trials
+Objective(name='val_accuracy', direction='max')
+Trial summary
+Hyperparameters:
+num_layers: 2
+units_0: 96
+units_1: 256
+units_2: 96
+units_3: 384
+units_4: 96
+units_5: 160
+units_6: 256
+Score: 0.8962264060974121
+Trial summary
+Hyperparameters:
+num_layers: 2
+units_0: 416
+units_1: 480
+units_2: 192
+units_3: 64
+units_4: 288
+units_5: 128
+units_6: 448
+Score: 0.8915460109710693
+Trial summary
+Hyperparameters:
+num_layers: 3
+units_0: 384
+units_1: 160
+units_2: 480
+units_3: 64
+units_4: 352
+units_5: 96
+units_6: 224
+units_7: 352
+Score: 0.8837209145228068
+Trial summary
+Hyperparameters:
+num_layers: 5
+units_0: 512
+units_1: 352
+units_2: 32
+units_3: 32
+units_4: 32
+Score: 0.8780166705449423
+Trial summary
+Hyperparameters:
+num_layers: 4
+units_0: 224
+units_1: 288
+units_2: 64
+units_3: 384
+units_4: 256
+units_5: 416
+units_6: 32
+Score: 0.8744332393010458
+Trial summary
+Hyperparameters:
+num_layers: 6
+units_0: 352
+units_1: 448
+units_2: 224
+units_3: 128
+units_4: 416
+units_5: 320
+units_6: 288
+units_7: 384
+Score: 0.6701038579146067
+Trial summary
+Hyperparameters:
+num_layers: 7
+units_0: 320
+units_1: 352
+units_2: 320
+units_3: 288
+units_4: 32
+units_5: 32
+units_6: 32
+Score: 0.2808249294757843
+Trial summary
+Hyperparameters:
+num_layers: 8
+units_0: 288
+units_1: 288
+units_2: 192
+units_3: 288
+units_4: 128
+units_5: 96
+units_6: 64
+units_7: 32
+Score: 0.2808249294757843
+Trial summary
+Hyperparameters:
+num_layers: 7
+units_0: 416
+units_1: 128
+units_2: 448
+units_3: 288
+units_4: 448
+units_5: 320
+units_6: 448
+units_7: 320
+Score: 0.2808249294757843
+Trial summary
+Hyperparameters:
+num_layers: 8
+units_0: 512
+units_1: 256
+units_2: 96
+units_3: 384
+units_4: 256
+units_5: 416
+units_6: 96
+units_7: 416
+Score: 0.2808249294757843

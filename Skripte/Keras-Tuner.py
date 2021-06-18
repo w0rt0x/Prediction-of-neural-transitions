@@ -37,7 +37,7 @@ class MyHyperModel(HyperModel):
                                         activation='sigmoid'))
         model.add(Dense(self.num_classes, activation='softmax'))
         model.compile(loss='categorical_crossentropy', 
-               optimizer=Adam(hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])),
+               optimizer='adam', #Adam(hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])),
                metrics=['accuracy'])
         return model
 
