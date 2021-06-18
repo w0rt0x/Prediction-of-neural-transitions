@@ -155,8 +155,8 @@ class FeedforwardNetWork():
         weights =  np.array(np.array_split(means, 5))
         plt.imshow(weights, cmap='hot', interpolation='nearest')
         plt.colorbar()
-        plt.ylabel('Neuronen')
-        plt.xlabel('Trials')
+        plt.ylabel('Trials')
+        plt.xlabel('Neuronen')
         plt.title('Mean of first-layer weights')
         plt.show()
 

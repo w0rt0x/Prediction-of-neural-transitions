@@ -214,7 +214,10 @@ class NeuralEarthquake_Classifier():
                     np.random.shuffle(rows)
                     for j in range(int(len(rows) / 5)):
                         a = rows[j*5: j*5+5]
-                        data.append(np.concatenate(a))
+                        #data.append(np.concatenate(a))
+                        mean = np.mean(a)
+                        var = np.var(a)
+                        data.append([mean, var])
 
                 # Adding first part to training data, rest is test-data
                 cut = int(ratio*len(data))
@@ -420,11 +423,11 @@ a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
 #a.split_transitions()
 #a.population_splitter(['bl684_no_white_Pop03', 'bl689-1_one_white_Pop09', 'bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07'])
 a.split_data()
-a.use_SMOTE()
+#a.use_SMOTE()
 #a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
-a.do_SVM(kernel='poly', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
+a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
 #print(a.get_f1())
 print("Macro: ",a.get_f1(avg="macro"))
 print("Micro: ", a.get_f1(avg="micro"))
