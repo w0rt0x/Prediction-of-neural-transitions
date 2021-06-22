@@ -3,11 +3,24 @@ import numpy as np
 from get_data_for_DL import getMeanAndVariance
 from copy import deepcopy
 
-X, x, Y, y = getMeanAndVariance(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\100_Transition_multiclass')
+X, Y = getMeanAndVariance(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\100_Transition_multiclass')
 
-X = np.concatenate((X, x))
-Y = np.concatenate((Y, y))
+x = []
+y = []
+table = {"0->0":0, "0->1":1, "1->0":2, "1->1":3}
+for i in range(len(X)):
+    x.append(X[i][0])
+    y.append(Y[i])
 
+plt.scatter(x, y)
+
+plt.ylabel('Transitions')
+plt.xlabel('Mean Acticity')
+#ax.set_xticks(["0->0", "0->1", "1->0","1->1"])
+plt.axvline(x=0.4, color='grey')
+plt.show()
+
+"""
 d = dict()
 for i in range(len(Y)):
     if Y[i] in d:
@@ -17,16 +30,22 @@ for i in range(len(Y)):
     else:
         d[Y[i]] = [X[i]]
 
+table = {"0->0":0, "0->1":1, "1->0":2, "1->1":3}
 for key in list(d.keys()):
     d[key] = np.asarray(d[key])
+"""
+   
 
-    plt.plot(d[key], marker='.', linestyle='none', markersize=7, label=key)
+
+"""
+plt.plot(d[key], label=key)
 
 plt.ylabel('Variance')
 plt.xlabel('Mean')
 plt.legend()
+plt.axvline(x=0.4, color='grey')
 plt.show()
-
+"""
 """
 for i in range(len(X)):
 

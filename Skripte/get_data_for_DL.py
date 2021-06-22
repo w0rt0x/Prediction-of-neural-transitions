@@ -51,11 +51,9 @@ def getMeanAndVariance(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8, n=10, rem
     """
     returns mean and variance of matrices
     """
-    X_test = []
-    X_train = []   
-    y_test = []   
-    y_train = []      
-
+   
+    data = []
+    responses = []
     for pop in pops:
         df = pd.read_csv(path + '\\' + pop + '.csv')
         header = set(df['label'].tolist())
@@ -74,26 +72,13 @@ def getMeanAndVariance(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8, n=10, rem
             response = rows[0][-1]  # 1 if (rows[0][-1] > 0) else 0
             # getting PC-Matrix and shuffeling PC-Arrays randomly
             rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-            data = []
-            for i in range(n):
-                np.random.shuffle(rows)
-                for j in range(int(len(rows) / 5)):
-                    a = rows[j*5: j*5+5]
-                    mean = np.mean(a)
-                    var = np.var(a)
-                    data.append([mean, var])
+            for j in range(len(rows)):
+                mean = np.mean(rows[j])
+                var = np.var(rows[j])
+                data.append([mean, var])
+                responses.append(response)
 
-            # Adding first part to training data, rest is test-data
-            cut = int(ratio*len(data))
-            for i in range(len(data)):
-                if i < cut:
-                    X_train.append(data[i])
-                    y_train.append(response)
-                else:
-                    X_test.append(data[i])
-                    y_test.append(response)
-
-    return np.asarray(X_train), np.asarray(X_test), np.asarray(y_train), np.asarray(y_test)
+    return np.asarray(data), np.asarray(responses)
 
 def get_matrix_data(pops, path=r'D:\Dataframes\30_Transition_multiclass', balanced=True, ratio=0.8, n=10, remove_day4=True):
     """
@@ -131,8 +116,12 @@ def get_matrix_data(pops, path=r'D:\Dataframes\30_Transition_multiclass', balanc
             for i in range(len(matrix)):
                 matrix[i] = matrix[i].tolist()
             # splitting data into training and test
-            data = []
-            label = []
+            X_train.append(matrix[:10])
+            y_train.append(rows[0][-1])
+            X_test.append(matrix[10:])
+            y_test.append(rows[0][-1])
+
+            """
             for i in range(n):
                 m = deepcopy(matrix)
                 random.shuffle(m)
@@ -144,9 +133,8 @@ def get_matrix_data(pops, path=r'D:\Dataframes\30_Transition_multiclass', balanc
                     #X_test.append(np.array(m))
                     X_test.append(m)
                     y_test.append(rows[0][-1])
-
+            """
     return X_train, X_test, y_train, y_test
-    #return np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
 
 def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
     X_test = []

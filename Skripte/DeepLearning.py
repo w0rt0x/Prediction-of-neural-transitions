@@ -13,6 +13,7 @@ import tensorflow as tf
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from copy import deepcopy
 
 class FeedforwardNetWork():
     
@@ -53,19 +54,19 @@ class FeedforwardNetWork():
         # Sequentiel model, layers are added one after another
         dim = len(self.X_train[0])
         dl = Sequential()
-        dl.add(Dense(96, input_dim=dim, activation='sigmoid'))
-        dl.add(Dense(256, activation='sigmoid'))
-        dl.add(Dense(96, activation='sigmoid'))
-        dl.add(Dense(384, activation='sigmoid'))
-        dl.add(Dense(96, activation='sigmoid'))
-        dl.add(Dense(160, activation='sigmoid'))
-        dl.add(Dense(256, activation='sigmoid'))
-        #dl.add(Dense(250, input_dim=dim, activation='sigmoid'))
-        #dl.add(Dense(125, activation='sigmoid'))
-        #dl.add(Dense(62, activation='sigmoid'))
-        #dl.add(Dense(31, activation='sigmoid'))
-        #dl.add(Dense(15, activation='sigmoid'))
-        #dl.add(Dense(7, activation='sigmoid'))
+        """
+        dl.add(Dense(512, input_dim=dim, activation='sigmoid'))
+        dl.add(Dense(352, activation='sigmoid'))
+        dl.add(Dense(32, activation='sigmoid'))
+        dl.add(Dense(32, activation='sigmoid'))
+        dl.add(Dense(32, activation='sigmoid'))
+        """
+        dl.add(Dense(250, input_dim=dim, activation='sigmoid'))
+        dl.add(Dense(125, activation='sigmoid'))
+        dl.add(Dense(62, activation='sigmoid'))
+        dl.add(Dense(31, activation='sigmoid'))
+        dl.add(Dense(15, activation='sigmoid'))
+        dl.add(Dense(7, activation='sigmoid'))
         dl.add(Dense(4,activation='softmax'))
 
         # Choosing the loss-function, more infos here:
@@ -178,7 +179,48 @@ class FeedforwardNetWork():
         plt.xlabel('First Layer')
         plt.title('First Layer Weights (500x250)')
         plt.show()
+
+    def map_input(self):
+        weights = self.model.layers[0].get_weights()[0]
+        weights = np.asarray(weights)
+        y_pred = decode_labels(self.model.predict_classes(self.X_test))
+        d = dict()
+
+        for i in range(len(y_pred)):
+            # Only for correct predictions
+            if y_pred[i] == self.y_test[i]:
+                if y_pred[i] in d:
+                    l = deepcopy(d[y_pred[i]])
+                    l.append(self.X_test[i])
+                    d[y_pred[i]] = l
+                else:
+                    d[y_pred[i]] = [self.X_test[i]]
         
+        keys = list(d.keys())
+        samples = []
+        for key in keys:
+            samples.append(random.choice(d[key]))
+        del d
+
+        matrices = []
+        for i in range(len(samples)):
+            w = deepcopy(weights)
+            vec = samples[i]
+            label = keys[i]
+            for j in range(len(vec)):
+                w[j] = weights[j] * vec[j]
+
+            matrices.append(w)
+        matrices = np.asarray(matrices)
+        mini = np.min(matrices)
+        maxi = np.max(matrices)
+        for w in range(len(matrices)):
+            plt.imshow(matrices[w], cmap='hot', interpolation='nearest', vmin=mini, vmax=maxi)
+            plt.colorbar()
+            plt.ylabel('Input-Layer')
+            plt.xlabel('First Layer')
+            plt.title(keys[w])
+            plt.show()
 
 a = FeedforwardNetWork()
 a.get_data()
@@ -188,5 +230,6 @@ a.encode_labels()
 a.makeModell()
 a.fitModel()
 a.evaluateModel()
+a.map_input()
 #a.mapMeanWeights()
 #a.plotWeights()
