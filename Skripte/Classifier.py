@@ -210,14 +210,11 @@ class NeuralEarthquake_Classifier():
                 rows = np.delete(rows, np.s_[0,1,-1], axis=1)
 
                 data = []
-                for i in range(n):
-                    np.random.shuffle(rows)
-                    for j in range(int(len(rows) / 5)):
-                        a = rows[j*5: j*5+5]
-                        #data.append(np.concatenate(a))
-                        mean = np.mean(a)
-                        var = np.var(a)
-                        data.append([mean, var])
+                #for i in range(n):
+                np.random.shuffle(rows)
+                for j in range(int(len(rows) / 5)):
+                    a = rows[j*5: j*5+5]
+                    data.append(np.concatenate(a))
 
                 # Adding first part to training data, rest is test-data
                 cut = int(ratio*len(data))
@@ -396,6 +393,7 @@ class NeuralEarthquake_Classifier():
             self.dataframes.append(pd.read_csv(path + '\\' + i + '.csv'))
 
 
+
 def test_SVM():
     a = NeuralEarthquake_Classifier(
     r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
@@ -417,13 +415,14 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\30_Transition'):
     return test
 
 p = r'D:\Dataframes\100_Transition_multiclass'
+p = r'D:\Dataframes\PCA_Multiclass'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
 a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
-#a.random_split()
+a.random_split()
 #a.split_transitions()
 #a.population_splitter(['bl684_no_white_Pop03', 'bl689-1_one_white_Pop09', 'bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07'])
-a.split_data()
-#a.use_SMOTE()
+#a.split_data()
+a.use_SMOTE()
 #a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()

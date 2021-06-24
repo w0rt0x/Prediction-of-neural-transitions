@@ -7,7 +7,7 @@ from sklearn.metrics import classification_report
 from sklearn import metrics
 import warnings
 warnings.filterwarnings('ignore')
-from get_data_for_DL import get_data, use_adasyn, use_smote, encode_labels, decode_labels
+from get_data_for_DL import get_data, use_adasyn, use_smote, encode_labels, decode_labels, random_split
 from keras import backend as K
 import tensorflow as tf
 import random
@@ -152,6 +152,9 @@ class FeedforwardNetWork():
         # Saved Model to file:
         # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
 
+    def get_single_trials(self,liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\100_Transition_multiclass'):
+        self.X_train, self.X_test, self.y_train, self.y_test = random_split(pops=liste, path=path)
+
     def mapMeanWeights(self, layer=0):
         """
         Maps Wights to heatmap
@@ -223,13 +226,17 @@ class FeedforwardNetWork():
             plt.show()
 
 a = FeedforwardNetWork()
-a.get_data()
+#a.get_data()
+a.get_single_trials(path=r'D:\Dataframes\PCA_Multiclass')
 a.use_smote()
 #a.shuffle_labels()
 a.encode_labels()
 a.makeModell()
 a.fitModel()
 a.evaluateModel()
-a.map_input()
+#a.map_input()
 #a.mapMeanWeights()
 #a.plotWeights()
+
+
+#['bl684_no_white_Pop03',' bl689-1_one_white_Pop09','bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07']

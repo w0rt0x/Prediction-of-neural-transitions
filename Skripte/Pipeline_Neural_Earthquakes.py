@@ -522,7 +522,32 @@ def extract_all_neurons(n=30, path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-
         a = None
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-extract_all_neurons(n=100, destination=r'D:\Dataframes\100_Transition_multiclass', binary=False)
+def pca_multi(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\30_mostActive_Neurons', binary=True):
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+
+    # removing dubs
+    populations = list(populations)
+
+    for pop in populations:
+
+        # read in data
+        a = NeuralEarthquake_singlePopulation(pop)
+        a.read_population()
+        a.create_full_df()
+        a.add_activity_to_df()
+        a.make_transition_labels(binary=binary)
+        a.df_to_file(destination)
+        a = None
+        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
+
+pca_multi(destination=r'D:\Dataframes\PCA_Multiclass', binary=False)
 #a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop05", "PCA", dimension=20)
 #a.read_population()
 #a.get_most_active_neurons()

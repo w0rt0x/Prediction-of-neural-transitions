@@ -3,6 +3,7 @@ import numpy as np
 import random
 import pandas as pd
 from copy import deepcopy
+from sklearn.model_selection import train_test_split
 
 def get_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8, n=10, remove_day4=True):
     X_test = []
@@ -29,11 +30,11 @@ def get_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8, n=10, remove_day4=T
             # getting PC-Matrix and shuffeling PC-Arrays randomly
             rows = np.delete(rows, np.s_[0,1,-1], axis=1)
             data = []
-            for i in range(n):
-                np.random.shuffle(rows)
-                for j in range(int(len(rows) / 5)):
-                    a = rows[j*5: j*5+5]
-                    data.append(np.concatenate(a))
+            #for i in range(n):
+            np.random.shuffle(rows)
+            for j in range(int(len(rows) / 5)):
+                a = rows[j*5: j*5+5]
+                data.append(np.concatenate(a))
 
             # Adding first part to training data, rest is test-data
             cut = int(ratio*len(data))
@@ -116,24 +117,22 @@ def get_matrix_data(pops, path=r'D:\Dataframes\30_Transition_multiclass', balanc
             for i in range(len(matrix)):
                 matrix[i] = matrix[i].tolist()
             # splitting data into training and test
+            """
             X_train.append(matrix[:10])
             y_train.append(rows[0][-1])
             X_test.append(matrix[10:])
             y_test.append(rows[0][-1])
-
             """
-            for i in range(n):
-                m = deepcopy(matrix)
-                random.shuffle(m)
-                if i < int(n*ratio):
-                    #X_train.append(np.array(m))
-                    X_train.append(m)
-                    y_train.append(rows[0][-1])
-                else:
-                    #X_test.append(np.array(m))
-                    X_test.append(m)
-                    y_test.append(rows[0][-1])
-            """
+            #for i in range(n):
+                #m = deepcopy(matrix)
+                #random.shuffle(m)
+            #if i < int(n*ratio):
+            X_train.append(matrix[:10])
+            y_train.append(rows[0][-1])
+            #else:
+            X_test.append(matrix[10:])
+            y_test.append(rows[0][-1])
+            
     return X_train, X_test, y_train, y_test
 
 def get_PCA_data(pops, path=r'r"D:\Dataframes\20PCs', ratio=0.8):
@@ -193,3 +192,24 @@ def decode_labels(y):
     for i in range(len(y)):
         y_hot.append(table[y[i]])
     return y_hot
+
+def random_split(pops, path=r'r"D:\Dataframes\20PCs', split_ratio=0.2, randomState=None, strat=None):
+    dataframes = []
+    for pop in pops:
+        df = pd.read_csv(path + '\\' + pop + '.csv')
+        dataframes.append(df)
+
+    X = []
+    y = []
+
+    for df in dataframes:
+        for index, row in df.iterrows():
+            if eval(row[1])[0] != 4:
+                X.append(row[2:-1].tolist())
+                y.append(row[-1])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=split_ratio, random_state=randomState, stratify=strat)
+    X, y = None, None
+
+    return X_train, X_test, y_train, y_test
