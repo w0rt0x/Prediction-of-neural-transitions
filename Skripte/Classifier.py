@@ -43,7 +43,8 @@ class NeuralEarthquake_Classifier():
             for index, row in df.iterrows():
                 if eval(row[1])[0] != 4:
                     X.append(row[2:-1].tolist())
-                    y.append(row[-1])
+                    #y.append(row[-1])
+                    y.append(1 if (int(row[-1]) > 0) else 0)
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=split_ratio, random_state=randomState, stratify=strat)
@@ -412,7 +413,7 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\30_Transition'):
     print(test)
     return test
 
-p = r'D:\Dataframes\isomap_multi_2d'
+p = r'D:\Dataframes\isomap_bin_2d'
 #p = r'D:\Dataframes\30_most_active'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
 #a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
