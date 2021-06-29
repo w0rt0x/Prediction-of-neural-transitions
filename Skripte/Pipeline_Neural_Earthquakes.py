@@ -10,6 +10,7 @@ from scipy.io import loadmat
 import math
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
+from sklearn.manifold import Isomap
 from sklearn.manifold import TSNE
 import plotly.express as px
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
@@ -139,6 +140,16 @@ class NeuralEarthquake_singlePopulation():
 
         return pca.components_.T.tolist(), sum(pca.explained_variance_ratio_)
 
+    def do_isomap(self, X):
+        """
+        does isomap on given data-set
+        """
+        # Source: https://benalexkeen.com/isomap-for-dimensionality-reduction-in-python/
+        iso = Isomap(n_components=self.dimension)
+        iso.fit(X)
+        manifold_2Da = iso.transform(X)
+        return manifold_2Da.tolist()
+
     def get_loading_data(self, path=r'D:\Dataframes\Loadings'):
         """
         Calculates each Loading matrix (Trial x PCs) and their mean/total-sum value,
@@ -175,7 +186,7 @@ class NeuralEarthquake_singlePopulation():
     def create_full_df(self):
         """
         creates a pandas dataframe for all stimuli 
-        PCA or tSNE has been applied beforehand
+        PCA or tSNE or isomap has been applied beforehand
         """
         if self.reduction_method == 'PCA':
             reduced_data, var = self.do_PCA(self.data)
@@ -190,6 +201,15 @@ class NeuralEarthquake_singlePopulation():
             
         elif self.reduction_method == 'tSNE':
             pass
+        elif self.reduction_method == 'isomap':
+            reduced_data = self.do_isomap(self.data.T)
+            for i in range(len(reduced_data)):
+                reduced_data[i].insert(0, self.header[i])
+            cols = ['label']
+            for i in range(self.dimension):
+                cols.append('PC' + str((i+1)))
+
+            self.dataframe = pd.DataFrame(reduced_data, columns=cols)
         else:
             print('Invalid reduction Method! Try PCA or tSNE!')
 
@@ -425,7 +445,7 @@ def create_all_df(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten',
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
         # read in data
-        a = NeuralEarthquake_singlePopulation(pop, "PCA", dimension=dim)
+        a = NeuralEarthquake_singlePopulation(pop, reduction_method='PCA', dimension=dim)
         a.read_population()
         a.create_full_df()
         a.add_activity_to_df()
@@ -547,7 +567,32 @@ def pca_multi(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', des
         a = None
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-pca_multi(destination=r'D:\Dataframes\PCA_Multiclass', binary=False)
+def do_isomap(path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten', destination=r'D:\Dataframes\30_mostActive_Neurons', binary=True, dim=2):
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+
+    # removing dubs
+    populations = list(populations)
+
+    for pop in populations:
+
+        # read in data
+        a = NeuralEarthquake_singlePopulation(pop, reduction_method='isomap', dimension=dim)
+        a.read_population()
+        a.create_full_df()
+        #a.add_activity_to_df()
+        a.make_transition_labels(binary=binary)
+        a.df_to_file(destination)
+        a = None
+        print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
+
+do_isomap(destination=r'D:\Dataframes\isomap_multi', binary=False)
 #a = NeuralEarthquake_singlePopulation("bl693_no_white_Pop05", "PCA", dimension=20)
 #a.read_population()
 #a.get_most_active_neurons()

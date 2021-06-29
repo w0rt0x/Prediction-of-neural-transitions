@@ -279,9 +279,6 @@ class NeuralEarthquake_Classifier():
         #df = pd.DataFrame.from_dict(clf.cv_results_)
         #df.to_csv(r'C:\Users\Sam\Desktop\grid1Pop.csv')
            
-    def create_labels_for_transitions(self):
-        """changes y_train and test so that the transitions can be predicted"""
-        return 0
 
     def get_accuracy(self):
         return self.accuracy
@@ -338,6 +335,7 @@ class NeuralEarthquake_Classifier():
         self.accuracy = svm.score(self.X_test, self.y_test)
         self.cm = metrics.confusion_matrix(self.y_test, svm.predict(self.X_test), normalize='true')
         self.classifier = svm
+
 
     def get_cm(self):
         """ returns Confusion matrix"""
@@ -414,15 +412,16 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\30_Transition'):
     print(test)
     return test
 
-p = r'D:\Dataframes\100_Transition_multiclass'
-p = r'D:\Dataframes\PCA_Multiclass'
+p = r'D:\Dataframes\isomap_multi_2d'
+#p = r'D:\Dataframes\30_most_active'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
-a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
+#a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
 a.random_split()
+#a.splitter_for_multiple_dataframes()
 #a.split_transitions()
 #a.population_splitter(['bl684_no_white_Pop03', 'bl689-1_one_white_Pop09', 'bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07'])
 #a.split_data()
-a.use_SMOTE()
+#a.use_SMOTE()
 #a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()

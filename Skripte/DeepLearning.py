@@ -227,7 +227,7 @@ class FeedforwardNetWork():
 
 a = FeedforwardNetWork()
 #a.get_data()
-a.get_single_trials(path=r'D:\Dataframes\PCA_Multiclass')
+a.get_single_trials(liste=['bl693_no_white_Pop05'], path=r'D:\Dataframes\PCA_Multiclass')
 a.use_smote()
 #a.shuffle_labels()
 a.encode_labels()
