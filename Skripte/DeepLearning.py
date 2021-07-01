@@ -61,6 +61,10 @@ class FeedforwardNetWork():
         dl.add(Dense(32, activation='sigmoid'))
         dl.add(Dense(32, activation='sigmoid'))
         """
+        dl.add(Dense(10, input_dim=dim, activation='sigmoid'))
+        dl.add(Dense(5, activation='sigmoid'))
+        dl.add(Dense(4,activation='softmax'))
+        """
         dl.add(Dense(250, input_dim=dim, activation='sigmoid'))
         dl.add(Dense(125, activation='sigmoid'))
         dl.add(Dense(62, activation='sigmoid'))
@@ -68,7 +72,7 @@ class FeedforwardNetWork():
         dl.add(Dense(15, activation='sigmoid'))
         dl.add(Dense(7, activation='sigmoid'))
         dl.add(Dense(4,activation='softmax'))
-
+        """
         # Choosing the loss-function, more infos here:
         # https://machinelearningmastery.com/how-to-choose-loss-functions-when-training-deep-learning-neural-networks/
         # Also choosing optimizer (stochastic gradient descent algorithm 'adam'):
@@ -227,7 +231,8 @@ class FeedforwardNetWork():
 
 a = FeedforwardNetWork()
 #a.get_data()
-a.get_single_trials(liste=['bl693_no_white_Pop05'], path=r'D:\Dataframes\PCA_Multiclass')
+#a.get_single_trials(liste=['bl693_no_white_Pop05'], path=r'D:\Dataframes\ISOMAP\multi_20')
+a.get_data(liste=['bl693_no_white_Pop05'], path=r'D:\Dataframes\ISOMAP\multi_20')
 a.use_smote()
 #a.shuffle_labels()
 a.encode_labels()

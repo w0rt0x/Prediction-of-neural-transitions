@@ -43,8 +43,7 @@ class NeuralEarthquake_Classifier():
             for index, row in df.iterrows():
                 if eval(row[1])[0] != 4:
                     X.append(row[2:-1].tolist())
-                    #y.append(row[-1])
-                    y.append(1 if (int(row[-1]) > 0) else 0)
+                    y.append(row[-1])
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X, y, test_size=split_ratio, random_state=randomState, stratify=strat)
@@ -73,7 +72,7 @@ class NeuralEarthquake_Classifier():
                 # geting rows with (day, Trail)-label
                 rows = df.loc[df['label'] == trial].to_numpy()
                 # getting binary response label
-                response = 1 if (rows[0][-1] > 0) else 0
+                response = rows[0][-1]#1 if (rows[0][-1] > 0) else 0
                 # getting PC-Matrix and shuffeling PC-Arrays randomly
                 rows = np.delete(rows, np.s_[0,1,-1], axis=1)
                 # shuffle PC-Matrix
@@ -142,7 +141,7 @@ class NeuralEarthquake_Classifier():
 
         return X, y
 
-    def splitter_for_multiple_dataframes(self, ratio=0.8):
+    def splitter_for_multiple_dataframes(self, ratio=0.75):
         """ 
         The given list of dataframes will be used to set the class attributes
         X_train, X_test, etc by taking from all trials the same ratio of data.
@@ -158,7 +157,7 @@ class NeuralEarthquake_Classifier():
                 # geting rows with (day, Trail)-label
                 rows = df.loc[df['label'] == trial].to_numpy()
                 # getting binary response label
-                response = 1 if (rows[0][-1] > 0) else 0
+                response = rows[0][-1]#1 if (rows[0][-1] > 0) else 0
                 # getting PC-Matrix and shuffeling PC-Arrays randomly
                 rows = np.delete(rows, np.s_[0,1,-1], axis=1)
                 # shuffle PC-Matrix
@@ -232,7 +231,6 @@ class NeuralEarthquake_Classifier():
         self.y_train = y_train
         self.X_test = X_test
         self.y_test = y_test
-
 
     def shuffle_labels(self):
         """
@@ -413,16 +411,16 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\30_Transition'):
     print(test)
     return test
 
-p = r'D:\Dataframes\isomap_bin_2d'
+p = r'C:\Users\Sam\Desktop'
 #p = r'D:\Dataframes\30_most_active'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
 #a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
-a.random_split()
-#a.splitter_for_multiple_dataframes()
+#a.random_split()
+a.splitter_for_multiple_dataframes()
 #a.split_transitions()
 #a.population_splitter(['bl684_no_white_Pop03', 'bl689-1_one_white_Pop09', 'bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07'])
 #a.split_data()
-#a.use_SMOTE()
+a.use_SMOTE()
 #a.use_ADASYN()
 #a.shuffle_labels()
 #a.prepare_binary_labels()
@@ -431,7 +429,6 @@ a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='b
 print("Macro: ",a.get_f1(avg="macro"))
 print("Micro: ", a.get_f1(avg="micro"))
 print("Weighted: ",a.get_f1(avg="weighted"))
-#print("Accuracy: ",a.get_accuracy())
 a.plot_CM()
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 #a.grid_search(C=c, Y=c)
