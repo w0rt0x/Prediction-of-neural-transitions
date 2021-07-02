@@ -8,7 +8,8 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
 from sklearn.manifold import Isomap
 from sklearn.manifold import TSNE
-
+import umap
+import matplotlib.pyplot as plt
 
 class Preprocessor():
 
@@ -84,9 +85,14 @@ class Preprocessor():
         iso.fit(self.data.T)
         self.reduced_data = iso.transform(self.data.T)
 
-    def do_TSNE(self, dim, seed=1):
+    def do_TSNE(self, dim, seed=1, perplexity=30):
         # https://towardsdatascience.com/t-sne-clearly-explained-d84c537f53a 
-        self.reduced_data = TSNE(n_components=dim, random_state=seed).fit_transform(self.data.T)
+        self.reduced_data = TSNE(n_components=dim, random_state=seed, perplexity=perplexity).fit_transform(self.data.T)
+
+    def do_umap(self, dim, seed=1):
+        reducer = umap.UMAP(n_components=dim, random_state=seed)
+        self.reduced_data = reducer.fit_transform(self.data.T)
+        print(self.reduced_data.shape)
 
     def create_binary_transition_labels(self):
         """
@@ -181,6 +187,33 @@ class Preprocessor():
         """
         self.data = StandardScaler().fit_transform(self.data)
 
+    def plot_data(self, title):
+        """
+        Does a scatter plot for the 2D reduced Data,
+        Source:
+        https://pythonspot.com/matplotlib-scatterplot/
+        """
+        cols = {"0->0" : "cyan", "0->1" : "lime", "1->0" : "red", "1->1" : "yellow"}
+
+        # Create plot
+        fig = plt.figure()
+        #plt.style.use('dark_background')
+        ax = fig.add_subplot(1, 1, 1)
+
+        for i in range(len(self.reduced_data)):
+            if self.label[i] != '0':
+                x = self.reduced_data[i][0]
+                y = self.reduced_data[i][1]
+                c = cols[self.label[i]]
+                l = self.label[i]
+                ax.scatter(x, y, alpha=0.8, c=c,label=l)
+        
+        plt.ylabel('Component 1')
+        plt.xlabel('Component 1')
+        plt.title(title)
+        plt.legend(cols, loc=2)
+        plt.show()
+
 def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
     populations = set()
@@ -201,11 +234,12 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-prepare_data(destination=r'D:\Dataframes\tSNE\multi_2d', dim=2)
+#prepare_data(destination=r'D:\Dataframes\tSNE\multi_2d_p50', dim=2)
 
-#pop = "bl693_no_white_Pop05"
-#a = Preprocessor(pop)
-#a.do_TSNE(2)
-#a.create_multiclass_transition_labels()
+pop = "bl693_no_white_Pop05"
+a = Preprocessor(pop)
+a.do_umap(2)
+a.create_multiclass_transition_labels()
+a.plot_data("uMAP on bl693_no_white_Pop05")
 ##a.get_most_active_neurons()
 #a.df_to_file(r'C:\Users\Sam\Desktop')
