@@ -261,7 +261,7 @@ class NeuralEarthquake_Classifier():
             for y in range(len(Y)):
                 svm = SVC(kernel=kernel, C=C[c], degree=degree, gamma=Y[y], class_weight=class_weight).fit(self.X_train, self.y_train)
                 self.classifier = svm
-                f1 = metrics.f1_score(self.y_test, self.classifier.predict(self.X_test))
+                f1 = metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average="weighted")
                 results[c].append(round(f1,4))
         
         ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=C, yticklabels=Y)
@@ -401,7 +401,7 @@ def test_SVM():
     print(cm)
     print(acc)
 
-def get_n_random(n, remove=None, path=r'D:\Dataframes\30_Transition'):
+def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     files = [f for f in os.listdir(path) if isfile(join(path, f))]
     for i in range(len(files)):
         files[i] = files[i][:-4]
@@ -411,19 +411,14 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\30_Transition'):
     print(test)
     return test
 
-p = r'C:\Users\Sam\Desktop'
-#p = r'D:\Dataframes\30_most_active'
+p = r'D:\Dataframes\ISOMAP\2'
 a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
 #a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
 #a.random_split()
 a.splitter_for_multiple_dataframes()
 #a.split_transitions()
-#a.population_splitter(['bl684_no_white_Pop03', 'bl689-1_one_white_Pop09', 'bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07'])
-#a.split_data()
 a.use_SMOTE()
-#a.use_ADASYN()
 #a.shuffle_labels()
-#a.prepare_binary_labels()
 a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
 #print(a.get_f1())
 print("Macro: ",a.get_f1(avg="macro"))

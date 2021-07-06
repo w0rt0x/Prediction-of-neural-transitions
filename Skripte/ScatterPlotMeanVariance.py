@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np 
 import pandas as pd
 
-path = r'D:\Dataframes\tSNE\multi_2d'
+path = r'D:\Dataframes\tSNE\perp5'
 pop = 'bl693_no_white_Pop05'
 df = pd.read_csv(path + '\\' + pop + '.csv')
 header = df['label'].tolist()
@@ -22,8 +22,8 @@ for i in range(len(label)):
 
 plt.scatter(x, y, c=cols, cmap='plasma')
 
-plt.ylabel('ISOMAP Component 1')
-plt.xlabel('ISOMAP Component 1')
-#plt.legend(label)
+plt.ylabel('Component 2')
+plt.xlabel('Component 1')
+plt.legend(label)
 plt.show()
 

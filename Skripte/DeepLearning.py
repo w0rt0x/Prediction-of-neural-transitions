@@ -61,8 +61,10 @@ class FeedforwardNetWork():
         dl.add(Dense(32, activation='sigmoid'))
         dl.add(Dense(32, activation='sigmoid'))
         """
-        dl.add(Dense(10, input_dim=dim, activation='sigmoid'))
-        dl.add(Dense(5, activation='sigmoid'))
+        dl.add(Dense(50, input_dim=dim, activation='sigmoid'))
+        dl.add(Dense(25, activation='sigmoid'))
+        dl.add(Dense(12, activation='sigmoid'))
+        dl.add(Dense(6, activation='sigmoid'))
         dl.add(Dense(4,activation='softmax'))
         """
         dl.add(Dense(250, input_dim=dim, activation='sigmoid'))
@@ -232,7 +234,7 @@ class FeedforwardNetWork():
 a = FeedforwardNetWork()
 #a.get_data()
 #a.get_single_trials(liste=['bl693_no_white_Pop05'], path=r'D:\Dataframes\ISOMAP\multi_20')
-a.get_data(liste=['bl693_no_white_Pop05'], path=r'D:\Dataframes\ISOMAP\multi_20')
+a.get_data(liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\most_active_neurons\100')
 a.use_smote()
 #a.shuffle_labels()
 a.encode_labels()

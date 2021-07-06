@@ -92,7 +92,6 @@ class Preprocessor():
     def do_umap(self, dim, seed=1):
         reducer = umap.UMAP(n_components=dim, random_state=seed)
         self.reduced_data = reducer.fit_transform(self.data.T)
-        print(self.reduced_data.shape)
 
     def create_binary_transition_labels(self):
         """
@@ -211,7 +210,7 @@ class Preprocessor():
         plt.ylabel('Component 1')
         plt.xlabel('Component 1')
         plt.title(title)
-        plt.legend(cols, loc=2)
+        plt.legend(cols)
         plt.show()
 
 def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
@@ -238,8 +237,10 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
 
 pop = "bl693_no_white_Pop05"
 a = Preprocessor(pop)
-a.do_umap(2)
+a.get_most_active_neurons(n=2)
 a.create_multiclass_transition_labels()
-a.plot_data("uMAP on bl693_no_white_Pop05")
-##a.get_most_active_neurons()
-#a.df_to_file(r'C:\Users\Sam\Desktop')
+a.plot_data("ISOMAP with 2 Components")
+#a.df_to_file(r'D:\Dataframes\most_active_neurons\100')
+
+
+
