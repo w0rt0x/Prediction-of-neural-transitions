@@ -118,7 +118,7 @@ class Preprocessor():
         also removes day 4 trials
         """
         transistions = [0] * len(self.label)
-        for trail in self.header:
+        for trail in set(self.header):
             # Skipping Day 4
             if trail[0] == 4:
                 pass
@@ -228,19 +228,19 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.do_TSNE(dim)
+        a.get_most_active_neurons(dim)
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-#prepare_data(destination=r'D:\Dataframes\tSNE\multi_2d_p50', dim=2)
+prepare_data(destination=r'D:\Dataframes\most_active_neurons\3', dim=3)
 
-pop = "bl693_no_white_Pop05"
-a = Preprocessor(pop)
-a.get_most_active_neurons(n=2)
-a.create_multiclass_transition_labels()
-a.plot_data("ISOMAP with 2 Components")
-#a.df_to_file(r'D:\Dataframes\most_active_neurons\100')
+#pop = "bl693_no_white_Pop05"
+#a = Preprocessor(pop)
+#a.get_most_active_neurons(n=2)
+#a.create_multiclass_transition_labels()
+#a.plot_data("ISOMAP with 2 Components")
+#a.df_to_file(r'C:\Users\Sam\Desktop')
 
 
 
