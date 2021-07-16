@@ -3,51 +3,153 @@ import os
 from os.path import isfile, join
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import random
-from sklearn.model_selection import GridSearchCV
 import seaborn as sns
+from random import sample, shuffle
+from copy import deepcopy
 from imblearn.over_sampling import ADASYN, SMOTE
-from get_data_for_DL import getMeanAndVariance
+from typing import Tuple
 
-class NeuralEarthquake_Classifier():
 
-    def __init__(self, path, population):
-        self.dataframe = pd.read_csv(path)
-        self.population = population
-        self.X_train = None
-        self.y_train = None
-        self.X_test = None
-        self.y_test = None
-        self. accuracy = None
-        self.cm = None
-        self.dataframes = [self.dataframe]
+class Classifier():
 
-    def read_in_df(self, path):
-        self.dataframe = pd.read_csv(path)
-
-    def random_split(self, split_ratio=0.2, randomState=None, strat=None):
+    def __init__(self, populations: list, direc: str):
         """
-        Converts dataframe into list with PC's and labels,
-        saves X_train, y_train, X_test, y_test as class attributes and sets dataframe to None after.
-        Optional variable split_ratio sets ratio for training/test split, bist be between 0 and 1.
-        randomState must be int, for reproducable outcomes
+        :param populations(list) - List with Population names
+        :param direc - path(str) to directory with data
+        """
+        self.populations = populations
+        self.dataframes = []
+        for i in range(len(populations)):
+            self.dataframes.append(pd.read_csv(direc + '\\{}.csv'.format(populations[i])))
+
+    def random_split(self, split_ratio: float=0.2, randomState: int=None, remove_day4: bool=True):
+        """
+        Taking random samples for training/Test with the train_test_split function by Scikit learn
+        for each population
+        :param Split-ratio (float) - Ratio of Training/Test Split
+        :param randomState (int) - Seed
+        :param remove_day4 (bool) - True removes day 4 trials, default is True
         """
         X = []
         y = []
 
         for df in self.dataframes:
             for index, row in df.iterrows():
-                if eval(row[1])[0] != 4:
+                if remove_day4 and eval(row[1])[0] != 4:
                     X.append(row[2:-1].tolist())
                     y.append(row[-1])
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=split_ratio, random_state=randomState, stratify=strat)
+            X, y, test_size=split_ratio, random_state=randomState)
         X, y = None, None
+
+    def split_population_wise(self, n:int, remove_day4: bool=True):
+        """
+        This splitter-function takes n random populations for testing and all remaining for training.
+        Those n populations are taken from the provided list at the beginning (init)
+        :param n (int) - number of populations used for training
+        :param remove_day4 (bool) - removes day4 trials, default is True
+        """
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = []      
+        
+        # Splitting
+        dfs = deepcopy(self.dataframes)
+        shuffle(dfs)
+        df_test = dfs[:n]
+        df_train = dfs[n:]
+
+        for df in df_train:
+            X, x, Y, y = self.__split_df(df, 0.0, remove_day4, False)
+            X_train = X_train + X
+            y_train = y_train + Y
+
+        for df in df_test:
+            X, x, Y, y = self.__split_df(df, 0.0, remove_day4, False)
+            X_test = X_test + X
+            y_test = y_test + Y
+
+        self.X_train = np.asarray(X_train)
+        self.X_test = np.asarray(X_test)
+        self.y_train = np.asarray(y_train)
+        self.y_test = np.asarray(y_test)
+
+    def print_shape(self):
+        """
+        Prints shape of training/test data
+        """
+        print("X_train: ", self.X_train.shape)
+        print("X_test: ", self.X_test.shape)
+        print("y_train: ", self.y_train.shape)
+        print("y_test: ", self.y_test.shape)
+
+    def split_trial_wise(self, split_ratio: float=0.2, remove_day4: bool=True, shuffle: bool=True):
+        """
+        Each Population has ~20 repetitions per trial. This function splits each of those repetitions so that 
+        training and test data have some repetitions (split_ratio)
+        :param Split-ratio (float) - Ratio of Training/Test Split, default is 0.2
+        :param remove_day4 (bool) - True removes day 4 trials, default is True
+        :param shuffle (bool) - shuffles trials before splitting them, default is True
+        """
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = [] 
+
+    def __split_df(self, df:pd.DataFrame, ratio:float, rem_day4:bool, shuffle:bool) -> Tuple[list, list, list, list]:
+        """
+        returns Training/Test data as lists
+        """
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = [] 
+
+        header = set(df['label'].tolist())
+        # Removing Day 4
+        trails = set()
+        for i in header:
+            trail = eval(i)
+            if trail[0] != 4 and rem_day4:
+                trails.add(i)
+            else:
+                if trail[0] == 4 and not(rem_day4):
+                    trails.add(i)
+
+        header = trails
+
+        # Getting all the matrices from the trials
+        print(len(df['label'].tolist()))
+        for trial in header:
+            # geting rows with (day, Trail)-label
+            rows = df.loc[df['label'] == trial].to_numpy()
+            # getting response label
+            response = rows[0][-1]
+            # getting the actual data from the matrix
+            rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+            if shuffle:
+                # shuffle PC-Matrix
+                np.random.shuffle(rows)
+
+            # Splitting into Test and training
+            cut = int(ratio*len(rows))
+            for i in range(len(rows)):
+                if i < cut or ratio == 0.0:
+                    X_train.append(rows[i])
+                    y_train.append(response)
+                else:
+                    X_test.append(rows[i])
+                    y_test.append(response)
+
+        return X_train, X_test, y_train, y_test
 
     def split_transitions(self, remove_day4=True):
         """
@@ -104,7 +206,7 @@ class NeuralEarthquake_Classifier():
 
         self.X_test, self.y_test = self.__split_df(self.dataframes)
 
-    def __split_df(self, dataframes, n=10, remove_day4 = True):
+    def __split_df2(self, dataframes, n=10, remove_day4 = True):
         """
         Takes in List of dataframes, returns X_train and y-train
         """
@@ -234,7 +336,7 @@ class NeuralEarthquake_Classifier():
 
     def shuffle_labels(self):
         """
-        shuffles y-labels to have a f1-Score Benchamrk
+        shuffles labels to have a (random) Benchamrk
         """
         random.shuffle(self.y_train)
         random.shuffle(self.y_test)
@@ -243,13 +345,11 @@ class NeuralEarthquake_Classifier():
         """performs SMOTE on training data"""
         smote = SMOTE()
         self.X_train, self.y_train = smote.fit_resample(self.X_train, self.y_train)
-        #self.X_test, self.y_test = smote.fit_resample(self.X_test, self.y_test)
 
     def use_ADASYN(self):
         """performs ADASYN on training data"""
         ada = ADASYN()
         self.X_train, self.y_train = ada.fit_resample(self.X_train, self.y_train)
-        #self.X_test, self.y_test = ada.fit_resample(self.X_test, self.y_test)
 
     def grid_search(self, C, Y = [1], kernel='rbf', degree=3, class_weight='balanced'):
         """
@@ -268,19 +368,7 @@ class NeuralEarthquake_Classifier():
         plt.xlabel('Gamma')
         plt.ylabel('C')
         plt.title("Grid Search:\n RBF-Kernel, balanced class_weights")
-        plt.show()
-
-        #clf = GridSearchCV(classifier, parameters, scoring = score, cv = cv)
-        #clf.fit(self.X_train, self.y_train)
-
-        #print(clf.best_estimator_)
-        #print(clf.score(self.X_test, self.y_test))
-        #df = pd.DataFrame.from_dict(clf.cv_results_)
-        #df.to_csv(r'C:\Users\Sam\Desktop\grid1Pop.csv')
-           
-
-    def get_accuracy(self):
-        return self.accuracy
+        plt.show()    
 
     def do_Logistic_Regression(self, penality='l2', c=1.0):
         """
@@ -326,7 +414,7 @@ class NeuralEarthquake_Classifier():
         self.accuracy = LRCV.score(self.X_test, self.y_test)
         self.classifier = LRCV
 
-    def do_SVM(self, kernel="linear",degree=3, c=1, gamma='scale', class_weight=None):
+    def do_SVM(self, kernel="linear", degree=3, c=1, gamma='scale', class_weight=None):
         """
         performs Support Vectors Machine on dataset
         """
@@ -334,7 +422,6 @@ class NeuralEarthquake_Classifier():
         self.accuracy = svm.score(self.X_test, self.y_test)
         self.cm = metrics.confusion_matrix(self.y_test, svm.predict(self.X_test), normalize='true')
         self.classifier = svm
-
 
     def get_cm(self):
         """ returns Confusion matrix"""
@@ -348,9 +435,12 @@ class NeuralEarthquake_Classifier():
         """ returns f1-Score"""
         return metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average=avg)
 
-    def plot_CM(self, norm=None, title=None, path=None):
+    def plot_CM(self, norm: str=None, title: str='Confusion Matrix', path_dir: str=None):
         """
         plots Confusion Matrix of results, can be saved to path
+        :param norm (str) - True for normalized CM (normalize must be one of {'true', 'pred', 'all', None})
+        :param title (str) - Title for the CM
+        :param path_dir (str) - if provided, saves CM to that directory
         """
         # Source:
         # https://stackoverflow.com/questions/57043260/how-change-the-color-of-boxes-in-confusion-matrix-using-sklearn
@@ -361,34 +451,12 @@ class NeuralEarthquake_Classifier():
                                              normalize=norm,
                                              values_format='.3f',
                                              labels=class_names)
-        title = "Confusion Matrix of {},:\n {}'bl693_no_white_Pop02', 'bl693_no_white_Pop03'\n with {} Dimensions, total accuracy: {}".format(
-            str(self.classifier), self.population, len(self.X_train[0]), str(round(self.accuracy, 4)))
+        
         disp.ax_.set_title(title)
-        if path == None:
+        if path_dir == None:
             plt.show()
         else:
-            plt.savefig(path)
-
-    def merge_dataframes(self, lst, path = r"D:\Dataframes\20PCs"):
-        """Takes in list of other populations, adds them to dataframe"""
-        #removing index column
-        # Source: https://stackoverflow.com/questions/43983622/remove-unnamed-columns-in-pandas-dataframe
-        self.dataframe = self.dataframe.drop(self.dataframe.columns[self.dataframe.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
-        dfs = []
-        for i in lst:
-            # Reading new dataframes and removing index column
-            df = pd.read_csv(path + '\\' + i + '.csv')
-            df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
-            dfs.append(df)
-        # merging dataframes
-        self.dataframe = pd.concat([self.dataframe] + dfs, axis=0)
-
-    def add_dataframes(self, lst, path = r"D:\Dataframes\20PCs"):
-        """Takes in list of other populations, adds them to dataframe list"""
-        for i in lst:
-            # Reading new dataframes and removing index column
-            self.dataframes.append(pd.read_csv(path + '\\' + i + '.csv'))
-
+            plt.savefig(path_dir + '\\CM.png')
 
 
 def test_SVM():
@@ -411,19 +479,21 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     print(test)
     return test
 
-p = r'D:\Dataframes\ISOMAP\2'
-a = NeuralEarthquake_Classifier(p + '\\' + 'bl693_no_white_Pop05.csv', 'bl693_no_white_Pop05')
+
+a = Classifier(['bl693_no_white_Pop05', 'bl693_no_white_Pop02'], r'D:\Dataframes\tSNE\perp30')
 #a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
+a.split_population_wise(1, remove_day4=False)
+a.print_shape()
 #a.random_split()
-a.splitter_for_multiple_dataframes()
+#a.splitter_for_multiple_dataframes()
 #a.split_transitions()
-a.use_SMOTE()
+#a.use_SMOTE()
 #a.shuffle_labels()
-a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
-#print(a.get_f1())
-print("Macro: ",a.get_f1(avg="macro"))
-print("Micro: ", a.get_f1(avg="micro"))
-print("Weighted: ",a.get_f1(avg="weighted"))
-a.plot_CM()
+#a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
+
+#print("Macro: ",a.get_f1(avg="macro"))
+#print("Micro: ", a.get_f1(avg="micro"))
+#print("Weighted: ",a.get_f1(avg="weighted"))
+#a.plot_CM(title='bl693_no_white_Pop05')
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 #a.grid_search(C=c, Y=c)

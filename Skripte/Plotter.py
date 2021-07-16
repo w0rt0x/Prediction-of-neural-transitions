@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.patches as mpatches
 import os
 from os.path import isfile, join
+import Classifier
 
 class Plotter:
 
@@ -106,6 +107,11 @@ class Plotter:
             ax.set_zlabel(z_axis)
             #plt.show()
             plt.savefig(dest_path + '\\{}.png'.format(name))
+
+    def compare_n_neurons(self, n=list):
+        """
+        """
+        pass
 
 path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
 populations = set()
