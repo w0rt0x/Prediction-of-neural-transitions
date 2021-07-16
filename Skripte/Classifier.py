@@ -104,6 +104,28 @@ class Classifier():
         y_test = []   
         y_train = [] 
 
+
+    def split_day_wise(self, day:int=3, remove_day4:bool=True, shuffle: bool=True):
+        """
+        Splits each Populations into training/test data, while day x is only used for testing
+        :param day (int) - default is day3 that is used for testing
+        :param remove_day4 (bool) - True removes day 4 trials, default is True
+        :param shuffle (bool) - shuffles trials before splitting them, default is True
+        """
+        pass
+
+    def split_trial_wise_with_concat_vectors(self, n_vec: int, split_ratio: float=0.2, remove_day4: bool=True, shuffle: bool=True):
+        """
+        Each Population has ~20 repetitions per trial. This function splits each of those repetitions so that 
+        training and test data have some repetitions (split_ratio).
+        variable number of repetitions will be concatinated.
+        :param n_vec (int) - number of repetiotions that are concatinated to one trial
+        :param Split-ratio (float) - Ratio of Training/Test Split, default is 0.2
+        :param remove_day4 (bool) - True removes day 4 trials, default is True
+        :param shuffle (bool) - shuffles trials before splitting them, default is True
+        """
+        pass
+
     def __split_df(self, df:pd.DataFrame, ratio:float, rem_day4:bool, shuffle:bool) -> Tuple[list, list, list, list]:
         """
         returns Training/Test data as lists
@@ -127,7 +149,6 @@ class Classifier():
         header = trails
 
         # Getting all the matrices from the trials
-        print(len(df['label'].tolist()))
         for trial in header:
             # geting rows with (day, Trail)-label
             rows = df.loc[df['label'] == trial].to_numpy()
@@ -150,189 +171,6 @@ class Classifier():
                     y_test.append(response)
 
         return X_train, X_test, y_train, y_test
-
-    def split_transitions(self, remove_day4=True):
-        """
-        Splits dataframes into test and training, while test only contains day 3 transitions
-        """
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = []      
-
-        for df in self.dataframes:
-            header = set(df['label'].tolist())
-            trails = set()
-            if remove_day4:
-                # Removing Day 4 Trails
-                for i in header:
-                    trail = eval(i)
-                    if trail[0] != 4:
-                        trails.add(i)
-                header = trails
-            for trial in header:
-                # geting rows with (day, Trail)-label
-                rows = df.loc[df['label'] == trial].to_numpy()
-                # getting binary response label
-                response = rows[0][-1]#1 if (rows[0][-1] > 0) else 0
-                # getting PC-Matrix and shuffeling PC-Arrays randomly
-                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-                # shuffle PC-Matrix
-                np.random.shuffle(rows)
-
-                # Spliiting in Training/Test depending on transition
-                for i in range(len(rows)):
-                    if eval(trial)[0] != 3:
-                        X_train.append(rows[i])
-                        y_train.append(response)
-                    else:
-                        X_test.append(rows[i])
-                        y_test.append(response)
-
-        # Now each training/test part contains data from all trails
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_test = X_test
-        self.y_test = y_test
-
-    def population_splitter(self, test_df, path = r'D:\Dataframes\30_Transition'):
-        """
-        Uses self. dataframes for training-data, and the list of populations from the parameter as training
-        """
-        self.X_train, self.y_train = self.__split_df(self.dataframes)
-
-        for i in range(len(test_df)):
-            test_df[i] = pd.read_csv(path + '\\' + test_df[i] + '.csv')
-
-        self.X_test, self.y_test = self.__split_df(self.dataframes)
-
-    def __split_df2(self, dataframes, n=10, remove_day4 = True):
-        """
-        Takes in List of dataframes, returns X_train and y-train
-        """
-        X = []
-        y = []
-        for df in dataframes:
-            header = set(df['label'].tolist())
-            trails = set()
-            if remove_day4:
-                # Removing Day 4 Trails
-                for i in header:
-                    trail = eval(i)
-                    if trail[0] != 4:
-                        trails.add(i)
-                header = trails
-
-            for trial in header:
-                # geting rows with (day, Trail)-label
-                rows = df.loc[df['label'] == trial].to_numpy()
-                # getting binary response label
-                response = 1 if (rows[0][-1] > 0) else 0
-                # getting PC-Matrix and shuffeling PC-Arrays randomly
-                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-
-                data = []
-                for i in range(n):
-                    np.random.shuffle(rows)
-                    for j in range(int(len(rows) / 5)):
-                        a = rows[j*5: j*5+5]
-                        data.append(np.concatenate(a))
-                    for i in range(len(data)):
-                            X.append(data[i])
-                            y.append(response)
-
-        return X, y
-
-    def splitter_for_multiple_dataframes(self, ratio=0.75):
-        """ 
-        The given list of dataframes will be used to set the class attributes
-        X_train, X_test, etc by taking from all trials the same ratio of data.
-        """ 
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = []      
-
-        for df in self.dataframes:
-            header = set(df['label'].tolist())
-            for trial in header:
-                # geting rows with (day, Trail)-label
-                rows = df.loc[df['label'] == trial].to_numpy()
-                # getting binary response label
-                response = rows[0][-1]#1 if (rows[0][-1] > 0) else 0
-                # getting PC-Matrix and shuffeling PC-Arrays randomly
-                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-                # shuffle PC-Matrix
-                np.random.shuffle(rows)
-                # Adding first part to training data, rest is test-data
-                cut = int(ratio*len(rows))
-                for i in range(len(rows)):
-                    if i < cut:
-                        X_train.append(rows[i])
-                        y_train.append(response)
-                    else:
-                        X_test.append(rows[i])
-                        y_test.append(response)
-
-        # Now each training/test part contains data from all trails
-
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_test = X_test
-        self.y_test = y_test
-
-    def split_data(self, n=10, ratio=0.8, remove_day4=True):
-        """ 
-        The given list of dataframes will be used to set the class attributes
-        X_train, X_test, etc by taking from all trials the same ratio of data.
-        """ 
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = []      
-
-        for df in self.dataframes:
-            header = set(df['label'].tolist())
-
-            trails = set()
-            if remove_day4:
-                # Removing Day 4 Trails
-                for i in header:
-                    trail = eval(i)
-                    if trail[0] != 4:
-                        trails.add(i)
-                header = trails
-
-            for trial in header:
-                # geting rows with (day, Trail)-label
-                rows = df.loc[df['label'] == trial].to_numpy()
-                # getting binary response label
-                response = rows[0][-1]#1 if (rows[0][-1] > 0) else 0
-                # getting PC-Matrix and shuffeling PC-Arrays randomly
-                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-
-                data = []
-                #for i in range(n):
-                np.random.shuffle(rows)
-                for j in range(int(len(rows) / 5)):
-                    a = rows[j*5: j*5+5]
-                    data.append(np.concatenate(a))
-
-                # Adding first part to training data, rest is test-data
-                cut = int(ratio*len(data))
-                for i in range(len(data)):
-                    if i < cut:
-                        X_train.append(data[i])
-                        y_train.append(response)
-                    else:
-                        X_test.append(data[i])
-                        y_test.append(response)
-
-
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_test = X_test
-        self.y_test = y_test
 
     def shuffle_labels(self):
         """
@@ -480,9 +318,8 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     return test
 
 
-a = Classifier(['bl693_no_white_Pop05', 'bl693_no_white_Pop02'], r'D:\Dataframes\tSNE\perp30')
-#a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
-a.split_population_wise(1, remove_day4=True)
+a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\perp30')
+a.split_trial_wise()
 a.print_shape()
 #a.random_split()
 #a.splitter_for_multiple_dataframes()
