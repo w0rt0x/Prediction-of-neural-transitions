@@ -118,10 +118,10 @@ class Classifier():
         trails = set()
         for i in header:
             trail = eval(i)
-            if trail[0] != 4 and rem_day4:
+            if trail[0] != 4:
                 trails.add(i)
             else:
-                if trail[0] == 4 and not(rem_day4):
+                if not(rem_day4):
                     trails.add(i)
 
         header = trails
@@ -482,7 +482,7 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
 
 a = Classifier(['bl693_no_white_Pop05', 'bl693_no_white_Pop02'], r'D:\Dataframes\tSNE\perp30')
 #a.add_dataframes(['bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=p)
-a.split_population_wise(1, remove_day4=False)
+a.split_population_wise(1, remove_day4=True)
 a.print_shape()
 #a.random_split()
 #a.splitter_for_multiple_dataframes()
