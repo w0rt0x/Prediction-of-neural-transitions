@@ -104,6 +104,17 @@ class Classifier():
         y_test = []   
         y_train = [] 
 
+        for df in self.dataframes:
+            X, x, Y, y = self.__split_df(df, 1 - split_ratio, remove_day4, shuffle)
+            X_train = X_train + X
+            y_train = y_train + Y
+            X_test = X_test + x
+            y_test = y_test + y
+
+        self.X_train = np.asarray(X_train)
+        self.X_test = np.asarray(X_test)
+        self.y_train = np.asarray(y_train)
+        self.y_test = np.asarray(y_test)
 
     def split_day_wise(self, day:int=3, remove_day4:bool=True, shuffle: bool=True):
         """
@@ -113,6 +124,9 @@ class Classifier():
         :param shuffle (bool) - shuffles trials before splitting them, default is True
         """
         pass
+    # Tage-weise splits
+    # n Aktivste neuronen plotten im Vergleich (mit random), skript in git history finden
+    #Grid Search mit neuen SVM Parametern (während Art)
 
     def split_trial_wise_with_concat_vectors(self, n_vec: int, split_ratio: float=0.2, remove_day4: bool=True, shuffle: bool=True):
         """
@@ -124,9 +138,24 @@ class Classifier():
         :param remove_day4 (bool) - True removes day 4 trials, default is True
         :param shuffle (bool) - shuffles trials before splitting them, default is True
         """
-        pass
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = [] 
 
-    def __split_df(self, df:pd.DataFrame, ratio:float, rem_day4:bool, shuffle:bool) -> Tuple[list, list, list, list]:
+        for df in self.dataframes:
+            X, x, Y, y = self.__split_df(df, 1 - split_ratio, remove_day4, shuffle, n_vec=n_vec)
+            X_train = X_train + X
+            y_train = y_train + Y
+            X_test = X_test + x
+            y_test = y_test + y
+
+        self.X_train = np.asarray(X_train)
+        self.X_test = np.asarray(X_test)
+        self.y_train = np.asarray(y_train)
+        self.y_test = np.asarray(y_test)       
+
+    def __split_df(self, df:pd.DataFrame, ratio:float, rem_day4:bool, shuffle:bool, n_vec: int=1) -> Tuple[list, list, list, list]:
         """
         returns Training/Test data as lists
         """
@@ -159,6 +188,19 @@ class Classifier():
             if shuffle:
                 # shuffle PC-Matrix
                 np.random.shuffle(rows)
+
+            if n_vec == 1:
+                pass
+            else:
+                new_rows = []
+                # taking samples
+                while len(rows) > n_vec:
+                    vecs = rows[:n_vec]
+                    # deleting vectors that are already taken
+                    rows = rows[n_vec:]
+                    # Concat vectors to one
+                    new_rows.append(np.concatenate(vecs))
+                rows = new_rows
 
             # Splitting into Test and training
             cut = int(ratio*len(rows))
@@ -252,18 +294,22 @@ class Classifier():
         self.accuracy = LRCV.score(self.X_test, self.y_test)
         self.classifier = LRCV
 
-    def do_SVM(self, kernel="linear", degree=3, c=1, gamma='scale', class_weight=None):
+    def do_SVM(self, kernel="linear", degree=3, c=1, gamma='scale', class_weight=None, print_report: bool=False):
         """
         performs Support Vectors Machine on dataset
         """
         svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight).fit(self.X_train, self.y_train)
-        self.accuracy = svm.score(self.X_test, self.y_test)
-        self.cm = metrics.confusion_matrix(self.y_test, svm.predict(self.X_test), normalize='true')
         self.classifier = svm
+        # Classification report as dictionary
+        self.report = classification_report(self.y_test, svm.predict(self.X_test), output_dict=True)
+        if print_report:
+            print(classification_report(self.y_test, svm.predict(self.X_test)))
 
-    def get_cm(self):
-        """ returns Confusion matrix"""
-        return self.cm
+    def get_report(self):
+        """
+        returns scikit classification report as dictionary
+        """
+        return classification_report(self.y_test, self.classifier.predict(self.X_test), output_dict=True)
 
     def get_accuracy(self):
         """ returns accuracy"""
@@ -296,6 +342,12 @@ class Classifier():
         else:
             plt.savefig(path_dir + '\\CM.png')
 
+    def get_data(self) -> Tuple[np.array, np.array, np.array, np.array,]:
+        """
+        returns X_train, X_test, etc
+        """
+        return self.X_train, self.X_test, self.y_train, self.y_test
+
 
 def test_SVM():
     a = NeuralEarthquake_Classifier(
@@ -318,16 +370,15 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     return test
 
 
-a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\perp30')
-a.split_trial_wise()
+a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\most_active_neurons\100')
+a.split_trial_wise_with_concat_vectors(1)
 a.print_shape()
 #a.random_split()
 #a.splitter_for_multiple_dataframes()
 #a.split_transitions()
 #a.use_SMOTE()
 #a.shuffle_labels()
-#a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced') #class_weight='balanced'
-
+#a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
 #print("Macro: ",a.get_f1(avg="macro"))
 #print("Micro: ", a.get_f1(avg="micro"))
 #print("Weighted: ",a.get_f1(avg="weighted"))
