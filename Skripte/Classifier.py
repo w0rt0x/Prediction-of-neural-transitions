@@ -123,8 +123,31 @@ class Classifier():
         :param remove_day4 (bool) - True removes day 4 trials, default is True
         :param shuffle (bool) - shuffles trials before splitting them, default is True
         """
-        pass
-        
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = [] 
+        for df in self.dataframes:
+            header = set(df['label'].tolist())
+            for trial in header:
+                # geting rows with (day, Trail)-label
+                rows = df.loc[df['label'] == trial].to_numpy()
+                # getting response label
+                response = rows[0][-1]
+                # getting the actual data from the matrix
+                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+                for i in range(len(rows)):
+                    if eval(trial)[0] == day:
+                        X_test.append(rows[i])
+                        y_test.append(response)
+                    else:
+                        X_train.append(rows[i])
+                        y_train.append(response)
+
+        self.X_train = np.asarray(X_train)
+        self.X_test = np.asarray(X_test)
+        self.y_train = np.asarray(y_train)
+        self.y_test = np.asarray(y_test)  
 
     def split_trial_wise_with_concat_vectors(self, n_vec: int, split_ratio: float=0.2, remove_day4: bool=True, shuffle: bool=True):
         """
@@ -376,14 +399,15 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
 
 
 a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\perp30')
-a.split_trial_wise()
-a.use_SMOTE()
+a.split_day_wise()
+a.print_shape()
+#a.use_SMOTE()
 #a.random_split()
 #a.splitter_for_multiple_dataframes()
 #a.split_transitions()
 #a.use_SMOTE()
 #a.shuffle_labels()
-a.do_SVM(kernel='poly', c=1, gamma=0.5, class_weight='balanced')
+a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
 print("Macro: ",a.get_f1(avg="macro"))
 print("Micro: ", a.get_f1(avg="micro"))
 print("Weighted: ",a.get_f1(avg="weighted"))
