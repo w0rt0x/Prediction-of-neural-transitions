@@ -23,7 +23,12 @@ class Plotter:
 
     def plot_2D(self, method: str, x_axis: str, y_axis: str, show: bool=True, dest_path: str=None):
         """
-        
+        Plots 2D Data
+        :param methods (str) - Can be PCA, n most active neurons, t-SNE
+        :param x_axis (str) - name of x-axis
+        :param y_axis (str) - name of y-axis
+        :param show (bool) - dafault is true, shows plot when done
+        :param dest_path (str) - default is None, if its not none the plot will be saved to that directory
         """
         for pop in self.full_paths:
             df = pd.read_csv(pop)
@@ -48,7 +53,7 @@ class Plotter:
                     label[i] = 'yellow'
 
             # Plotting
-            plt.scatter(x, y, c=label, alpha=0.5)
+            plt.scatter(x, y, c=label, alpha=0.3)
             name = self.populations[self.full_paths.index(pop)]
             plt.title('{} of {}'.format(method, name))
             
@@ -63,9 +68,20 @@ class Plotter:
                 plt.show()
             if dest_path != None:
                 plt.savefig(dest_path + '\\{}.png'.format(name))
+            
+            plt.clf()
+            plt.cla()
+            plt.close()
 
     def plot_3D(self, method: str, x_axis: str, y_axis: str, z_axis: str, show: bool=True, dest_path: str=None):
         """
+        Plots 2D Data
+        :param methods (str) - Can be PCA, n most active neurons, t-SNE
+        :param x_axis (str) - name of x-axis
+        :param y_axis (str) - name of y-axis
+        :param z_axis (str) - name of z-axis
+        :param show (bool) - dafault is true, shows plot when done
+        :param dest_path (str) - default is None, if its not none the plot will be saved to that directory
         """
         for pop in self.full_paths:
             fig = plt.figure()
@@ -95,7 +111,7 @@ class Plotter:
 
             # Plotting
             ax = plt.axes(projection ="3d")
-            ax.scatter(x, y, z, c=label, alpha=0.7)
+            ax.scatter(x, y, z, c=label, alpha=0.5)
             name = self.populations[self.full_paths.index(pop)]
             ax.set_title('{} of {}'.format(method, name))
             
@@ -112,9 +128,15 @@ class Plotter:
             if dest_path != None:
                 plt.savefig(dest_path + '\\{}.png'.format(name))
 
+            plt.clf()
+            plt.cla()
+            plt.close()
+
     def compare_n_neurons(self, title: str, neurons:list=list(range(5, 101, 5))):
         """
-        Compares 
+        Compares performance of n most active neurons
+        :param title (str) - Title of plot
+        :param neurons (list) - List of integers that are directory names of path in init function
         """
         macro = []
         micro = []
@@ -160,6 +182,68 @@ class Plotter:
         plt.title(title)
         plt.show()
         
+    def plot_actual_vs_predicted(self, method: str, x_axis: str, y_axis: str, show: bool=True, dest_path: str=None):
+        """
+        Plots 2 Plots: Predicted(SVM) vs Actual data
+        :param methods (str) - Can be PCA, n most active neurons, t-SNE
+        :param x_axis (str) - name of x-axis
+        :param y_axis (str) - name of y-axis
+        :param show (bool) - dafault is true, shows plot when done
+        :param dest_path (str) - default is None, if its not none the plot will be saved to that directory
+        """
+        for pop in self.populations:
+            c = Classifier([pop], self.path)
+            c.split_trial_wise()
+            c.use_SMOTE()
+            c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+            X, x, Y, y = c.get_data()
+            x = x.T
+
+            y = self.__multiclass_to_color(y.tolist())
+            pred = self.__multiclass_to_color(c.get_predictions().tolist())
+
+                # Plotting the Data
+            figure, axis = plt.subplots(1, 2, figsize=(13,7))
+            axis[0].scatter(x[0], x[1], c=y, alpha=0.5)
+            axis[0].set_title("Actual Data")
+            axis[0].set_xlabel(x_axis)
+            axis[0].set_ylabel(y_axis)
+                
+            # For Cosine Function
+            axis[1].scatter(x[0], x[1], c=pred, alpha=0.5)
+            axis[1].set_title("Prediction")
+            axis[1].set_xlabel(x_axis)
+            axis[1].set_ylabel(y_axis)
+
+            yellow = mpatches.Patch(color='yellow', label='1->1')
+            red = mpatches.Patch(color='red', label='1->0')
+            green = mpatches.Patch(color='green', label='0->1')
+            cyan = mpatches.Patch(color='cyan', label='0->0')
+            figure.legend(handles=[yellow, red, green, cyan])
+
+            figure.suptitle("{} - Test-Data of {},\n SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')\n\n".format(method, pop))
+            
+
+            if show:
+                plt.show() 
+            if dest_path !=None:
+                plt.savefig(dest_path + '\\{}.png'.format(self.populations[0]))
+
+            plt.clf()
+            plt.cla()
+            plt.close()
+
+    def __multiclass_to_color(self, label):
+        for i in range(len(label)):
+                if label[i] == '0->0':
+                    label[i] = 'cyan'
+                if label[i] == '1->0':
+                    label[i] = 'red'
+                if label[i] == '0->1':
+                    label[i] = 'green'
+                if label[i] == '1->1':
+                    label[i] = 'yellow'
+        return label
 
 def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
     """
@@ -176,7 +260,8 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
     return list(populations)
 
 # removing dubs
-a = Plotter(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\3D_perp30')
-a.plot_3D("t-SNE", "Component 1", "Component 2", "Component3")
-#a.compare_n_neurons("bl693_no_white_Pop05, bl693_no_white_Pop02, bl693_no_white_Pop03,\n Smote on Training-Data,\n SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
-#a.plot_2D('t-SNE Plot', '1st Component', '2nd Component', r'C:\Users\Sam\Desktop')
+#a = Plotter(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\tSNE\perp30')
+#a.plot_2D("t-SNE", "t-SNE Component 1", "t-SNE Component 2")
+#a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
+#b = Plotter(get_all_pop(), r'D:\Dataframes\tSNE\perp30')
+#b.plot_actual_vs_predicted("t-SNE", "t-SNE Component 1", "t-SNE Component 2", show=False, dest_path=r'D:\Dataframes\tSNE\2D_actual_vs_predicted')

@@ -299,7 +299,8 @@ class Classifier():
         svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight).fit(self.X_train, self.y_train)
         self.classifier = svm
         # Classification report as dictionary
-        self.report = classification_report(self.y_test, svm.predict(self.X_test), output_dict=True)
+        self.pred = svm.predict(self.X_test)
+        self.report = classification_report(self.y_test, self.pred, output_dict=True)
         if print_report:
             print(classification_report(self.y_test, svm.predict(self.X_test)))
 
@@ -307,7 +308,13 @@ class Classifier():
         """
         returns scikit classification report as dictionary
         """
-        return classification_report(self.y_test, self.classifier.predict(self.X_test), output_dict=True)
+        return classification_report(self.y_test, self.pred, output_dict=True)
+
+    def get_predictions(self):
+        """
+        returns predicted labels
+        """
+        return self.pred
 
     def get_accuracy(self):
         """ returns accuracy"""
@@ -368,7 +375,7 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     return test
 
 """
-a = Classifier(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
+a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\perp30')
 a.split_trial_wise()
 a.use_SMOTE()
 #a.print_shape()
@@ -381,7 +388,7 @@ a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
 print("Macro: ",a.get_f1(avg="macro"))
 print("Micro: ", a.get_f1(avg="micro"))
 print("Weighted: ",a.get_f1(avg="weighted"))
-a.plot_CM(title="bl693_no_white_Pop05, bl693_no_white_Pop02, bl693_no_white_Pop03,\n SMOTE on Training-Data\n Multiclass SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
+a.plot_CM(title="bl693_no_white_Pop05,\n SMOTE on Training-Data\n Multiclass SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 #a.grid_search(C=c, Y=c)
 """
