@@ -124,9 +124,7 @@ class Classifier():
         :param shuffle (bool) - shuffles trials before splitting them, default is True
         """
         pass
-    # Tage-weise splits
-    # n Aktivste neuronen plotten im Vergleich (mit random), skript in git history finden
-    #Grid Search mit neuen SVM Parametern (während Art)
+        
 
     def split_trial_wise_with_concat_vectors(self, n_vec: int, split_ratio: float=0.2, remove_day4: bool=True, shuffle: bool=True):
         """
@@ -370,9 +368,9 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     return test
 
 
-a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\most_active_neurons\100')
-a.split_trial_wise_with_concat_vectors(1)
-a.print_shape()
+#a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\most_active_neurons\100')
+#a.split_trial_wise_with_concat_vectors(1)
+#a.print_shape()
 #a.random_split()
 #a.splitter_for_multiple_dataframes()
 #a.split_transitions()

@@ -4,13 +4,13 @@ import pandas as pd
 import matplotlib.patches as mpatches
 import os
 from os.path import isfile, join
-import Classifier
+from Classifier import Classifier
 
 class Plotter:
 
     def __init__(self, populations: list, path:str):
         """
-        
+        Needs List of populations and directory with dataframes
         :param populations - List of populationnames, without .csv at the end
         :param path - string path to directory
         """
@@ -108,22 +108,70 @@ class Plotter:
             #plt.show()
             plt.savefig(dest_path + '\\{}.png'.format(name))
 
-    def compare_n_neurons(self, n=list):
+    def compare_n_neurons(self, title: str, neurons:list=list(range(5, 101, 5))):
         """
+        Compares 
         """
-        pass
+        macro = []
+        micro = []
+        weighted = []
+        macro_r = []
+        micro_r = []
+        weighted_r = []
 
-path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
-populations = set()
-files = [f for f in os.listdir(path) if isfile(join(path, f))]
-for i in files:
-    if "_class.mat" in i:
-        populations.add(i[:-10])
+        for n in neurons:
+            # Regular run
+            c = Classifier(self.populations, self.path + str(n))
+            c.split_trial_wise()
+            c.use_SMOTE()
+            c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+            report = c.get_report()
+            macro.append(report['macro avg']['f1-score'])
+            micro.append(report['accuracy'])
+            weighted.append(report['weighted avg']['f1-score'])
+            
+            # Randomized labels
+            r = Classifier(self.populations, self.path + str(n))
+            r.split_trial_wise()
+            r.use_SMOTE()
+            r.shuffle_labels()
+            r.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+            report = r.get_report()
+            macro_r.append(report['macro avg']['f1-score'])
+            micro_r.append(report['accuracy'])
+            weighted_r.append(report['weighted avg']['f1-score'])
 
-    if "_lact.mat" in i:
-        populations.add(i[:-9])
+        
+        plt.plot(neurons,macro, marker = 'o', color='#f70d1a', label="Macro F1")
+        plt.plot(neurons,micro, marker = 'x', color='#08088A', label="Micro F1")
+        plt.plot(neurons,weighted, marker = '+', color='#FFBF00', label="weighted F1")
+        plt.plot(neurons,macro_r, marker = 'o', color='#f70d1a', label="Macro F1 (random)", linestyle = '--')
+        plt.plot(neurons,micro_r, marker = 'x', color='#08088A', label="Micro F1 (random)", linestyle = '--')
+        plt.plot(neurons,weighted_r, marker = '+', color='#FFBF00', label="weighted F1 (random)", linestyle = '--')
+        plt.xlabel("#Neurons")
+        plt.xticks(neurons)
+        plt.ylabel("F1-Scores")
+        plt.ylim([0, 1])
+        plt.legend(loc="upper left")
+        plt.title(title)
+        plt.show()
+        
+
+def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
+    """
+    returns all population-names
+    """
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
+
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+    return list(populations)
 
 # removing dubs
-populations = list(populations)
-a = Plotter(['bl693_no_white_Pop07'], r'D:\Dataframes\tSNE\perp30')
-a.plot_2D('t-SNE Plot', '1st Component', '2nd Component', r"D:\Dataframes\most_active_neurons\2D Plots")
+a = Plotter(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\most_active_neurons\\')
+a.compare_n_neurons("bl693_no_white_Pop05, bl693_no_white_Pop02, bl693_no_white_Pop03,\n Smote on Training-Data,\n SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
+#a.plot_2D('t-SNE Plot', '1st Component', '2nd Component', r'C:\Users\Sam\Desktop')

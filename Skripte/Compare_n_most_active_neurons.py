@@ -12,7 +12,7 @@ weighted_keras = [0.5489, 0.5834, 0.6262, 0.6511, 0.67115, 0.6861, 0.7047, 0.712
 
 plt.plot(x,macro_svm, marker = 'o', color='#f70d1a', label="Macro f1")
 plt.plot(x,micro_svm, marker = 'x', color='#08088A', label="Micro f1")
-plt.plot(x,weighted_svm, marker = '+', color='#FFBF00', label="weighted f1")
+plt.plot(x,weighted_svm, marker = '+', color='#FFBF00', label="weighted f1", linestyle = '--')
 plt.xlabel("#Neurons")
 plt.xticks(x)
 plt.ylabel("F1-Scores")

@@ -233,7 +233,8 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-prepare_data(destination=r'D:\Dataframes\most_active_neurons\3', dim=3)
+for i in list(range(5, 100, 10)):
+    prepare_data(destination='D:\\Dataframes\\most_active_neurons\\' + str(i), dim=i)
 
 #pop = "bl693_no_white_Pop05"
 #a = Preprocessor(pop)
