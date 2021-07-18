@@ -260,8 +260,8 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
     return list(populations)
 
 # removing dubs
-#a = Plotter(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\tSNE\perp30')
+a = Plotter(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\tSNE\perp30')
 #a.plot_2D("t-SNE", "t-SNE Component 1", "t-SNE Component 2")
-#a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
+a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
 #b = Plotter(get_all_pop(), r'D:\Dataframes\tSNE\perp30')
 #b.plot_actual_vs_predicted("t-SNE", "t-SNE Component 1", "t-SNE Component 2", show=False, dest_path=r'D:\Dataframes\tSNE\2D_actual_vs_predicted')
