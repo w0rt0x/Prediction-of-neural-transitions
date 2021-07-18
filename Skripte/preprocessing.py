@@ -228,13 +228,13 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.get_most_active_neurons(dim)
+        a.do_TSNE(dim)
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-for i in list(range(5, 100, 10)):
-    prepare_data(destination='D:\\Dataframes\\most_active_neurons\\' + str(i), dim=i)
+
+prepare_data(destination=r'D:\Dataframes\tSNE\3D_perp30', dim=3)
 
 #pop = "bl693_no_white_Pop05"
 #a = Preprocessor(pop)

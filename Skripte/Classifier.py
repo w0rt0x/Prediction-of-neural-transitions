@@ -367,19 +367,21 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     print(test)
     return test
 
-
-#a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\most_active_neurons\100')
-#a.split_trial_wise_with_concat_vectors(1)
+"""
+a = Classifier(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
+a.split_trial_wise()
+a.use_SMOTE()
 #a.print_shape()
 #a.random_split()
 #a.splitter_for_multiple_dataframes()
 #a.split_transitions()
 #a.use_SMOTE()
 #a.shuffle_labels()
-#a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-#print("Macro: ",a.get_f1(avg="macro"))
-#print("Micro: ", a.get_f1(avg="micro"))
-#print("Weighted: ",a.get_f1(avg="weighted"))
-#a.plot_CM(title='bl693_no_white_Pop05')
+a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+print("Macro: ",a.get_f1(avg="macro"))
+print("Micro: ", a.get_f1(avg="micro"))
+print("Weighted: ",a.get_f1(avg="weighted"))
+a.plot_CM(title="bl693_no_white_Pop05, bl693_no_white_Pop02, bl693_no_white_Pop03,\n SMOTE on Training-Data\n Multiclass SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
 #a.grid_search(C=c, Y=c)
+"""

@@ -21,7 +21,7 @@ class Plotter:
             full_paths.append(path + '\\' + populations[i] + '.csv')
         self.full_paths = full_paths
 
-    def plot_2D(self, method: str, x_axis: str, y_axis: str, dest_path: str):
+    def plot_2D(self, method: str, x_axis: str, y_axis: str, show: bool=True, dest_path: str=None):
         """
         
         """
@@ -48,7 +48,7 @@ class Plotter:
                     label[i] = 'yellow'
 
             # Plotting
-            plt.scatter(x, y, c=label)
+            plt.scatter(x, y, c=label, alpha=0.5)
             name = self.populations[self.full_paths.index(pop)]
             plt.title('{} of {}'.format(method, name))
             
@@ -59,10 +59,12 @@ class Plotter:
             plt.legend(handles=[yellow, red, green, cyan])
             plt.xlabel(x_axis)
             plt.ylabel(y_axis)
-            plt.show()
-            #plt.savefig(dest_path + '\\{}.png'.format(name))
+            if show:
+                plt.show()
+            if dest_path != None:
+                plt.savefig(dest_path + '\\{}.png'.format(name))
 
-    def plot_3D(self, method: str, x_axis: str, y_axis: str, z_axis: str, dest_path: str):
+    def plot_3D(self, method: str, x_axis: str, y_axis: str, z_axis: str, show: bool=True, dest_path: str=None):
         """
         """
         for pop in self.full_paths:
@@ -93,7 +95,7 @@ class Plotter:
 
             # Plotting
             ax = plt.axes(projection ="3d")
-            ax.scatter(x, y, z, c=label)
+            ax.scatter(x, y, z, c=label, alpha=0.7)
             name = self.populations[self.full_paths.index(pop)]
             ax.set_title('{} of {}'.format(method, name))
             
@@ -105,8 +107,10 @@ class Plotter:
             ax.set_xlabel(x_axis)
             ax.set_ylabel(y_axis)
             ax.set_zlabel(z_axis)
-            #plt.show()
-            plt.savefig(dest_path + '\\{}.png'.format(name))
+            if show:
+                plt.show()
+            if dest_path != None:
+                plt.savefig(dest_path + '\\{}.png'.format(name))
 
     def compare_n_neurons(self, title: str, neurons:list=list(range(5, 101, 5))):
         """
@@ -172,6 +176,7 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
     return list(populations)
 
 # removing dubs
-a = Plotter(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\most_active_neurons\\')
-a.compare_n_neurons("bl693_no_white_Pop05, bl693_no_white_Pop02, bl693_no_white_Pop03,\n Smote on Training-Data,\n SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
+a = Plotter(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\3D_perp30')
+a.plot_3D("t-SNE", "Component 1", "Component 2", "Component3")
+#a.compare_n_neurons("bl693_no_white_Pop05, bl693_no_white_Pop02, bl693_no_white_Pop03,\n Smote on Training-Data,\n SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 #a.plot_2D('t-SNE Plot', '1st Component', '2nd Component', r'C:\Users\Sam\Desktop')
