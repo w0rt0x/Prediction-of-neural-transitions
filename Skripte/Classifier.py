@@ -252,7 +252,7 @@ class Classifier():
         ada = ADASYN()
         self.X_train, self.y_train = ada.fit_resample(self.X_train, self.y_train)
 
-    def grid_search(self, C, Y = [1], kernel='rbf', degree=3, class_weight='balanced'):
+    def grid_search(self, title, C, Y = [1], kernel='rbf', degree=3, class_weight='balanced'):
         """
         Performs Grid-Search on given classifier
         """
@@ -268,7 +268,7 @@ class Classifier():
         ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=C, yticklabels=Y)
         plt.xlabel('Gamma')
         plt.ylabel('C')
-        plt.title("Grid Search:\n RBF-Kernel, balanced class_weights")
+        plt.title(title)
         plt.show()    
 
     def do_Logistic_Regression(self, penality='l2', c=1.0):
@@ -377,16 +377,6 @@ class Classifier():
         return self.X_train, self.X_test, self.y_train, self.y_test
 
 
-def test_SVM():
-    a = NeuralEarthquake_Classifier(
-    r"D:\Dataframes\20PCs\bl693_no_white_Pop05.csv", 'bl693_no_white_Pop05')
-    a.prepare_binary_labels()
-    a.do_SVM(kernel='sigmoid', degree=3, c=1)
-    cm = a.get_cm()
-    acc = a.get_accuracy()
-    print(cm)
-    print(acc)
-
 def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     files = [f for f in os.listdir(path) if isfile(join(path, f))]
     for i in range(len(files)):
@@ -398,19 +388,18 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     return test
 
 
-a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\perp30')
-a.split_day_wise()
-a.print_shape()
+#a = Classifier(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\most_active_neurons\40')
+#a = Classifier(['bl693_no_white_Pop05'], r'D:\Dataframes\most_active_neurons\40')
+#a.split_trial_wise()
+#a.print_shape()
 #a.use_SMOTE()
-#a.random_split()
-#a.splitter_for_multiple_dataframes()
-#a.split_transitions()
 #a.use_SMOTE()
 #a.shuffle_labels()
-a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-print("Macro: ",a.get_f1(avg="macro"))
-print("Micro: ", a.get_f1(avg="micro"))
-print("Weighted: ",a.get_f1(avg="weighted"))
-a.plot_CM(title="bl693_no_white_Pop05,\n SMOTE on Training-Data\n Multiclass SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
+#a.do_SVM(kernel='linear', c=1, gamma=0.5, class_weight='balanced')
+#print("Macro: ",a.get_f1(avg="macro"))
+#print("Micro: ", a.get_f1(avg="micro"))
+#print("Weighted: ",a.get_f1(avg="weighted"))
+#a.plot_CM(title="bl693_no_white_Pop05,\n SMOTE on Training-Data\n Multiclass SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 #c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-#a.grid_search(C=c, Y=c)
+#title="bl693_no_white_Pop05 (4 most active) on SVM (rbf Kernel),\n with class_weight='balanced'and SMOTE on Training-Data"
+#a.grid_search(title, C=c, Y=c)

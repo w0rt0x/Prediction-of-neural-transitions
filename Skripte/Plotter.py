@@ -245,6 +245,62 @@ class Plotter:
                     label[i] = 'yellow'
         return label
 
+    def compare_models(self, pops: list, paths:list, x_axis:str, title:str, width: float=0.2, show:bool=True, dest_path:str=None, names = None):
+    # names ist list of string
+    # random automatisch
+        micro = []
+        macro = []
+        weighted = []
+        pops.append(self.populations)
+        paths.append(self.path)
+        if names == None:
+            names = []
+            for i in range(len(pops)):
+                names.append('\n'.join(pops[i]))
+                names.append('\n'.join(pops[i]) + '\n(random labels)')
+        
+        for i in range(len(pops)):
+            c = Classifier(pops[i], paths[i])
+            c.split_trial_wise()
+            c.use_SMOTE()
+            c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+            report = c.get_report()
+            macro.append(report['macro avg']['f1-score'])
+            micro.append(report['accuracy'])
+            weighted.append(report['weighted avg']['f1-score'])
+                
+            # Randomized labels
+            r = Classifier(self.populations, self.path)
+            r.split_trial_wise()
+            r.use_SMOTE()
+            r.shuffle_labels()
+            r.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+            report = r.get_report()
+            macro.append(report['macro avg']['f1-score'])
+            micro.append(report['accuracy'])
+            weighted.append(report['weighted avg']['f1-score'])
+
+        x = np.arange(0, len(names))
+        plt.bar(x, micro, width=width, color='yellow', label="Micro F1-Score")
+        plt.bar(x + width, macro, width=width, color='blue', label="Macro F1-Score")
+        plt.bar(x + 2*width, weighted, width=width, color='green', label="Weighted F1-Score")
+        plt.xticks(x, names)
+        plt.ylabel("Scores")
+        plt.xlabel(x_axis)
+        plt.ylim(0, 1)
+        plt.grid(axis='y')
+        plt.legend()
+        plt.title(title)
+        if show:
+            plt.show()
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format(title))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+
 def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
     """
     returns all population-names
@@ -260,8 +316,9 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
     return list(populations)
 
 # removing dubs
-a = Plotter(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\tSNE\perp30')
+a = Plotter(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\3D_perp30')
+a.compare_models([['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop05']], [r'D:\Dataframes\tSNE\3D_perp30'], "Input Populations", "Prediction of Multiclass Labels with \n SVM(rbf Kernel, balanced class weights)\n and t-SNE 3D Data")
 #a.plot_2D("t-SNE", "t-SNE Component 1", "t-SNE Component 2")
-a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
+#a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
 #b = Plotter(get_all_pop(), r'D:\Dataframes\tSNE\perp30')
 #b.plot_actual_vs_predicted("t-SNE", "t-SNE Component 1", "t-SNE Component 2", show=False, dest_path=r'D:\Dataframes\tSNE\2D_actual_vs_predicted')
