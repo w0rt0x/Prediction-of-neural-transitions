@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 import os
 from os.path import isfile, join
 from Classifier import Classifier
+from collections import Counter
 
 
 class Plotter:
@@ -350,7 +351,7 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def sort_out_populations(self, percent:float=0, num_class:int=4, show:bool=True, dest_path:str=None):
+    def sort_out_populations(self, percent:float=0.0, num_class:int=4, show:bool=True, dest_path:str=None):
         """
         Checks and plots the number of Populations hat have n classes and a specific percentage of each class
         """
@@ -359,16 +360,43 @@ class Plotter:
 
         for pop in self.populations:
             df = pd.read_csv(self.path + '\\{}.csv'.format(pop))
-            response = list(set(df['response'].tolist()))
+            liste = df['response'].tolist()
+
+            response = list(set(liste))
             response.remove('0')
+
             if len(response) != num_class:
                 not_ok.append(pop)
             else:
-                ok.append(pop)
+                if percent == 0.0:
+                    ok.append(pop)
+                else:
+                    occurences = Counter(liste)
+                    # remove day 4
+                    del occurences["0"]
+                    keys = occurences.keys()
+                    s = 0
+                    for key in keys:
+                        s = s + occurences[key]
+                    for key in keys:
+                        occurences[key] = occurences[key] / s
+                    
+                    add = True
+                    for key in keys:
+                        if occurences[key] < percent:
+                            add = False
+                    if add:
+                         ok.append(pop)
+                    else:
+                        not_ok.append(pop)
+            
 
         classes = ["All {} classes present\n ({} in total)".format(num_class, len(ok)), "not all classes present\n ({} in total)".format(len(not_ok))]
         plt.pie([len(ok),(len(not_ok))], startangle=90, colors=['#5DADE2', '#515A5A'], labels=classes, autopct='%.1f%%')
-        plt.title("Valid Populations that have all {} classes".format(num_class))
+        if percent == 0.0:
+            plt.title("Valid Populations that have all {} classes".format(num_class))
+        else:
+            plt.title("Valid Populations that have all {} classes and \n each class has #class_i/#total >= {}".format(num_class, percent))
         if show:
             plt.show()
 
@@ -397,8 +425,9 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\single_values\mean_over_all')
-b, c = a.sort_out_populations()
-print(len(c))
+ok, nt_ok = a.sort_out_populations(percent=0.05)
+#b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
+#b.boxplots_of_classes("Mean activity over all neurons", "All 100  Populations with 4 Classes")
 #a.compare_models([['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop05']], [r'D:\Dataframes\tSNE\3D_perp30'], "Input Populations", "Prediction of Multiclass Labels with \n SVM(rbf Kernel, balanced class weights)\n and t-SNE 3D Data")
 #a.plot_2D("t-SNE", "t-SNE Component 1", "t-SNE Component 2")
 #a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
