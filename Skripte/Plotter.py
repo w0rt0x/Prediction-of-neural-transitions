@@ -1,10 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 import matplotlib.patches as mpatches
 import os
 from os.path import isfile, join
 from Classifier import Classifier
+
 
 class Plotter:
 
@@ -246,8 +248,13 @@ class Plotter:
         return label
 
     def compare_models(self, pops: list, paths:list, x_axis:str, title:str, width: float=0.2, show:bool=True, dest_path:str=None, names = None):
-    # names ist list of string
-    # random automatisch
+        """
+        Compares multiple models
+        :param pops (list of lists with str (population names))
+        :param paths (list of paths)
+        :param x_axis (str) Label
+        :param Title (str) title
+        """
         micro = []
         macro = []
         weighted = []
@@ -300,6 +307,79 @@ class Plotter:
         plt.cla()
         plt.close()
 
+    def boxplots_of_classes(self, y_axis:str, title:str, show:bool=True, dest_path:str=None):
+        """
+        makes 4 Box-plots that show the first component of the dataframe (mean, median, etc) of the 4 classes
+        """
+        d = {}
+        for pop in self.populations:
+            df = pd.read_csv(self.path + '\\{}.csv'.format(pop))
+            trials = df['label'].tolist()
+            values = df['Component 1'].tolist()
+            response = df['response'].tolist()
+            
+            for i in range(len(response)):
+                if response[i] in d:
+                    d[response[i]].add(values[i])
+                else:
+                    # Removing day 4 trials
+                    if eval(trials[i])[0] != 4:
+                        d[response[i]] = set()
+                        d[response[i]].add(values[i])
+
+        data = []
+        labels = d.keys()
+        if len(labels)==4:
+            labels = ['0->0', '0->1', '1->1', '1->0']
+        for key in labels:
+            data.append(list(d[key]))
+        
+        plt.boxplot(data, labels=labels) 
+        plt.xlabel('class')
+        plt.ylabel(y_axis)
+        plt.title(title)
+        plt.grid(axis='y')
+
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format(title))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+    def sort_out_populations(self, percent:float=0, num_class:int=4, show:bool=True, dest_path:str=None):
+        """
+        Checks and plots the number of Populations hat have n classes and a specific percentage of each class
+        """
+        ok = []
+        not_ok = []
+
+        for pop in self.populations:
+            df = pd.read_csv(self.path + '\\{}.csv'.format(pop))
+            response = list(set(df['response'].tolist()))
+            response.remove('0')
+            if len(response) != num_class:
+                not_ok.append(pop)
+            else:
+                ok.append(pop)
+
+        classes = ["All {} classes present\n ({} in total)".format(num_class, len(ok)), "not all classes present\n ({} in total)".format(len(not_ok))]
+        plt.pie([len(ok),(len(not_ok))], startangle=90, colors=['#5DADE2', '#515A5A'], labels=classes, autopct='%.1f%%')
+        plt.title("Valid Populations that have all {} classes".format(num_class))
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format("Valid Populations"))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+        return ok, not_ok
 
 def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
     """
@@ -315,9 +395,11 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
             populations.add(i[:-9])
     return list(populations)
 
-# removing dubs
-a = Plotter(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\3D_perp30')
-a.compare_models([['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop05']], [r'D:\Dataframes\tSNE\3D_perp30'], "Input Populations", "Prediction of Multiclass Labels with \n SVM(rbf Kernel, balanced class weights)\n and t-SNE 3D Data")
+populations = get_all_pop()
+a = Plotter(populations, r'D:\Dataframes\single_values\mean_over_all')
+b, c = a.sort_out_populations()
+print(len(c))
+#a.compare_models([['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop05']], [r'D:\Dataframes\tSNE\3D_perp30'], "Input Populations", "Prediction of Multiclass Labels with \n SVM(rbf Kernel, balanced class weights)\n and t-SNE 3D Data")
 #a.plot_2D("t-SNE", "t-SNE Component 1", "t-SNE Component 2")
 #a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
 #b = Plotter(get_all_pop(), r'D:\Dataframes\tSNE\perp30')

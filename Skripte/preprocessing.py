@@ -11,6 +11,7 @@ from sklearn.manifold import TSNE
 import umap
 import matplotlib.pyplot as plt
 
+
 class Preprocessor():
 
     def __init__(self, pop, NaN_replacement=0):
@@ -212,6 +213,50 @@ class Preprocessor():
         plt.title(title)
         plt.legend(cols)
         plt.show()
+    
+    def get_mean(self):
+        """
+        Calculates mean of each row
+        """
+        means = []
+        data = self.data.T
+        for i in range(len(data)):
+            means.append([np.mean(data[i])])
+
+        self.reduced_data = np.asarray(means)
+
+    def get_mean_over_reduced_data(self):
+        """
+        Calculates mean of each row that has already been reduced (nmost active, PCA, etc)
+        """
+        means = []
+        data = self.reduced_data
+        for i in range(len(data)):
+            means.append([np.mean(data[i])])
+
+        self.reduced_data = np.asarray(means)
+
+    def get_sum(self):
+        """
+        Calculates sum of each row
+        """
+        s = []
+        data = self.data.T
+        for i in range(len(data)):
+            s.append([np.sum(data[i])])
+
+        self.reduced_data = np.asarray(s)
+
+    def get_sum_over_reduced(self):
+        """
+        Calculates sum of each row that has already been reduced (n-most active, PCA, etc)
+        """
+        s = []
+        data = self.reduced_data
+        for i in range(len(data)):
+            s.append([np.sum(data[i])])
+
+        self.reduced_data = np.asarray(s)
 
 def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
@@ -228,20 +273,21 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.do_TSNE(dim)
+        a.get_most_active_neurons(n=dim)
+        a.get_sum_over_reduced()
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
 
-prepare_data(destination=r'D:\Dataframes\tSNE\3D_perp30', dim=3)
+prepare_data(destination=r'D:\Dataframes\single_values\sum_over_n_most_active\40', dim=40)
+
 
 #pop = "bl693_no_white_Pop05"
 #a = Preprocessor(pop)
-#a.get_most_active_neurons(n=2)
+#a.get_most_active_neurons(n=40)
+#a.get_mean_over_reduced_data()
 #a.create_multiclass_transition_labels()
-#a.plot_data("ISOMAP with 2 Components")
 #a.df_to_file(r'C:\Users\Sam\Desktop')
-
 
 
