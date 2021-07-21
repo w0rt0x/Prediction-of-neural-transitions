@@ -7,6 +7,7 @@ import os
 from os.path import isfile, join
 from Classifier import Classifier
 from collections import Counter
+from copy import deepcopy
 
 
 class Plotter:
@@ -409,6 +410,71 @@ class Plotter:
 
         return ok, not_ok
 
+    def histogram_single_values(self, x_axis:str, title:str, max_bins:int=1, show:bool=True, dest_path:str=None):
+        """
+        Plots the Distribution of means or sums (users choice) as a histogram
+        Compares multiple models
+        :param x_axis (str) Label
+        :param Title (str) title
+        :param max_bins(bool) - is max number of bins
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        """
+        d = {}
+        for pop in self.populations:
+            df = pd.read_csv(self.path + '\\{}.csv'.format(pop))
+            trials = df['label'].tolist()
+            values = df['Component 1'].tolist()
+            response = df['response'].tolist()
+            
+            for i in range(len(response)):
+                if response[i] in d:
+                    d[response[i]].add(values[i])
+                else:
+                    # Removing day 4 trials
+                    if eval(trials[i])[0] != 4:
+                        d[response[i]] = set()
+                        d[response[i]].add(values[i])
+
+        data = []
+        labels = d.keys()
+        if len(labels)==4:
+            labels = ['0->0', '0->1', '1->1', '1->0']
+        for key in labels:
+            data.append(list(d[key]))
+        
+        bins = np.linspace(0, max_bins, 500)
+        colors = self.__multiclass_to_color(deepcopy(labels))
+        for i in range(len(labels)):
+            plt.hist(d[labels[i]], bins, alpha=0.5, label=labels[i], color=colors[i])
+        plt.title(title)
+        plt.xlabel(x_axis)
+        plt.ylabel("Occurences")
+        plt.legend(loc='upper right')
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format(title))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+    def histogram_of_scores(self, title:str, show:bool=True, dest_path:str=None):
+        """
+        Plots weighted, macro and micro f1 Scores of provided populations as a Histogram
+        :param Title (str) title
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        """
+        for pop in self.populations:
+            c = Classifier(pop, self.path)
+            c.split_trial_wise()
+            c.use_SMOTE()
+            c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+        pass
+
 def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
     """
     returns all population-names
@@ -426,6 +492,8 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\single_values\mean_over_all')
 ok, nt_ok = a.sort_out_populations(percent=0.05)
+b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
+b.histogram_single_values("Mean activity of all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=0.1)
 #b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
 #b.boxplots_of_classes("Mean activity over all neurons", "All 100  Populations with 4 Classes")
 #a.compare_models([['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop05']], [r'D:\Dataframes\tSNE\3D_perp30'], "Input Populations", "Prediction of Multiclass Labels with \n SVM(rbf Kernel, balanced class weights)\n and t-SNE 3D Data")
