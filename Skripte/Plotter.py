@@ -515,6 +515,9 @@ class Plotter:
     def boxplot_of_scores(self, title:str, show:bool=True, dest_path:str=None):
         """
         Shows f1 scores (with and without shuffled labels) as boxplots
+        :param Title (str) title
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
         """
         labels = ["Micro F1", "Micro F1\n shuffled labels", "Macro F1", "Macro F1\n shuffled labels", "Weighted F1", "Weighted F1\n shuffled labels"]
         micro, macro, weighted = self.__get_f1s(self.populations, self.path)
@@ -537,6 +540,28 @@ class Plotter:
         plt.cla()
         plt.close()
 
+    def __get_cm(self, pop:str, path:str) -> np.array:
+        """
+        returns CM of classification
+        """
+        c = Classifier([pop], path)
+        c.split_trial_wise()
+        c.use_SMOTE()
+        c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+        return c.get_cm()
+
+    def CM_for_all_pop(self, title:str, mean: bool=True, show:bool=True, dest_path:str=None):
+        """
+        :param Title (str) title
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        """
+        CM = np.zeros((4, 4))
+        for pop in self.populations:
+            CM = CM + self.__get_cm(pop, self.path)
+        print(CM)
+
+
 def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
     """
     returns all population-names
@@ -553,9 +578,10 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\single_values\mean_over_all')
-ok, nt_ok = a.sort_out_populations()
+ok, nt_ok = a.sort_out_populations(percent=0.1)
 b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
-b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
+b.CM_for_all_pop("Title")
+#b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
 #b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)
 #b.histogram_single_values("Mean activity of all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=0.1)
 #b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
