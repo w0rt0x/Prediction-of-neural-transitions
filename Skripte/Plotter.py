@@ -269,7 +269,8 @@ class Plotter:
                 names.append('\n'.join(pops[i]) + '\n(random labels)')
         
         for i in range(len(pops)):
-            c = Classifier(pops[i], paths[i])
+            # möglicher Fehler?
+            c = Classifier([pops[i]], paths[i])
             c.split_trial_wise()
             c.use_SMOTE()
             c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
@@ -461,19 +462,49 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def histogram_of_scores(self, title:str, show:bool=True, dest_path:str=None):
+    def histogram_of_scores(self, title:str, random:bool=False, show:bool=True, dest_path:str=None):
         """
         Plots weighted, macro and micro f1 Scores of provided populations as a Histogram
         :param Title (str) title
+        :param random (bool) - default is false, if true: labels get shuffled
         :param show (bool) - Optional, shows plot of true (default is true)
         :param dest_path (str) - saves plot to that directory if provided
         """
+        micro = []
+        macro = []
+        weighted = []
         for pop in self.populations:
-            c = Classifier(pop, self.path)
+            c = Classifier([pop], self.path)
             c.split_trial_wise()
             c.use_SMOTE()
+            if random:
+                c.shuffle_labels()
             c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-        pass
+            report = c.get_report()
+            macro.append(report['macro avg']['f1-score'])
+            micro.append(report['accuracy'])
+            weighted.append(report['weighted avg']['f1-score'])
+        
+        bins = np.linspace(0, 1, 500)
+
+        plt.hist(micro, bins, alpha=0.5, label="Micro F1-Score", color="red")
+        plt.hist(macro, bins, alpha=0.5, label="Macro F1-Score", color="blue")
+        plt.hist(weighted, bins, alpha=0.5, label="weighted F1-Score", color="gold")
+        plt.title(title)
+        plt.xlim(0, 1)
+        plt.grid()
+        plt.xlabel("Scores")
+        plt.ylabel("Occurences")
+        plt.legend(loc='upper right')
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format(title))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
 
 def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
     """
@@ -491,9 +522,10 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\single_values\mean_over_all')
-ok, nt_ok = a.sort_out_populations(percent=0.05)
-b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
-b.histogram_single_values("Mean activity of all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=0.1)
+ok, nt_ok = a.sort_out_populations(percent=0.1)
+b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
+b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM(rbf kernel, balanced class weights) and SMOTE on Training-Data")
+#b.histogram_single_values("Mean activity of all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=0.1)
 #b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
 #b.boxplots_of_classes("Mean activity over all neurons", "All 100  Populations with 4 Classes")
 #a.compare_models([['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop05']], [r'D:\Dataframes\tSNE\3D_perp30'], "Input Populations", "Prediction of Multiclass Labels with \n SVM(rbf Kernel, balanced class weights)\n and t-SNE 3D Data")
