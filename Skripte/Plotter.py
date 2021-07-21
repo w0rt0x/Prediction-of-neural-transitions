@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -462,19 +463,12 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def histogram_of_scores(self, title:str, random:bool=False, show:bool=True, dest_path:str=None):
-        """
-        Plots weighted, macro and micro f1 Scores of provided populations as a Histogram
-        :param Title (str) title
-        :param random (bool) - default is false, if true: labels get shuffled
-        :param show (bool) - Optional, shows plot of true (default is true)
-        :param dest_path (str) - saves plot to that directory if provided
-        """
+    def __get_f1s(self, populations:str, path:str, random:bool=False) -> Tuple[list, list, list]:
         micro = []
         macro = []
         weighted = []
-        for pop in self.populations:
-            c = Classifier([pop], self.path)
+        for pop in populations:
+            c = Classifier([pop], path)
             c.split_trial_wise()
             c.use_SMOTE()
             if random:
@@ -484,8 +478,20 @@ class Plotter:
             macro.append(report['macro avg']['f1-score'])
             micro.append(report['accuracy'])
             weighted.append(report['weighted avg']['f1-score'])
+
+        return micro, macro, weighted
+
+    def histogram_of_scores(self, title:str, random:bool=False, show:bool=True, dest_path:str=None):
+        """
+        Plots weighted, macro and micro f1 Scores of provided populations as a Histogram
+        :param Title (str) title
+        :param random (bool) - default is false, if true: labels get shuffled
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        """
+        micro, macro, weighted = self.__get_f1s(self.populations, self.path, random=random)
         
-        bins = np.linspace(0, 1, 500)
+        bins = np.linspace(0, 1, 200)
 
         plt.hist(micro, bins, alpha=0.5, label="Micro F1-Score", color="red")
         plt.hist(macro, bins, alpha=0.5, label="Macro F1-Score", color="blue")
@@ -496,6 +502,31 @@ class Plotter:
         plt.xlabel("Scores")
         plt.ylabel("Occurences")
         plt.legend(loc='upper right')
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format(title))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+    def boxplot_of_scores(self, title:str, show:bool=True, dest_path:str=None):
+        """
+        Shows f1 scores (with and without shuffled labels) as boxplots
+        """
+        labels = ["Micro F1", "Micro F1\n shuffled labels", "Macro F1", "Macro F1\n shuffled labels", "Weighted F1", "Weighted F1\n shuffled labels"]
+        micro, macro, weighted = self.__get_f1s(self.populations, self.path)
+        micro_r, macro_r, weighted_r = self.__get_f1s(self.populations, self.path, random=True)
+        data = [micro, micro_r, macro, macro_r, weighted, weighted_r]
+        plt.boxplot(data, labels=labels) 
+        plt.xlabel('Type of F1-Score')
+        plt.ylabel("Score")
+        plt.title(title)
+        plt.grid(axis='y')
+        plt.ylim(0, 1)
+
         if show:
             plt.show()
 
@@ -522,9 +553,10 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\single_values\mean_over_all')
-ok, nt_ok = a.sort_out_populations(percent=0.1)
+ok, nt_ok = a.sort_out_populations()
 b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
-b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM(rbf kernel, balanced class weights) and SMOTE on Training-Data")
+b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
+#b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)
 #b.histogram_single_values("Mean activity of all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=0.1)
 #b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
 #b.boxplots_of_classes("Mean activity over all neurons", "All 100  Populations with 4 Classes")

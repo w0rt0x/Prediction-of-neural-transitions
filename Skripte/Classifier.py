@@ -14,6 +14,7 @@ from random import sample, shuffle
 from copy import deepcopy
 from imblearn.over_sampling import ADASYN, SMOTE
 from typing import Tuple
+from sklearn.metrics import confusion_matrix
 
 
 class Classifier():
@@ -375,6 +376,13 @@ class Classifier():
         returns X_train, X_test, etc
         """
         return self.X_train, self.X_test, self.y_train, self.y_test
+
+    def get_cm(self) -> np.array:
+        """
+        returns confusion matrix
+        """
+        return confusion_matrix(self.y_test, self.pred)
+
 
 
 def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
