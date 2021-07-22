@@ -449,6 +449,7 @@ class Plotter:
         colors = self.__multiclass_to_color(deepcopy(labels))
         for i in range(len(labels)):
             plt.hist(d[labels[i]], bins, alpha=0.5, label=labels[i], color=colors[i])
+            plt.axvline(np.array(list(d[labels[i]])).mean(), color=colors[i], linewidth=1)
         plt.title(title)
         plt.xlabel(x_axis)
         plt.ylabel("Occurences")
@@ -596,10 +597,10 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\single_values\mean_over_all')
-ok, nt_ok = a.sort_out_populations(percent=0.05)
-b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
-b.CM_for_all_pop("Confusion Matrix of all Populations with all 4 classes\n and a relative frequency of at least 5% per class. \n All Values were divided by the number of used Populations")
-
+ok, nt_ok = a.sort_out_populations()
+b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
+b.histogram_single_values("Mean over all neurons", "Histogram of all Populations with all 4 Classes", max_bins=0.1)
+#b.CM_for_all_pop("Confusion Matrix of all Populations with all 4 classes\n and a relative frequency of at least 5% per class. \n All Values were divided by the number of used Populations")
 #b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
 #b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)
 #b.histogram_single_values("sum over all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=20)
