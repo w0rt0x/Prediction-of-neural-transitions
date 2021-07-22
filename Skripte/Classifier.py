@@ -357,7 +357,7 @@ class Classifier():
         """
         # Source:
         # https://stackoverflow.com/questions/57043260/how-change-the-color-of-boxes-in-confusion-matrix-using-sklearn
-        class_names = ['0->1', '0->0', '1->0', '1->1']
+        class_names = ['0->0', '0->1', '1->0', '1->1']
         disp = metrics.plot_confusion_matrix(self.classifier, self.X_test, self.y_test,
                                              display_labels=class_names,
                                              cmap=plt.cm.OrRd,
@@ -381,7 +381,7 @@ class Classifier():
         """
         returns confusion matrix
         """
-        return confusion_matrix(self.y_test, self.pred)
+        return confusion_matrix(self.y_test, self.pred, labels=['0->0', '0->1', '1->0', '1->1'])
 
 
 
