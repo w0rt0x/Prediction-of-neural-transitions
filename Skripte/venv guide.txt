@@ -1,8 +1,0 @@
--Create venv
-virtualenv name
-
--Disable Powershell Error:
-Set-ExecutionPolicy Unrestricted -Scope Process
-
--Activate venv:
-.\Bch-venv\Scripts\activate.ps1

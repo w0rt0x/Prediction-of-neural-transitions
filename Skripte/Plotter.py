@@ -311,7 +311,7 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def boxplots_of_classes(self, y_axis:str, title:str, show:bool=True, dest_path:str=None):
+    def boxplots_of_classes(self, y_axis:str, title:str, show:bool=True, dest_path:str=None, show_outliers: bool=True):
         """
         makes 4 Box-plots that show the first component of the dataframe (mean, median, etc) of the 4 classes
         """
@@ -338,7 +338,7 @@ class Plotter:
         for key in labels:
             data.append(list(d[key]))
         
-        plt.boxplot(data, labels=labels) 
+        plt.boxplot(data, labels=labels, showfliers=show_outliers) 
         plt.xlabel('class')
         plt.ylabel(y_axis)
         plt.title(title)
@@ -599,13 +599,13 @@ populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\single_values\mean_over_all')
 ok, nt_ok = a.sort_out_populations()
 b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
-b.histogram_single_values("Mean over all neurons", "Histogram of all Populations with all 4 Classes", max_bins=0.1)
+#b.histogram_single_values("Mean over all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=0.1)
 #b.CM_for_all_pop("Confusion Matrix of all Populations with all 4 classes\n and a relative frequency of at least 5% per class. \n All Values were divided by the number of used Populations")
 #b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
 #b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)
 #b.histogram_single_values("sum over all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=20)
 #b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
-#b.boxplots_of_classes("Mean activity over all neurons", "All 100  Populations with 4 Classes")
+b.boxplots_of_classes("Mean activity over all neurons", "All 100 Populations with 4 Classes")
 #a.compare_models([['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop05']], [r'D:\Dataframes\tSNE\3D_perp30'], "Input Populations", "Prediction of Multiclass Labels with \n SVM(rbf Kernel, balanced class weights)\n and t-SNE 3D Data")
 #a.plot_2D("t-SNE", "t-SNE Component 1", "t-SNE Component 2")
 #a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
