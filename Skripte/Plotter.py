@@ -137,7 +137,7 @@ class Plotter:
             plt.cla()
             plt.close()
 
-    def compare_n_neurons(self, title: str, neurons:list=list(range(5, 101, 5))):
+    def compare_n_neurons(self, title: str, neurons:list=list(range(5, 101, 5)), kernel:str='rbf', degree:int=3, c:float=1.0, gamma:float=1.0):
         """
         Compares performance of n most active neurons
         :param title (str) - Title of plot
@@ -152,11 +152,11 @@ class Plotter:
 
         for n in neurons:
             # Regular run
-            c = Classifier(self.populations, self.path + str(n))
-            c.split_trial_wise()
-            c.use_SMOTE()
-            c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-            report = c.get_report()
+            a = Classifier(self.populations, self.path + str(n))
+            a.split_trial_wise()
+            a.use_SMOTE()
+            a.do_SVM(kernel=kernel, c=c, gamma=gamma, degree=degree, class_weight='balanced')
+            report = a.get_report()
             macro.append(report['macro avg']['f1-score'])
             micro.append(report['accuracy'])
             weighted.append(report['weighted avg']['f1-score'])
@@ -166,7 +166,7 @@ class Plotter:
             r.split_trial_wise()
             r.use_SMOTE()
             r.shuffle_labels()
-            r.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+            r.do_SVM(kernel=kernel, c=c, gamma=gamma, degree=degree, class_weight='balanced')
             report = r.get_report()
             macro_r.append(report['macro avg']['f1-score'])
             micro_r.append(report['accuracy'])
@@ -595,11 +595,12 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
             populations.add(i[:-9])
     return list(populations)
 
-populations = get_all_pop()
-a = Plotter(populations, r'D:\Dataframes\PCA\2')
-a.plot_2D("PCA", "Principle Component 1", "Principle Component 2", show=False, dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\PCA')
-a = Plotter(populations, r'D:\Dataframes\uMap\2')
-a.plot_2D("uMAP", "Component 1", "Component 2", show=False, dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\uMAP')
+#populations = get_all_pop()
+#a = Plotter(populations, r'D:\Dataframes\PCA\2')
+b = Plotter(['bl709_one_white_Pop09'], r"D:\\Dataframes\\most_active_neurons\\")
+b.compare_n_neurons("bl709_one_white_Pop09 with n most active neurons,\n Classification with SVM (rbf-Kernel, c=1, gamma=1, balanced classweights)\n and SMOTE on Training-Data")
+b.compare_n_neurons("bl709_one_white_Pop09 with n most active neurons,\n Classification with SVM (polynomial-Kernel, c=1, degree=3, balanced classweights)\n and SMOTE on Training-Data", kernel='poly')
+b.compare_n_neurons("bl709_one_white_Pop09 with n most active neurons,\n Classification with SVM (linear-Kernel, c=1, balanced classweights)\n and SMOTE on Training-Data", kernel='linear')
 #ok, nt_ok = a.sort_out_populations()
 #b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
 

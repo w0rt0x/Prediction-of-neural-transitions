@@ -395,7 +395,7 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     print(test)
     return test
 
-
+"""
 #a = Classifier(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\tSNE\perp30')
 a = Classifier(['bl709_one_white_Pop05'], r'D:\Dataframes\most_active_neurons\40')
 a.split_trial_wise()
@@ -411,3 +411,4 @@ print("Weighted: ",a.get_f1(avg="weighted"))
 c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000]
 title="bl693_no_white_Pop05 (40 most active neurons) on SVM (rbf Kernel,\n class_weight='balanced') and SMOTE on Training-Data"
 a.grid_search(title, C=c, Y=c, kernel='rbf')
+"""
