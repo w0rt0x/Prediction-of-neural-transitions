@@ -259,14 +259,14 @@ class Classifier():
         """
         results = []
         for c in range(len(C)):
+            print(C[c])
             results.append([])
             for y in range(len(Y)):
                 svm = SVC(kernel=kernel, C=C[c], degree=degree, gamma=Y[y], class_weight=class_weight).fit(self.X_train, self.y_train)
                 self.classifier = svm
                 f1 = metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average="weighted")
                 results[c].append(round(f1,4))
-        
-        ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=C, yticklabels=Y)
+        ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=Y, yticklabels=C, cbar_kws={'label': 'weighted f1-Score'})
         plt.xlabel('Gamma')
         plt.ylabel('C')
         plt.title(title)
@@ -395,20 +395,19 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     print(test)
     return test
 
-"""
+
 #a = Classifier(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\tSNE\perp30')
-a = Classifier(['bl709_one_white_Pop09'], r'D:\Dataframes\tSNE\perp30')
+a = Classifier(['bl709_one_white_Pop05'], r'D:\Dataframes\most_active_neurons\40')
 a.split_trial_wise()
 #a.print_shape()
 a.use_SMOTE()
 #a.use_SMOTE()
 #a.shuffle_labels()
-a.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-print("Macro: ",a.get_f1(avg="macro"))
-print("Micro: ", a.get_f1(avg="micro"))
+a.do_SVM(kernel='poly', c=1, gamma=0.5, class_weight='balanced')
+#print("Macro: ",a.get_f1(avg="macro"))
+#print("Micro: ", a.get_f1(avg="micro"))
 print("Weighted: ",a.get_f1(avg="weighted"))
-a.plot_CM(title="bl693_no_white_Pop05,\n SMOTE on Training-Data\n Multiclass SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
-#c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000, 10000]
-#title="bl693_no_white_Pop05 (4 most active) on SVM (rbf Kernel),\n with class_weight='balanced'and SMOTE on Training-Data"
-#a.grid_search(title, C=c, Y=c)
-"""
+#a.plot_CM(title="bl693_no_white_Pop05,\n SMOTE on Training-Data\n Multiclass SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
+c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000]
+title="bl693_no_white_Pop05 (40 most active neurons) on SVM (rbf Kernel,\n class_weight='balanced') and SMOTE on Training-Data"
+a.grid_search(title, C=c, Y=c, kernel='rbf')
