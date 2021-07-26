@@ -273,14 +273,13 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.get_most_active_neurons(n=dim)
-        a.get_sum_over_reduced()
+        a.do_PCA(dim)
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
 
-prepare_data(destination=r'D:\Dataframes\single_values\sum_over_n_most_active\40', dim=40)
+prepare_data(destination=r'D:\Dataframes\PCA\20', dim=20)
 
 
 #pop = "bl693_no_white_Pop05"
