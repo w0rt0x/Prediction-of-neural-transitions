@@ -11,6 +11,7 @@ from collections import Counter
 from copy import deepcopy
 
 
+
 class Plotter:
 
     def __init__(self, populations: list, path:str):
@@ -448,12 +449,13 @@ class Plotter:
         bins = np.linspace(0, max_bins, 500)
         colors = self.__multiclass_to_color(deepcopy(labels))
         for i in range(len(labels)):
-            plt.hist(d[labels[i]], bins, alpha=0.5, label=labels[i], color=colors[i])
-            plt.axvline(np.array(list(d[labels[i]])).mean(), color=colors[i], linewidth=1)
+            plt.kdeplot(d[labels[i]], bins, alpha=0.5, label=labels[i], color=colors[i])
+            plt.axvline(np.array(list(d[labels[i]])).mean(), color=colors[i], linewidth=1, label="{} mean".format(labels[i]))
         plt.title(title)
         plt.xlabel(x_axis)
         plt.ylabel("Occurences")
         plt.legend(loc='upper right')
+
         if show:
             plt.show()
 
@@ -551,7 +553,7 @@ class Plotter:
         c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
         return c.get_cm()
 
-    def CM_for_all_pop(self, title:str, mean: bool=True, show:bool=True, dest_path:str=None):
+    def CM_for_all_pop(self, title:str, norm: bool=True, show:bool=True, dest_path:str=None):
         """
         :param Title (str) title
         :param show (bool) - Optional, shows plot of true (default is true)
@@ -561,14 +563,21 @@ class Plotter:
         for pop in self.populations:
             CM = CM + self.__get_cm(pop, self.path)
 
-        if mean:
-            CM = CM / len(self.populations)
+        if norm:
+            CM_norm = np.zeros((4, 4))
+            for row in range(len(CM)):
+                for col in range(len(CM[row])):
+                    CM_norm[row][col] = round(CM[row][col] / np.sum(CM[row]), 3)
+            CM = CM_norm
 
-        df_cm = pd.DataFrame(CM, index = [i for i in ['0->0', '0->1', '1->0', '1->1']],
+
+        df_cm = pd.DataFrame(CM_norm, index = [i for i in ['0->0', '0->1', '1->0', '1->1']],
                   columns = [i for i in ['0->0', '0->1', '1->0', '1->1']])
         #plt.figure(figsize = (10,7))
-        sns.heatmap(df_cm, annot=True,cmap='Blues', fmt='g')
+        sns.heatmap(df_cm, annot=True, cmap='Blues', fmt='g')
         plt.title(title)
+        plt.xlabel("Predicted Label")
+        plt.ylabel("True Label")
 
         if show:
             plt.show()
@@ -595,17 +604,13 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
             populations.add(i[:-9])
     return list(populations)
 
-#populations = get_all_pop()
-#a = Plotter(populations, r'D:\Dataframes\PCA\2')
-b = Plotter(['bl709_one_white_Pop09'], r"D:\\Dataframes\\most_active_neurons\\")
-b.compare_n_neurons("bl709_one_white_Pop09 with n most active neurons,\n Classification with SVM (rbf-Kernel, c=1, gamma=1, balanced classweights)\n and SMOTE on Training-Data")
-b.compare_n_neurons("bl709_one_white_Pop09 with n most active neurons,\n Classification with SVM (polynomial-Kernel, c=1, degree=3, balanced classweights)\n and SMOTE on Training-Data", kernel='poly')
-b.compare_n_neurons("bl709_one_white_Pop09 with n most active neurons,\n Classification with SVM (linear-Kernel, c=1, balanced classweights)\n and SMOTE on Training-Data", kernel='linear')
-#ok, nt_ok = a.sort_out_populations()
-#b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
+populations = get_all_pop()
+a = Plotter(populations, r'D:\Dataframes\PCA\2')
+ok, nt_ok = a.sort_out_populations()
+b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
 
-#b.histogram_single_values("Mean over all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=0.1)
-#b.CM_for_all_pop("Confusion Matrix of all Populations with all 4 classes\n and a relative frequency of at least 5% per class. \n All Values were divided by the number of used Populations")
+b.histogram_single_values("Mean over all neurons", "Histogram of all Populations with all 4 Classes", max_bins=0.1)
+#b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all Populations with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 #b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
 #b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)
 #b.histogram_single_values("sum over all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=20)
