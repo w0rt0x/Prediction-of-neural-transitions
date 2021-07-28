@@ -1,0 +1,1 @@
+Outliers are 1.5 times the interquartile Range below Q1 or above Q3.
