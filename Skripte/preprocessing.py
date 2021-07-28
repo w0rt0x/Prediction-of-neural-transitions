@@ -145,10 +145,10 @@ class Preprocessor():
         neurons = []
         for i in range(len(matrix)):
             sums.append(matrix[i].sum())
-
         # Getting indices:
         # https://www.geeksforgeeks.org/python-indices-of-n-largest-elements-in-list/
         indices = sorted(range(len(sums)), key = lambda sub: sums[sub])[-n:]
+
         for i in indices:
             neurons.append(matrix[i])
 
@@ -279,12 +279,11 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
 
-prepare_data(destination=r'D:\Dataframes\PCA\20', dim=20)
+#prepare_data(destination=r'D:\Dataframes\PCA\20', dim=20)
 
-
-#pop = "bl693_no_white_Pop05"
-#a = Preprocessor(pop)
-#a.get_most_active_neurons(n=40)
+pop = "bl693_no_white_Pop05"
+a = Preprocessor(pop)
+a.get_most_active_neurons(n=40)
 #a.get_mean_over_reduced_data()
 #a.create_multiclass_transition_labels()
 #a.df_to_file(r'C:\Users\Sam\Desktop')

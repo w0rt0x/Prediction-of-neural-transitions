@@ -1,19 +1,36 @@
-from imblearn.over_sampling._smote.base import SMOTE
-import pandas as pd
-from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.metrics import classification_report
 from sklearn import metrics
 import warnings
 warnings.filterwarnings('ignore')
-from get_data_for_DL import get_data, use_adasyn, use_smote, encode_labels, decode_labels, random_split
+from Classifier import Classifier
 from keras import backend as K
 import tensorflow as tf
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
+
+def f1_weighted(true, pred): 
+    # Source for weightend f1:
+    # https://stackoverflow.com/questions/59963911/how-to-write-a-custom-f1-loss-function-with-weighted-average-for-keras
+    predLabels = K.argmax(pred, axis=-1)
+    pred = K.one_hot(predLabels, 4) 
+
+    ground_positives = K.sum(true, axis=0) + K.epsilon()       # = TP + FN
+    pred_positives = K.sum(pred, axis=0) + K.epsilon()         # = TP + FP
+    true_positives = K.sum(true * pred, axis=0) + K.epsilon()  # = TP
+        
+    precision = true_positives / pred_positives 
+    recall = true_positives / ground_positives
+
+    f1 = 2 * (precision * recall) / (precision + recall + K.epsilon())
+
+    weighted_f1 = f1 * ground_positives / K.sum(ground_positives) 
+    weighted_f1 = K.sum(weighted_f1)
+
+    return weighted_f1 
 
 class FeedforwardNetWork():
     
@@ -25,56 +42,30 @@ class FeedforwardNetWork():
         self.y_test = None
         self.y_test_en = None
 
-    def shuffle_labels(self):
-        """
-        shuffles y-labels to have a f1-Score Benchamrk
-        """
-        random.shuffle(self.y_train)
-        random.shuffle(self.y_test)
 
-    def get_data(self, liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\100_Transition_multiclass'):
+    def get_data(self, liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop01', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop04', 'bl693_no_white_Pop06'], path=r'D:\Dataframes\most_active_neurons\40', shuffle: bool=False, smote: bool=True):
         """
         sets training and tes data, takes in list with filenames from directory and path that that directory
         """
-        self.X_train, self.X_test, self.y_train, self.y_test = get_data(liste, path)
+        a = Classifier(liste, path)
+        a.split_trial_wise()
+        if shuffle:
+            a.shuffle_labels()
+        if smote:
+            a.use_SMOTE()
+        self.X_train = a.X_train.tolist()
+        self.X_test = a.X_test.tolist()
+        self.y_train = a.y_train.tolist()
+        self.y_test = a.y_test.tolist()
 
-    def use_smote(self):
-        """
-        Uses smoteon dataset
-        """
-        self.X_train, self.X_test, self.y_train, self.y_test = use_smote(self.X_train, self.X_test, self.y_train, self.y_test)
-
-    def use_adasyn(self):
-        """
-        Uses smoteon dataset
-        """
-        self.X_train, self.X_test, self.y_train, self.y_test = use_adasyn(self.X_train, self.X_test, self.y_train, self.y_test)
 
     def makeModell(self, loss='categorical_crossentropy', optimizer='adam', metric='accuracy'):
         # Sequentiel model, layers are added one after another
         dim = len(self.X_train[0])
         dl = Sequential()
-        """
-        dl.add(Dense(512, input_dim=dim, activation='sigmoid'))
-        dl.add(Dense(352, activation='sigmoid'))
-        dl.add(Dense(32, activation='sigmoid'))
-        dl.add(Dense(32, activation='sigmoid'))
-        dl.add(Dense(32, activation='sigmoid'))
-        """
-        dl.add(Dense(50, input_dim=dim, activation='sigmoid'))
-        dl.add(Dense(25, activation='sigmoid'))
-        dl.add(Dense(12, activation='sigmoid'))
-        dl.add(Dense(6, activation='sigmoid'))
+        dl.add(Dense(16, input_dim=len(self.X_train[0]), activation='sigmoid'))
         dl.add(Dense(4,activation='softmax'))
-        """
-        dl.add(Dense(250, input_dim=dim, activation='sigmoid'))
-        dl.add(Dense(125, activation='sigmoid'))
-        dl.add(Dense(62, activation='sigmoid'))
-        dl.add(Dense(31, activation='sigmoid'))
-        dl.add(Dense(15, activation='sigmoid'))
-        dl.add(Dense(7, activation='sigmoid'))
-        dl.add(Dense(4,activation='softmax'))
-        """
+
         # Choosing the loss-function, more infos here:
         # https://machinelearningmastery.com/how-to-choose-loss-functions-when-training-deep-learning-neural-networks/
         # Also choosing optimizer (stochastic gradient descent algorithm 'adam'):
@@ -82,27 +73,6 @@ class FeedforwardNetWork():
         # Using accuracy-metric because of binary classification
         dl.compile(loss=loss, optimizer=optimizer, metrics=[metric])
         self.model = dl
-
-
-    def f1_weighted(true, pred): 
-        # Source for weightend f1:
-        # https://stackoverflow.com/questions/59963911/how-to-write-a-custom-f1-loss-function-with-weighted-average-for-keras
-        predLabels = K.argmax(pred, axis=-1)
-        pred = K.one_hot(predLabels, 4) 
-
-        ground_positives = K.sum(true, axis=0) + K.epsilon()       # = TP + FN
-        pred_positives = K.sum(pred, axis=0) + K.epsilon()         # = TP + FP
-        true_positives = K.sum(true * pred, axis=0) + K.epsilon()  # = TP
-        
-        precision = true_positives / pred_positives 
-        recall = true_positives / ground_positives
-
-        f1 = 2 * (precision * recall) / (precision + recall + K.epsilon())
-
-        weighted_f1 = f1 * ground_positives / K.sum(ground_positives) 
-        weighted_f1 = K.sum(weighted_f1)
-
-        return weighted_f1 
 
     def f1_m(true, pred):
         # Source:
@@ -120,16 +90,32 @@ class FeedforwardNetWork():
         f1 = tf.where(tf.math.is_nan(f1), tf.zeros_like(f1), f1)
         return K.mean(f1)
 
+    def __encode_labels(self, y):
+        """ Encodes string labels"""
+        y_hot = []
+        table = {"0->0":[1,0,0,0], "0->1":[0,1,0,0], "1->0":[0,0,1,0], "1->1":[0,0,0,1]}
+        for i in range(len(y)):
+            y_hot.append(table[y[i]])
+        return y_hot
+
+    def __decode_labels(self, y):
+        """ Encodes string labels"""
+        y_hot = []
+        table = {0:"0->0", 1:"0->1", 2:"1->0", 3:"1->1"}
+        for i in range(len(y)):
+            y_hot.append(table[y[i]])
+        return y_hot
+    
     def encode_labels(self):
         """
         encodes labels, One Hot Encoding
         """
-        self.y_train = encode_labels(self.y_train)
-        self.y_test_en = encode_labels(self.y_test)
+        self.y_train = self.__encode_labels(self.y_train)
+        self.y_test_en = self.__encode_labels(self.y_test)
 
-    def fitModel(self, epochs=100, batch_size=5):
+    def fitModel(self, epochs=50, batch_size=32):
         """
-        Fits Model with given Epoch and Batch Size, default: epochs=100, batch_size=5
+        Fits Model with given Epoch and Batch Size, default: epochs=50, batch_size=32
         """
         # Fitting is done with Epochs, each epoch contains batches:
         # https://machinelearningmastery.com/difference-between-a-batch-and-an-epoch/
@@ -145,7 +131,7 @@ class FeedforwardNetWork():
         print('Accuracy %.2f' % (accuracy*100))
 
         print(' ')
-        y_pred = decode_labels(self.model.predict_classes(self.X_test))
+        y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
         print("F1-Score macro: ", metrics.f1_score(self.y_test, y_pred,average='macro'))
         print("F1-Score micro: ", metrics.f1_score(self.y_test, y_pred,average='micro'))
         print("F1-Score wighted: ", metrics.f1_score(self.y_test, y_pred,average='weighted'))
@@ -158,8 +144,6 @@ class FeedforwardNetWork():
         # Saved Model to file:
         # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
 
-    def get_single_trials(self,liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\100_Transition_multiclass'):
-        self.X_train, self.X_test, self.y_train, self.y_test = random_split(pops=liste, path=path)
 
     def mapMeanWeights(self, layer=0):
         """
@@ -179,31 +163,31 @@ class FeedforwardNetWork():
 
     def plotWeights(self, layer=0):
         """
-        Plots first Layer Weights
+        Plots Layer Weights
         """
         weights = self.model.layers[0].get_weights()[0]
         plt.imshow(weights, cmap='hot', interpolation='nearest')
         plt.colorbar()
         plt.ylabel('Input-Layer')
         plt.xlabel('First Layer')
-        plt.title('First Layer Weights (500x250)')
+        plt.title('First Layer Weights')
         plt.show()
 
     def map_input(self):
         weights = self.model.layers[0].get_weights()[0]
         weights = np.asarray(weights)
-        y_pred = decode_labels(self.model.predict_classes(self.X_test))
+        y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
         d = dict()
 
         for i in range(len(y_pred)):
             # Only for correct predictions
             if y_pred[i] == self.y_test[i]:
                 if y_pred[i] in d:
-                    l = deepcopy(d[y_pred[i]])
-                    l.append(self.X_test[i])
-                    d[y_pred[i]] = l
+                    d[y_pred[i]].append(self.X_test[i])
                 else:
                     d[y_pred[i]] = [self.X_test[i]]
+        
+
         
         keys = list(d.keys())
         samples = []
@@ -223,6 +207,7 @@ class FeedforwardNetWork():
         matrices = np.asarray(matrices)
         mini = np.min(matrices)
         maxi = np.max(matrices)
+        
         for w in range(len(matrices)):
             plt.imshow(matrices[w], cmap='hot', interpolation='nearest', vmin=mini, vmax=maxi)
             plt.colorbar()
@@ -232,18 +217,9 @@ class FeedforwardNetWork():
             plt.show()
 
 a = FeedforwardNetWork()
-#a.get_data()
-#a.get_single_trials(liste=['bl693_no_white_Pop05'], path=r'D:\Dataframes\ISOMAP\multi_20')
-a.get_data(liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\most_active_neurons\100')
-a.use_smote()
-#a.shuffle_labels()
+a.get_data(liste=['bl693_no_white_Pop02','bl693_no_white_Pop05', 'bl693_no_white_Pop03'])
 a.encode_labels()
 a.makeModell()
 a.fitModel()
 a.evaluateModel()
-#a.map_input()
-#a.mapMeanWeights()
-#a.plotWeights()
-
-
-#['bl684_no_white_Pop03',' bl689-1_one_white_Pop09','bl688-1_one_white_Pop05', 'bl709_one_white_Pop11', 'bl660-1_two_white_Pop07']
+a.map_input()
