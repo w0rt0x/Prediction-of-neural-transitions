@@ -10,6 +10,7 @@ from sklearn.manifold import Isomap
 from sklearn.manifold import TSNE
 import umap
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class Preprocessor():
@@ -47,6 +48,7 @@ class Preprocessor():
         # Getting Response Modes
         mat = loadmat(r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\data_for_sam' + '\\' + pop + '.mat')
         array = mat['cl_id']
+        self.all_labels = array
         d = dict()
         for i in range(0, 34):
             for j in range(0, 4):
@@ -56,6 +58,20 @@ class Preprocessor():
             label.append(d[header[i]])
 
         self.label = np.asarray(label)
+
+    def plot_label(self):
+        data = np.zeros((34,4))
+        for i in range(len(self.all_labels)):
+            for j in range((len(self.all_labels[i]))):
+                if self.all_labels[i][j]>0:
+                    data[i][j] = 1
+
+        ax = sns.heatmap(data , cmap = 'Greys' , linewidths=1, linecolor='black', xticklabels=['Day ' + str(x) for x in range(1,5)], yticklabels=['stim  ' + str(x) for x in range(1,35)])
+        plt.title("Transitions of {}".format(self.population))
+        colorbar = ax.collections[0].colorbar
+        colorbar.set_ticks([0.25,0.75])
+        colorbar.set_ticklabels(['0', '1'])
+        plt.show()
 
     def do_PCA(self, dim):
         """
@@ -76,8 +92,6 @@ class Preprocessor():
         """
         does isomap on given data-set,
         saves manifold data to self.reduced_data
-
-        # MEHR PARAMETER
         """
         # Source: https://benalexkeen.com/isomap-for-dimensionality-reduction-in-python/
         # https://towardsdatascience.com/what-is-isomap-6e4c1d706b54
@@ -283,7 +297,8 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
 
 pop = "bl693_no_white_Pop05"
 a = Preprocessor(pop)
-a.get_most_active_neurons(n=40)
+a.plot_label()
+#a.get_most_active_neurons(n=40)
 #a.get_mean_over_reduced_data()
 #a.create_multiclass_transition_labels()
 #a.df_to_file(r'C:\Users\Sam\Desktop')
