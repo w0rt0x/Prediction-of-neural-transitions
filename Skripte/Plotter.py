@@ -9,6 +9,8 @@ from os.path import isfile, join
 from Classifier import Classifier
 from collections import Counter
 from copy import deepcopy
+import warnings
+warnings.filterwarnings('always')
 
 
 
@@ -248,7 +250,7 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'yellow'
+                    label[i] = 'magenta'
         return label
 
     def compare_models(self, pops: list, paths:list, x_axis:str, title:str, width: float=0.2, show:bool=True, dest_path:str=None, names = None):
@@ -312,7 +314,7 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def boxplots_of_classes(self, y_axis:str, title:str, show:bool=True, dest_path:str=None, show_outliers: bool=True):
+    def boxplots_of_classes(self, y_axis:str, title:str, show:bool=True, dest_path:str=None, show_outliers: bool=False):
         """
         makes 4 Box-plots that show the first component of the dataframe (mean, median, etc) of the 4 classes
         """
@@ -449,8 +451,10 @@ class Plotter:
         bins = np.linspace(0, max_bins, 500)
         colors = self.__multiclass_to_color(deepcopy(labels))
         for i in range(len(labels)):
-            plt.kdeplot(d[labels[i]], bins, alpha=0.5, label=labels[i], color=colors[i])
-            plt.axvline(np.array(list(d[labels[i]])).mean(), color=colors[i], linewidth=1, label="{} mean".format(labels[i]))
+            plt.hist(d[labels[i]], bins, alpha=0.5, label=labels[i], color=colors[i])
+            # Source: https://towardsdatascience.com/histograms-and-density-plots-in-python-f6bda88f5ac0
+            #sns.distplot(list(d[labels[i]]), hist = False, kde = True,kde_kws = {'linewidth': 2}, label = labels[i], norm_hist=True)
+            plt.axvline(np.array(list(d[labels[i]])).mean(), ls='--', color=colors[i], linewidth=1, label="{} mean".format(labels[i]))
         plt.title(title)
         plt.xlabel(x_axis)
         plt.ylabel("Occurences")
@@ -589,6 +593,46 @@ class Plotter:
         plt.cla()
         plt.close()
 
+    def plot_mean_of_each_class(self, title:str, show:bool=True, dest_path:str=None):
+        """
+        """
+        a = Classifier(self.populations, self.path)
+        a.split_trial_wise()
+        X = np.concatenate((a.X_train, a.X_test))
+        Y = np.concatenate((a.y_train, a.y_test))
+
+        d = {}
+        for i in range(len(Y)):
+            if Y[i] in d:
+                d[Y[i]].append(X[i])
+            else:
+                d[Y[i]] = [X[i]]
+
+        for key in d.keys():
+            d[key] = np.asarray(d[key])
+            d[key] = np.mean(d[key], axis=0)[::-1]
+
+        c = {"1->1": "magenta", "0->0": "cyan", "1->0":"red", "0->1": "green"}
+        for key in d.keys():
+            plt.plot(range(1, len(X[0]) + 1), d[key], color=c[key], label=key)
+
+        plt.xlabel('{} most active Neurons'.format(len(X[0])))
+        plt.ylabel("Neuron-wise mean per class")
+        plt.title(title)
+        plt.legend()
+
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format(title))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+
+
 
 def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
     """
@@ -606,10 +650,13 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\PCA\2')
-ok, nt_ok = a.sort_out_populations()
-b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
+ok, nt_ok = a.sort_out_populations(show=False)
+#b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
+b = Plotter(ok, r'D:\Dataframes\most_active_neurons\100')
+b.plot_mean_of_each_class("Neuron-wise mean of the 40 Most active neurons,\n seperated into the four classes")
+#b.histogram_single_values("All Trails with their mean over all neurons", "Histogram of all Populations with all 4 Classes", max_bins=0.1)
 
-b.histogram_single_values("Mean over all neurons", "Histogram of all Populations with all 4 Classes", max_bins=0.1)
+
 #b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all Populations with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 #b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
 #b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)

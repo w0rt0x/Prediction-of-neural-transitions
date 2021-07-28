@@ -15,8 +15,6 @@ from copy import deepcopy
 from imblearn.over_sampling import ADASYN, SMOTE
 from typing import Tuple
 from sklearn.metrics import confusion_matrix
-import warnings
-warnings.filterwarnings('always')
 
 
 
@@ -374,7 +372,7 @@ class Classifier():
         else:
             plt.savefig(path_dir + '\\CM.png')
 
-    def get_data(self) -> Tuple[np.array, np.array, np.array, np.array,]:
+    def get_data(self):
         """
         returns X_train, X_test, etc
         """
