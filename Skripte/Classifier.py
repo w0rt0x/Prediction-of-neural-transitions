@@ -252,7 +252,7 @@ class Classifier():
         ada = ADASYN()
         self.X_train, self.y_train = ada.fit_resample(self.X_train, self.y_train)
 
-    def grid_search(self, title, C, Y = [1], kernel='rbf', degree=3, class_weight='balanced'):
+    def grid_search(self, title, C, Y = [1], kernel='rbf', degree=3, class_weight='balanced', show: bool=True, dest_path: str = None):
         """
         Performs Grid-Search on given classifier
         """
@@ -271,7 +271,16 @@ class Classifier():
         plt.xlabel('Degree')
         plt.ylabel('C')
         plt.title(title)
-        plt.show()    
+
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path)
+
+        plt.clf()
+        plt.cla()
+        plt.close()   
 
     def do_Logistic_Regression(self, penality='l2', c=1.0):
         """
