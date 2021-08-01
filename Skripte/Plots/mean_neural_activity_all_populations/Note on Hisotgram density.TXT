@@ -1,0 +1,6 @@
+The Density-Plot is made the following way:
+"Each bin will display the bin's raw count divided by the total number of counts and the bin width 
+(density = counts / (sum(counts) * np.diff(bins))), so that the area under the histogram integrates 
+to 1 (np.sum(density * np.diff(bins)) == 1)."
+
+Taken from: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.hist.html
