@@ -552,7 +552,7 @@ class Plotter:
         c = Classifier([pop], path)
         c.split_trial_wise()
         c.use_SMOTE()
-        c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
+        c.do_SVM(kernel='poly', c=1, gamma=0.5, degree=4, class_weight='balanced')
         return c.get_cm()
 
     def CM_for_all_pop(self, title:str, norm: bool=True, show:bool=True, dest_path:str=None):
@@ -649,13 +649,12 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\PCA\2')
 ok, nt_ok = a.sort_out_populations(show=False)
-b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
+b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
 #b = Plotter(ok, r'D:\Dataframes\most_active_neurons\100')
 #b.plot_mean_of_each_class("Neuron-wise mean of the 40 Most active neurons,\n seperated into the four classes")
-b.histogram_single_values("All trials with their mean over all neurons", "Histogram of all populations with all four classes", max_bins=0.1)
+#b.histogram_single_values("All trials with their mean over all neurons", "Histogram of all populations with all four classes", max_bins=0.1)
+b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='poly', c=1, degree=4, class_weight='balanced')")
 
-
-#b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all Populations with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 #b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
 #b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)
 #b.histogram_single_values("sum over all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=20)

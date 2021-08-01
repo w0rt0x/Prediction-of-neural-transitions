@@ -212,7 +212,7 @@ class FeedforwardNetWork():
             plt.imshow(matrices[w], cmap='hot', interpolation='nearest', vmin=mini, vmax=maxi)
             plt.colorbar()
             plt.ylabel('Input-Layer')
-            plt.xlabel('First Layer')
+            plt.xlabel('First Hidden\n Layer')
             plt.title(keys[w])
             plt.show()
 
