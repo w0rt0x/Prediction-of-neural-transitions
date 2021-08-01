@@ -266,7 +266,8 @@ class Classifier():
                 f1 = metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average="weighted")
                 results[c].append(round(f1,4))
         ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=Y, yticklabels=C, cbar_kws={'label': 'weighted f1-Score'})
-        plt.xlabel('Gamma')
+        if Y!=[1]:
+            plt.xlabel('Gamma')
         plt.ylabel('C')
         plt.title(title)
         plt.show()    
