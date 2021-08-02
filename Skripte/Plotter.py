@@ -564,7 +564,6 @@ class Plotter:
         self.gamma = gamma
         self.degree = degree
 
-
     def CM_for_all_pop(self, title:str, norm: bool=True, show:bool=True, dest_path:str=None):
         """
         :param Title (str) title
@@ -573,6 +572,7 @@ class Plotter:
         """
         CM = np.zeros((4, 4))
         for pop in self.populations:
+            print(pop)
             CM = CM + self.__get_cm(pop, self.path)
 
         if norm:
@@ -699,18 +699,3 @@ b.set_svm_parameter("poly", 1.0, 1.0, degree=3)
 b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (20 Principle Components) with all 4 classes. \n Classification via SVM(kernel='poly', c=1, degree=3, class_weight='balanced')",
                 show=False, 
                 dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\SVM\PCA\All-Populations_SVM-poly-20PCAs.png')
-
-# umap Kernel
-a = Classifier(['bl709_one_white_Pop09'], r'D:\Dataframes\uMap\50')
-a.split_trial_wise()
-a.use_SMOTE()
-c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000]
-title="bl709_one_white_Pop09\n (50 uMAP Components) on SVM (polynomial Kernel,\n class_weight='balanced') and SMOTE on Training-Data"
-a.grid_search(title, C=c, kernel='poly', degree=[2,3,4])
-
-a = Classifier(['bl709_one_white_Pop09'], r'D:\Dataframes\uMap\100')
-a.split_trial_wise()
-a.use_SMOTE()
-c = [0.00001, 0.0001, 0.001, 0.01, 0.1, 0.5, 1, 10, 25, 50, 100, 1000]
-title="bl709_one_white_Pop09\n (100 uMAP Components) on SVM (polynomial Kernel,\n class_weight='balanced') and SMOTE on Training-Data"
-a.grid_search(title, C=c, kernel='poly', degree=[2,3,4])

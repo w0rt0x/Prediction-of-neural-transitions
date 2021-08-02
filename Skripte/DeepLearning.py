@@ -173,7 +173,7 @@ class FeedforwardNetWork():
         plt.title('First Layer Weights')
         plt.show()
 
-    def map_input(self):
+    def map_input(self, title: str):
         weights = self.model.layers[0].get_weights()[0]
         weights = np.asarray(weights)
         y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
@@ -189,7 +189,7 @@ class FeedforwardNetWork():
         
 
         
-        keys = list(d.keys())
+        keys = ['0->0', '0->1', '1->0', '1->1']
         samples = []
         for key in keys:
             samples.append(random.choice(d[key]))
@@ -208,18 +208,27 @@ class FeedforwardNetWork():
         mini = np.min(matrices)
         maxi = np.max(matrices)
         
+        fig, axis = plt.subplots(nrows=1, ncols=4)
         for w in range(len(matrices)):
-            plt.imshow(matrices[w], cmap='hot', interpolation='nearest', vmin=mini, vmax=maxi)
-            plt.colorbar()
-            plt.ylabel('Input-Layer')
-            plt.xlabel('First Hidden\n Layer')
-            plt.title(keys[w])
-            plt.show()
+
+            im = axis[w].imshow(matrices[w], cmap='hot', interpolation='nearest', vmin=mini, vmax=maxi)
+            axis[w].set_title(keys[w])
+            axis[w].set_yticklabels([41, 40, 35, 30, 25, 20, 15, 10, 5])
+
+        
+        fig.suptitle(title)
+        fig.text(0.5, 0.04, 'First Hidden\n Layer', ha='center')
+        fig.text(0.04, 0.5, 'Input-Layer', va='center', rotation='vertical')
+
+        cb_ax = fig.add_axes([0.93, 0.1, 0.02, 0.8])
+        cbar = fig.colorbar(im, cax=cb_ax)
+
+        plt.show()
 
 a = FeedforwardNetWork()
-a.get_data(liste=['bl693_no_white_Pop02','bl693_no_white_Pop05', 'bl693_no_white_Pop03'])
+a.get_data(liste=['bl693_no_white_Pop05'])
 a.encode_labels()
 a.makeModell()
 a.fitModel()
 a.evaluateModel()
-a.map_input()
+a.map_input("Population: bl693_no_white_Pop05 \n One random correct predicted sample of each class\n mapped to the first Layer weights")
