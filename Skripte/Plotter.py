@@ -58,7 +58,7 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'yellow'
+                    label[i] = 'magenta'
 
             # Plotting
             plt.scatter(x, y, c=label, alpha=0.3)
@@ -115,7 +115,7 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'yellow'
+                    label[i] = 'magenta'
 
             # Plotting
             ax = plt.axes(projection ="3d")
@@ -555,7 +555,7 @@ class Plotter:
         c.do_SVM(kernel=self.kernel, c=self.c, gamma=self.gamma, degree=self.degree, class_weight='balanced')
         return c.get_cm()
 
-    def set_svm_parameter(self, kernel: str, c:float, gamma:float, degree:int):
+    def set_svm_parameter(self, kernel: str='rbf', c:float=1.0, gamma:float=1.0, degree:int=3):
         """
         sets SVM Parameters
         """
@@ -572,7 +572,7 @@ class Plotter:
         """
         CM = np.zeros((4, 4))
         for pop in self.populations:
-            print(pop)
+            print(self.populations.index(pop))
             CM = CM + self.__get_cm(pop, self.path)
 
         if norm:
@@ -663,11 +663,6 @@ b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
 #b = Plotter(ok, r'D:\Dataframes\most_active_neurons\100')
 #b.plot_mean_of_each_class("Neuron-wise mean of the 40 Most active neurons,\n seperated into the four classes")
 #b.histogram_single_values("All trials with their mean over all neurons", "Histogram of all populations with all four classes", max_bins=0.1)
-b.set_svm_parameter("poly", 1.0, 1.0, degree=4)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='poly', c=1, degree=4, class_weight='balanced')",
-                show=False, 
-                dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\SVM\tSNE\All-Populations_SVM-poly-2tSNE.png')
-
 
 #b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
 #b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)
@@ -679,14 +674,10 @@ b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2
 #a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
 #b = Plotter(get_all_pop(), r'D:\Dataframes\tSNE\perp30')
 #b.plot_actual_vs_predicted("t-SNE", "t-SNE Component 1", "t-SNE Component 2", show=False, dest_path=r'D:\Dataframes\tSNE\2D_actual_vs_predicted')
-b.set_svm_parameter("linear", 1.0, 1.0, degree=4)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='linear', c=1, class_weight='balanced')",
-                show=False, 
-                dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\SVM\tSNE\All-Populations_SVM-linear-2tSNE.png')
-b.set_svm_parameter("rbf", 1.0, 0.5, degree=4)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')",
-                show=False, 
-                dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\SVM\tSNE\All-Populations_SVM-rbf-2tSNE.png')
+b.set_svm_parameter(kernel="linear", c=1.0)
+b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='linear', c=1, class_weight='balanced')")
+b.set_svm_parameter(kernel="rbf", c=1.0, gamma=0.5)
+b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 
 # PCA
 b = Plotter(ok, r'D:\Dataframes\PCA\20')

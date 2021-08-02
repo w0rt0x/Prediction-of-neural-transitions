@@ -335,7 +335,7 @@ class Classifier():
         # Classification report as dictionary
         self.pred = svm.predict(self.X_test)
         self.report = classification_report(self.y_test, self.pred, output_dict=True)
-
+        
         if print_report:
             print(classification_report(self.y_test, svm.predict(self.X_test)))
 
