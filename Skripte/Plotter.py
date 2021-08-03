@@ -601,8 +601,9 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def plot_mean_of_each_class(self, title:str, show:bool=True, dest_path:str=None):
+    def plot_mean_of_each_class(self, title:str, show:bool=True, dest_path:str=None, std=True):
         """
+        Line Plot that shows neuron-wise mean, with or without standard deviation
         """
         a = Classifier(self.populations, self.path)
         a.split_trial_wise()
@@ -616,14 +617,20 @@ class Plotter:
             else:
                 d[Y[i]] = [X[i]]
 
+        stds = {}
         for key in d.keys():
-            d[key] = np.asarray(d[key])
+            d[key] = np.asarray(d[key], dtype=float)
+            stds[key] = np.std(d[key], axis=0)[::-1]
             d[key] = np.mean(d[key], axis=0)[::-1]
+            
 
         c = {"1->1": "magenta", "0->0": "cyan", "1->0":"red", "0->1": "green"}
+        fig, ax = plt.subplots()
         for key in d.keys():
-            plt.plot(range(1, len(X[0]) + 1), d[key], color=c[key], label=key)
-
+            ax.plot(range(1, len(X[0]) + 1), d[key], color=c[key], label="mean of {}".format(key))
+            if std:
+                ax.fill_between(range(1, len(X[0]) + 1), d[key] + stds[key], alpha=0.1, color=c[key], label="std of {}".format(key))
+        
         plt.xlabel('{} most active Neurons'.format(len(X[0])))
         plt.ylabel("Neuron-wise mean per class")
         plt.title(title)
@@ -659,9 +666,9 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\PCA\2')
 ok, nt_ok = a.sort_out_populations(show=False)
-b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
+b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
 #b = Plotter(ok, r'D:\Dataframes\most_active_neurons\100')
-#b.plot_mean_of_each_class("Neuron-wise mean of the 40 Most active neurons,\n seperated into the four classes")
+b.plot_mean_of_each_class("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
 #b.histogram_single_values("All trials with their mean over all neurons", "Histogram of all populations with all four classes", max_bins=0.1)
 
 #b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
@@ -674,19 +681,3 @@ b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
 #a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
 #b = Plotter(get_all_pop(), r'D:\Dataframes\tSNE\perp30')
 #b.plot_actual_vs_predicted("t-SNE", "t-SNE Component 1", "t-SNE Component 2", show=False, dest_path=r'D:\Dataframes\tSNE\2D_actual_vs_predicted')
-b.set_svm_parameter(kernel="linear", c=1.0)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='linear', c=1, class_weight='balanced')")
-b.set_svm_parameter(kernel="rbf", c=1.0, gamma=0.5)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
-
-# PCA
-b = Plotter(ok, r'D:\Dataframes\PCA\20')
-b.set_svm_parameter("rbf", 1.0, 10, degree=3)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (20 Principle Components) with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=10, class_weight='balanced')",
-                show=False, 
-                dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\SVM\PCA\All-Populations_SVM-rbf-20PCAs.png')
-
-b.set_svm_parameter("poly", 1.0, 1.0, degree=3)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (20 Principle Components) with all 4 classes. \n Classification via SVM(kernel='poly', c=1, degree=3, class_weight='balanced')",
-                show=False, 
-                dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\SVM\PCA\All-Populations_SVM-poly-20PCAs.png')
