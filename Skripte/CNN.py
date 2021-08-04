@@ -26,7 +26,7 @@ X_train = np.reshape(X_train, X_train.shape + tuple([1]))
 X_test = np.reshape(X_test, X_test.shape + tuple([1]))
 """
 
-X_train, X_test, y_train, y_test = get_matrix_data(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\20PCs')
+X_train, X_test, y_train, y_test = get_matrix_data(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], path=r'D:\Dataframes\most_active_neurons\40')
 #random.shuffle(y_train)
 #random.shuffle(y_test)
 y_train = encode_labels(y_train)
@@ -43,7 +43,7 @@ print(X_test.shape)
 model = Sequential() 
 # 32 = Output Filter, (3,3) = Kernel Size, (20,30,1) Höhe Breite Tiefe
 #convolutional layer with rectified linear unit activation
-model.add(Conv2D(32, kernel_size = (3, 3), activation = 'relu', input_shape = (10,20,1))) 
+model.add(Conv2D(32, kernel_size = (3, 3), activation = 'relu', input_shape = (10,40,1))) 
 #32 convolution filters used each of size 3x3
 model.add(Conv2D(64, (3, 3), activation = 'relu')) 
 # choose the best features via MAX pooling

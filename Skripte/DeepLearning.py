@@ -192,18 +192,18 @@ class FeedforwardNetWork():
         keys = ['0->0', '0->1', '1->0', '1->1']
         samples = []
         for key in keys:
-            samples.append(random.choice(d[key]))
+            samples.append(np.mean(d[key], axis=0))
         del d
 
         matrices = []
         for i in range(len(samples)):
             w = deepcopy(weights)
             vec = samples[i]
-            label = keys[i]
             for j in range(len(vec)):
                 w[j] = weights[j] * vec[j]
 
             matrices.append(w)
+
         matrices = np.asarray(matrices)
         mini = np.min(matrices)
         maxi = np.max(matrices)
@@ -226,9 +226,9 @@ class FeedforwardNetWork():
         plt.show()
 
 a = FeedforwardNetWork()
-a.get_data(liste=['bl693_no_white_Pop05'])
+a.get_data(liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop01', 'bl693_no_white_Pop04', 'bl693_no_white_Pop06'], shuffle=True)
 a.encode_labels()
 a.makeModell()
 a.fitModel()
 a.evaluateModel()
-a.map_input("Population: bl693_no_white_Pop05 \n One random correct predicted sample of each class\n mapped to the first Layer weights")
+a.map_input("Population: bl693_no_white_Pop05/02/03/01/04/06 \n neurons-wise mean of all correct predicted trials per class\n mapped to the first Layer weights")
