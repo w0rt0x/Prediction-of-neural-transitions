@@ -400,7 +400,8 @@ class Classifier():
         performs k-fold cross validation on SVM, 
         returns mean of f1-scores
         """
-        
+        counter = 0
+        results = {}
         for df in self.dataframes:
             k_folds = {}
             micro = []
@@ -453,8 +454,10 @@ class Classifier():
                 micro.append(self.get_f1(avg="micro"))
                 macro.append(self.get_f1(avg="macro"))
                 weighted.append(self.get_f1(avg="weighted"))
-                print("Population: ", self.populations[self.dataframes.index(df)])
-                print("Mean Micro f1-Score: ", np.mean(np.array(micro)))
-                print("Mean Macro f1-Score: ", np.mean(np.array(macro)))
-                print("Mean weighted f1-Score: ", np.mean(np.array(weighted)))
+            
+            results[self.populations[counter]] = {"MeanMicro": np.mean(np.array(micro)), "MeanMacro": np.mean(np.array(macro)), "MeanWeighted": np.mean(np.array(weighted))}
+            counter += 1
+            print(results)
+
+        return results
         
