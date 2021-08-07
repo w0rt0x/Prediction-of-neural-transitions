@@ -9,12 +9,11 @@ import pandas as pd
 import numpy as np
 import random
 import seaborn as sns
-from random import sample, shuffle
+from random import shuffle
 from copy import deepcopy
 from imblearn.over_sampling import ADASYN, SMOTE
 from typing import Tuple
 from sklearn.metrics import confusion_matrix
-
 
 
 class Classifier():
@@ -331,6 +330,10 @@ class Classifier():
         """
         performs Support Vectors Machine on dataset
         """
+        print(self.X_train.shape)
+        print(self.X_test.shape)
+        print(self.y_train.shape)
+        print(self.y_test.shape)
         svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight).fit(self.X_train, self.y_train)
         self.classifier = svm
         # Classification report as dictionary
@@ -395,10 +398,10 @@ class Classifier():
         """
         return confusion_matrix(self.y_test, self.pred, labels=['0->0', '0->1', '1->0', '1->1'])
 
-    def k_fold_cross_validation(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True):
+    def k_fold_cross_validation_populationwise(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True) -> dict:
         """
         performs k-fold cross validation on SVM, 
-        returns mean of f1-scores
+        returns mean of f1-scores population-wise as dictionary
         """
         counter = 0
         results = {}
@@ -443,12 +446,12 @@ class Classifier():
                             k_folds[k]["X_train"].append(ch.astype(np.float))
                             k_folds[k]["y_train"].append(response)
 
-            for i in range(k):
+            for k in range(K):
 
-                self.X_test = np.asarray(k_folds[i]["X_test"])
-                self.y_test = np.asarray(k_folds[i]["y_test"])
-                self.X_train = np.asarray(k_folds[i]["X_train"])
-                self.y_train = np.asarray(k_folds[i]["y_train"])
+                self.X_test = np.asarray(k_folds[k]["X_test"])
+                self.y_test = np.asarray(k_folds[k]["y_test"])
+                self.X_train = np.asarray(k_folds[k]["X_train"])
+                self.y_train = np.asarray(k_folds[k]["y_train"])
 
                 self.do_SVM(kernel=kernel, degree=degree, c=c,gamma=gamma, class_weight=class_weight, print_report=print_report)
                 micro.append(self.get_f1(avg="micro"))
@@ -457,7 +460,70 @@ class Classifier():
             
             results[self.populations[counter]] = {"MeanMicro": np.mean(np.array(micro)), "MeanMacro": np.mean(np.array(macro)), "MeanWeighted": np.mean(np.array(weighted))}
             counter += 1
-            print(results)
 
         return results
         
+    def k_fold_cross_validation(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True) -> dict:
+        """
+        performs k-fold cross validation on SVM, 
+        returns mean of f1-scores
+        uses all Populations at once
+        """
+        k_folds = {}
+        micro = []
+        macro = []
+        weighted = []
+
+        for k in range(K):
+            k_folds[k] = {"X_train": [], "X_test": [], "y_test": [], "y_train": []}
+            for df in self.dataframes:
+                header = set(df['label'].tolist())
+                # Removing Day 4
+                trails = set()
+                for i in header:
+                    trail = eval(i)
+                    if trail[0] != 4:
+                        trails.add(i)
+                    else:
+                        if not(rem_day4):
+                            trails.add(i)
+
+                header = trails
+
+                for trial in header:
+                    # geting rows with (day, Trail)-label
+                    rows = df.loc[df['label'] == trial].to_numpy()
+                    # getting response label
+                    response = rows[0][-1]
+                    # getting the actual data from the matrix
+                    rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+
+                    chunks = np.array_split(rows, K)
+                    for chunk in chunks[k]:
+                        k_folds[k]["X_test"].append(chunk.astype(np.float))
+                        k_folds[k]["y_test"].append(response)
+
+                    train_chunks = np.delete(chunks, k, axis=0)
+                    for chunk in train_chunks:
+                        for ch in chunk:
+                            k_folds[k]["X_train"].append(ch.astype(np.float))
+                            k_folds[k]["y_train"].append(response)
+                
+            print(np.asarray(k_folds[k]["X_test"]).shape)
+            print(np.asarray(k_folds[k]["y_test"]).shape)
+            print(np.asarray(k_folds[k]["X_train"]).shape)
+            print(np.asarray(k_folds[k]["y_train"]).shape)
+
+        for k in range(K):
+
+            self.X_test = np.asarray(k_folds[k]["X_test"])
+            self.y_test = np.asarray(k_folds[k]["y_test"])
+            self.X_train = np.asarray(k_folds[k]["X_train"])
+            self.y_train = np.asarray(k_folds[k]["y_train"])
+
+            self.do_SVM(kernel=kernel, degree=degree, c=c,gamma=gamma, class_weight=class_weight, print_report=print_report)
+            micro.append(self.get_f1(avg="micro"))
+            macro.append(self.get_f1(avg="macro"))
+            weighted.append(self.get_f1(avg="weighted"))
+
+        return {"MeanMicro": np.mean(np.array(micro)), "MeanMacro": np.mean(np.array(macro)), "MeanWeighted": np.mean(np.array(weighted))}

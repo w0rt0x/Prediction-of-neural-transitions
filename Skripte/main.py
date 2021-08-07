@@ -14,9 +14,10 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     print(test)
     return test
 
-a = Classifier(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
+a = Classifier(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\most_active_neurons\40')
 a.split_trial_wise()
 a.use_SMOTE()
+#print(a.k_fold_cross_validation_populationwise())
 print(a.k_fold_cross_validation())
 #a.shuffle_labels()
 #a.do_SVM(kernel='rbf',degree=4, c=1, gamma=0.5, class_weight='balanced')
