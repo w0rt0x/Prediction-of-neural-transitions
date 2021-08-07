@@ -395,14 +395,17 @@ class Classifier():
         """
         return confusion_matrix(self.y_test, self.pred, labels=['0->0', '0->1', '1->0', '1->1'])
 
-    def k_fold_cross_validation(self, k: int =5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True):
+    def k_fold_cross_validation(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True):
         """
         performs k-fold cross validation on SVM, 
         returns mean of f1-scores
         """
+        
         for df in self.dataframes:
-            x = []
-            y = []
+            k_folds = {}
+            micro = []
+            macro = []
+            weighted = []
 
             header = set(df['label'].tolist())
             # Removing Day 4
@@ -418,56 +421,40 @@ class Classifier():
             header = trails
 
             # Getting all the matrices from the trials
-            for trial in header:
-                # geting rows with (day, Trail)-label
-                rows = df.loc[df['label'] == trial].to_numpy()
-                # getting response label
-                response = rows[0][-1]
-                # getting the actual data from the matrix
-                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+            for k in range(K):
+                k_folds[k] = {"X_train": [], "X_test": [], "y_test": [], "y_train": []}
+                for trial in header:
+                    # geting rows with (day, Trail)-label
+                    rows = df.loc[df['label'] == trial].to_numpy()
+                    # getting response label
+                    response = rows[0][-1]
+                    # getting the actual data from the matrix
+                    rows = np.delete(rows, np.s_[0,1,-1], axis=1)
 
-                X_folds = np.array_split(rows, k)
-                y_folds = np.array_split(np.full((len(rows)), response), k)
-                
-                x.append(X_folds)
-                y.append(y_folds)
+                    chunks = np.array_split(rows, K)
+                    for chunk in chunks[k]:
+                        k_folds[k]["X_test"].append(chunk.astype(np.float))
+                        k_folds[k]["y_test"].append(response)
 
-        x = np.asarray(x)
-        y = np.asarray(y)
-        print(x[5])
-        print(y[5])
+                    train_chunks = np.delete(chunks, k, axis=0)
+                    for chunk in train_chunks:
+                        for ch in chunk:
+                            k_folds[k]["X_train"].append(ch.astype(np.float))
+                            k_folds[k]["y_train"].append(response)
 
-        micro = []
-        macro = []
-        weighted = []
+            for i in range(k):
 
-        for i in range(k):
-            X_train = []
-            X_test = []
-            y_train = []
-            y_test = []
+                self.X_test = np.asarray(k_folds[i]["X_test"])
+                self.y_test = np.asarray(k_folds[i]["y_test"])
+                self.X_train = np.asarray(k_folds[i]["X_train"])
+                self.y_train = np.asarray(k_folds[i]["y_train"])
 
-            for j in range(len(x)):
-                test_trial = np.asarray(x[j])
-                for t in test_trial[i]:
-                    X_test.append(test_trial[i][t])
-                    y_test.append(test_trial[i][t])
-                
-                train_trial = np.delete(X_folds, i, axis=0)
-
-            print(i)
-            self.X_test = X_folds[i]
-            self.y_test = y_folds[i]
-
-            self.X_train = np.concatenate((np.delete(X_folds, i, axis=0)))
-            self.y_train = np.concatenate((np.delete(y_folds, i, axis=0)))
-
-            self.do_SVM(kernel=kernel, degree=degree, c=c,gamma=gamma, class_weight=class_weight, print_report=print_report)
-            micro.append(self.get_f1(avg="micro"))
-            macro.append(self.get_f1(avg="macro"))
-            weighted.append(self.get_f1(avg="weighted"))
-        
-        print("Mean Micro f1-Score: ", np.mean(np.array(micro)))
-        print("Mean Macro f1-Score: ", np.mean(np.array(macro)))
-        print("Mean weighted f1-Score: ", np.mean(np.array(weighted)))
+                self.do_SVM(kernel=kernel, degree=degree, c=c,gamma=gamma, class_weight=class_weight, print_report=print_report)
+                micro.append(self.get_f1(avg="micro"))
+                macro.append(self.get_f1(avg="macro"))
+                weighted.append(self.get_f1(avg="weighted"))
+                print("Population: ", self.populations[self.dataframes.index(df)])
+                print("Mean Micro f1-Score: ", np.mean(np.array(micro)))
+                print("Mean Macro f1-Score: ", np.mean(np.array(macro)))
+                print("Mean weighted f1-Score: ", np.mean(np.array(weighted)))
         

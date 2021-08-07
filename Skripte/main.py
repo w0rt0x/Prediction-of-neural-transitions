@@ -14,7 +14,7 @@ def get_n_random(n, remove=None, path=r'D:\Dataframes\100_Transition'):
     print(test)
     return test
 
-a = Classifier(['bl709_one_white_Pop09'], r'D:\Dataframes\most_active_neurons\5')
+a = Classifier(['bl709_one_white_Pop09'], r'D:\Dataframes\most_active_neurons\40')
 a.split_trial_wise()
 a.use_SMOTE()
 a.k_fold_cross_validation()
