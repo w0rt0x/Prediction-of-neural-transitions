@@ -330,10 +330,6 @@ class Classifier():
         """
         performs Support Vectors Machine on dataset
         """
-        print(self.X_train.shape)
-        print(self.X_test.shape)
-        print(self.y_train.shape)
-        print(self.y_test.shape)
         svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight).fit(self.X_train, self.y_train)
         self.classifier = svm
         # Classification report as dictionary
@@ -398,7 +394,7 @@ class Classifier():
         """
         return confusion_matrix(self.y_test, self.pred, labels=['0->0', '0->1', '1->0', '1->1'])
 
-    def k_fold_cross_validation_populationwise(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True) -> dict:
+    def k_fold_cross_validation_populationwise(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True, smote:bool=True, shuffle: bool=False) -> dict:
         """
         performs k-fold cross validation on SVM, 
         returns mean of f1-scores population-wise as dictionary
@@ -453,6 +449,12 @@ class Classifier():
                 self.X_train = np.asarray(k_folds[k]["X_train"])
                 self.y_train = np.asarray(k_folds[k]["y_train"])
 
+                if smote:
+                    self.use_SMOTE()
+
+                if shuffle:
+                    self.shuffle_labels()
+
                 self.do_SVM(kernel=kernel, degree=degree, c=c,gamma=gamma, class_weight=class_weight, print_report=print_report)
                 micro.append(self.get_f1(avg="micro"))
                 macro.append(self.get_f1(avg="macro"))
@@ -463,7 +465,7 @@ class Classifier():
 
         return results
         
-    def k_fold_cross_validation(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True) -> dict:
+    def k_fold_cross_validation(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True, smote: bool=True, shuffle: bool=True) -> dict:
         """
         performs k-fold cross validation on SVM, 
         returns mean of f1-scores
@@ -508,11 +510,6 @@ class Classifier():
                         for ch in chunk:
                             k_folds[k]["X_train"].append(ch.astype(np.float))
                             k_folds[k]["y_train"].append(response)
-                
-            print(np.asarray(k_folds[k]["X_test"]).shape)
-            print(np.asarray(k_folds[k]["y_test"]).shape)
-            print(np.asarray(k_folds[k]["X_train"]).shape)
-            print(np.asarray(k_folds[k]["y_train"]).shape)
 
         for k in range(K):
 
@@ -520,6 +517,12 @@ class Classifier():
             self.y_test = np.asarray(k_folds[k]["y_test"])
             self.X_train = np.asarray(k_folds[k]["X_train"])
             self.y_train = np.asarray(k_folds[k]["y_train"])
+
+            if smote:
+                    self.use_SMOTE()
+
+            if shuffle:
+                    self.shuffle_labels()
 
             self.do_SVM(kernel=kernel, degree=degree, c=c,gamma=gamma, class_weight=class_weight, print_report=print_report)
             micro.append(self.get_f1(avg="micro"))
