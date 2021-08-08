@@ -330,7 +330,7 @@ class Classifier():
         """
         performs Support Vectors Machine on dataset
         """
-        svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight).fit(self.X_train, self.y_train)
+        svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight, cache_size=2000).fit(self.X_train, self.y_train)
         self.classifier = svm
         # Classification report as dictionary
         self.pred = svm.predict(self.X_test)

@@ -568,7 +568,7 @@ class Plotter:
         """
         CM = np.zeros((4, 4))
         for pop in self.populations:
-            print(self.populations.index(pop))
+            print(self.populations.index(pop), pop)
             CM = CM + self.__get_cm(pop, self.path)
 
         if norm:
