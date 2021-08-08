@@ -127,30 +127,52 @@ class Preprocessor():
                         transistions[j] = 1
         self.label = np.asarray(transistions)
 
-    def create_multiclass_transition_labels(self, remove_last_day=True):
+    def create_multiclass_transition_labels(self, skip: int=1):
         """
         Creates multiclass transitions (0->0, 0->1, ...)
-        also removes day 4 trials
+        also removes day 4 trials (in case of skip>1, day 3 gets removed too)
         """
         transistions = [0] * len(self.label)
-        for trail in set(self.header):
-            # Skipping Day 4
-            if trail[0] == 4:
-                pass
-            else:
-                next_day = (trail[0] + 1, trail[1])
-                indices = [i for i in range(len(self.header)) if self.header[i] == trail]
-                label = '-'
-                if self.label[self.header.index(next_day)] == 0 and self.label[self.header.index(trail)] == 0:
-                    label = '0->0'
-                if self.label[self.header.index(next_day)] > 0 and self.label[self.header.index(trail)] > 0:
-                    label = '1->1'
-                if self.label[self.header.index(next_day)] > 0 and self.label[self.header.index(trail)] == 0:
-                    label = '0->1'
-                if self.label[self.header.index(next_day)] == 0 and self.label[self.header.index(trail)] > 0:
-                    label = '1->0'
-                for j in indices:
-                    transistions[j] = label
+        if skip == 1:
+            for trail in set(self.header):
+                # Skipping Day 4
+                if trail[0] == 4:
+                    pass
+                else:
+                    next_day = (trail[0] + 1, trail[1])
+                    indices = [i for i in range(len(self.header)) if self.header[i] == trail]
+                    label = '-'
+                    if self.label[self.header.index(next_day)] == 0 and self.label[self.header.index(trail)] == 0:
+                        label = '0->0'
+                    if self.label[self.header.index(next_day)] > 0 and self.label[self.header.index(trail)] > 0:
+                        label = '1->1'
+                    if self.label[self.header.index(next_day)] > 0 and self.label[self.header.index(trail)] == 0:
+                        label = '0->1'
+                    if self.label[self.header.index(next_day)] == 0 and self.label[self.header.index(trail)] > 0:
+                        label = '1->0'
+                    for j in indices:
+                        transistions[j] = label
+            
+        else:
+            for trail in set(self.header):
+                # Skipping Day 4 and 3
+                if trail[0] == 4 or trail[0] == 3:
+                    pass
+                else:
+                    next_day = (trail[0] + 2, trail[1])
+                    indices = [i for i in range(len(self.header)) if self.header[i] == trail]
+                    label = '-'
+                    if self.label[self.header.index(next_day)] == 0 and self.label[self.header.index(trail)] == 0:
+                        label = '0->0'
+                    if self.label[self.header.index(next_day)] > 0 and self.label[self.header.index(trail)] > 0:
+                        label = '1->1'
+                    if self.label[self.header.index(next_day)] > 0 and self.label[self.header.index(trail)] == 0:
+                        label = '0->1'
+                    if self.label[self.header.index(next_day)] == 0 and self.label[self.header.index(trail)] > 0:
+                        label = '1->0'
+                    for j in indices:
+                        transistions[j] = label
+            
         self.label = np.asarray(transistions)
 
     def get_most_active_neurons(self, n=30):
@@ -287,20 +309,13 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.do_PCA(dim)
-        a.create_multiclass_transition_labels()
+        a.get_most_active_neurons(n=40)
+        a.create_multiclass_transition_labels(skip=2)
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
 
-#prepare_data(destination=r'D:\Dataframes\PCA\20', dim=20)
+prepare_data(destination=r'D:\Dataframes\double_skip', dim=40)
 
-pop = "bl693_no_white_Pop05"
-a = Preprocessor(pop)
-a.plot_label()
-#a.get_most_active_neurons(n=40)
-#a.get_mean_over_reduced_data()
-#a.create_multiclass_transition_labels()
-#a.df_to_file(r'C:\Users\Sam\Desktop')
 
 

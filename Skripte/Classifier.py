@@ -186,16 +186,15 @@ class Classifier():
         y_train = [] 
 
         header = set(df['label'].tolist())
+        responses = set(df['response'].tolist())
         # Removing Day 4
         trails = set()
-        for i in header:
-            trail = eval(i)
-            if trail[0] != 4:
-                trails.add(i)
+        for i in range(len(header)):
+            if rem_day4 and eval(responses[i]) == 0:
+                pass
             else:
-                if not(rem_day4):
-                    trails.add(i)
-
+                trails.append(header(i))
+            
         header = trails
 
         # Getting all the matrices from the trials
@@ -330,7 +329,7 @@ class Classifier():
         """
         performs Support Vectors Machine on dataset
         """
-        svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight, cache_size=2000).fit(self.X_train, self.y_train)
+        svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight, cache_size=4000).fit(self.X_train, self.y_train)
         self.classifier = svm
         # Classification report as dictionary
         self.pred = svm.predict(self.X_test)

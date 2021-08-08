@@ -4,6 +4,7 @@ from os.path import isfile, join
 import random
 from Plotter import Plotter
 
+
 def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
     """
     returns all population-names
@@ -35,23 +36,15 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 #title="bl709_one_white_Pop09\n (50 uMAP Components) on SVM (polynomial Kernel,\n class_weight='balanced') and SMOTE on Training-Data"
 #a.grid_search(title, C=c, kernel='poly', degree=[2,3,4])
 populations = get_all_pop()
-a = Plotter(populations, r'D:\Dataframes\PCA\2')
-ok, nt_ok = a.sort_out_populations(show=False)
-b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
+a = Plotter(populations, r'D:\Dataframes\double_skip')
+ok, nt_ok = a.sort_out_populations()
 
-b.set_svm_parameter(kernel="linear", c=1.0)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='linear', c=1, class_weight='balanced')")
-b.set_svm_parameter(kernel="rbf", c=1.0, gamma=0.5)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')")
 
-# PCA
-b = Plotter(ok, r'D:\Dataframes\PCA\20')
-b.set_svm_parameter("rbf", 1.0, 10, degree=3)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (20 Principle Components) with all 4 classes. \n Classification via SVM(kernel='rbf', c=1, gamma=10, class_weight='balanced')",
-                show=False, 
-                dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\SVM\PCA\All-Populations_SVM-rbf-20PCAs.png')
 
-b.set_svm_parameter("poly", 1.0, 1.0, degree=3)
-b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (20 Principle Components) with all 4 classes. \n Classification via SVM(kernel='poly', c=1, degree=3, class_weight='balanced')",
-                show=False, 
-                dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\SVM\PCA\All-Populations_SVM-poly-20PCAs.png')
+
+#b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
+#b.set_svm_parameter(kernel="linear", c=1.0)
+#b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='linear', c=1, class_weight='balanced')")
+
+#b.set_svm_parameter(kernel="poly", c=1, gamma=1, degree=2)
+#b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components) with all 4 classes. \n Classification via SVM(kernel='poly', c=1, degree=2, class_weight='balanced')")
