@@ -468,21 +468,16 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def __get_f1s(self, populations:str, path:str, random:bool=False) -> Tuple[list, list, list]:
+    def __get_f1s(self, K, random:bool=False) -> Tuple[list, list, list]:
         micro = []
         macro = []
         weighted = []
-        for pop in populations:
-            c = Classifier([pop], path)
-            c.split_trial_wise()
-            c.use_SMOTE()
-            if random:
-                c.shuffle_labels()
-            c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-            report = c.get_report()
-            macro.append(report['macro avg']['f1-score'])
-            micro.append(report['accuracy'])
-            weighted.append(report['weighted avg']['f1-score'])
+        a = Classifier(self.populations, self.path)
+        data = a.k_fold_cross_validation_populationwise(K=K, kernel=self.kernel, c=self.c, gamma=self.gamma, shuffle=random)
+        for pop in data:
+            micro.append(data[pop]['MeanMicro'])
+            macro.append(data[pop]['MeanMacro'])
+            weighted.append(data[pop]['MeanWeighted'])
 
         return micro, macro, weighted
 
@@ -517,16 +512,17 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def boxplot_of_scores(self, title:str, show:bool=True, dest_path:str=None):
+    def boxplot_of_scores(self, title:str, show:bool=True, dest_path:str=None, K: int=5):
         """
         Shows f1 scores (with and without shuffled labels) as boxplots
         :param Title (str) title
         :param show (bool) - Optional, shows plot of true (default is true)
         :param dest_path (str) - saves plot to that directory if provided
+        :param K (int) - K for k-Fold Cross Validation
         """
         labels = ["Micro F1", "Micro F1\n shuffled labels", "Macro F1", "Macro F1\n shuffled labels", "Weighted F1", "Weighted F1\n shuffled labels"]
-        micro, macro, weighted = self.__get_f1s(self.populations, self.path)
-        micro_r, macro_r, weighted_r = self.__get_f1s(self.populations, self.path, random=True)
+        micro, macro, weighted = self.__get_f1s(K)
+        micro_r, macro_r, weighted_r = self.__get_f1s(K, random=True)
         data = [micro, micro_r, macro, macro_r, weighted, weighted_r]
         plt.boxplot(data, labels=labels) 
         plt.xlabel('Type of F1-Score')
@@ -648,27 +644,14 @@ class Plotter:
 
 
 
-
-def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
-    """
-    returns all population-names
-    """
-    populations = set()
-    files = [f for f in os.listdir(path) if isfile(join(path, f))]
-    for i in files:
-        if "_class.mat" in i:
-            populations.add(i[:-10])
-
-        if "_lact.mat" in i:
-            populations.add(i[:-9])
-    return list(populations)
-
-populations = get_all_pop()
-a = Plotter(populations, r'D:\Dataframes\PCA\2')
-ok, nt_ok = a.sort_out_populations(show=False)
-b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
+#populations = get_all_pop()
+#a = Plotter(populations, r'D:\Dataframes\PCA\2')
+#ok, nt_ok = a.sort_out_populations(show=False)
+#b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
 #b = Plotter(ok, r'D:\Dataframes\most_active_neurons\100')
-b.plot_mean_of_each_class("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
+#b.set_svm_parameter(gamma=0.5)
+#b.boxplot_of_scores("Mean F1-Scores of 5-fold Cross-Validation using the 40 most active neurons \n and a SVM (rbf-Kernel, c=1, gamma=0.5, balanced class weights) and SMOTE on Training-Data")
+#b.plot_mean_of_each_class("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
 #b.histogram_single_values("All trials with their mean over all neurons", "Histogram of all populations with all four classes", max_bins=0.1)
 
 #b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
