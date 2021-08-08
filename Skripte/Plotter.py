@@ -335,9 +335,8 @@ class Plotter:
                         d[response[i]].add(values[i])
 
         data = []
-        labels = d.keys()
-        if len(labels)==4:
-            labels = ['0->0', '0->1', '1->1', '1->0']
+        
+        labels = ['0->0', '0->1', '1->1', '1->0']
         for key in labels:
             data.append(list(d[key]))
         

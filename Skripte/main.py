@@ -37,10 +37,13 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 #a.grid_search(title, C=c, kernel='poly', degree=[2,3,4])
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\double_skip')
-ok, nt_ok = a.sort_out_populations()
+ok, nt_ok = a.sort_out_populations(show=False)
+print(ok)
+b = Plotter(ok, r'D:\Dataframes\double_skip')
+b.plot_mean_of_each_class("Neuron-wise mean of the 40 most active neurons,\n seperated into the four classes (Transitions over 2 Days).")
 
-
-
+b = Plotter(ok, r'D:\Dataframes\double_skip_mean')
+b.boxplots_of_classes("mean activity of the 40 most active neurons", "All 91 Populations with all 4 classes (Transitions over 2 Days, No Outliers)")
 
 #b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
 #b.set_svm_parameter(kernel="linear", c=1.0)

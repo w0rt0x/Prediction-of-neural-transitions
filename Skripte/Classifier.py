@@ -185,15 +185,15 @@ class Classifier():
         y_test = []   
         y_train = [] 
 
-        header = set(df['label'].tolist())
-        responses = set(df['response'].tolist())
+        header = df['label'].tolist()
+        responses = df['response'].tolist()
         # Removing Day 4
         trails = set()
         for i in range(len(header)):
-            if rem_day4 and eval(responses[i]) == 0:
+            if rem_day4 and responses[i] == "0":
                 pass
             else:
-                trails.append(header(i))
+                trails.add(header[i])
             
         header = trails
 
