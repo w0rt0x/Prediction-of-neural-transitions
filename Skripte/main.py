@@ -1,3 +1,4 @@
+from math import gamma
 from Classifier import Classifier
 import os
 from os.path import isfile, join
@@ -38,12 +39,16 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
 populations = get_all_pop()
 a = Plotter(populations, r'D:\Dataframes\double_skip')
 ok, nt_ok = a.sort_out_populations(show=False)
-print(ok)
-b = Plotter(ok, r'D:\Dataframes\double_skip')
-b.plot_mean_of_each_class("Neuron-wise mean of the 40 most active neurons,\n seperated into the four classes (Transitions over 2 Days).")
 
-b = Plotter(ok, r'D:\Dataframes\double_skip_mean')
-b.boxplots_of_classes("mean activity of the 40 most active neurons", "All 91 Populations with all 4 classes (Transitions over 2 Days, No Outliers)")
+b = Plotter(ok, r'D:\Dataframes\double_skip')
+b.set_svm_parameter(kernel="rbf", c=1.0, gamma=0.5)
+b.boxplot_of_scores("Mean F1-Scores of 5-fold Cross-Validation using the 40 most active neurons (Transitions over 2 Days)\n and a SVM (rbf-Kernel, c=1, gamma=0.5, balanced class weights) and SMOTE on Training-Data")
+#b.set_svm_parameter(kernel="rbf", c=1.0, gamma=0.5)
+#b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all \nPopulations with all 4 classes (Transitions over 2 Days). \n Classification via SVM(kernel='rbf', c=1, gamma=0.5 class_weight='balanced')")
+
+#b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
+#b.set_svm_parameter(kernel="linear", c=1.0)
+#b.CM_for_all_pop("Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components, perplexity=30) with all 4 classes. \n Classification via SVM(kernel='linear', c=1, class_weight='balanced')")
 
 #b = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
 #b.set_svm_parameter(kernel="linear", c=1.0)
