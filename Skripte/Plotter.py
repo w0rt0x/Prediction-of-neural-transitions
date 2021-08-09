@@ -10,7 +10,6 @@ from Classifier import Classifier
 from collections import Counter
 from copy import deepcopy
 import warnings
-from DeepLearning import FeedforwardNetWork
 warnings.filterwarnings('always')
 
 
@@ -656,13 +655,13 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
             populations.add(i[:-9])
     return list(populations)
 
-#populations = get_all_pop()
-#a = Plotter(populations, r'D:\Dataframes\PCA\2')
-#ok, nt_ok = a.sort_out_populations(show=False)
-#b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
+populations = get_all_pop()
+a = Plotter(populations, r'D:\Dataframes\PCA\2')
+ok, nt_ok = a.sort_out_populations(show=False)
+b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
 #b = Plotter(ok, r'D:\Dataframes\most_active_neurons\100')
 #b.set_svm_parameter(gamma=0.5)
-#b.boxplot_of_scores("Mean F1-Scores of 5-fold Cross-Validation using the 40 most active neurons \n and a SVM (rbf-Kernel, c=1, gamma=0.5, balanced class weights) and SMOTE on Training-Data")
+b.boxplot_of_scores("Mean F1-Scores of 5-fold Cross-Validation using the 40 most active neurons \n Classification via Feedforward Network, SMOTE used on Training-Data")
 #b.plot_mean_of_each_class("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
 #b.histogram_single_values("All trials with their mean over all neurons", "Histogram of all populations with all four classes", max_bins=0.1)
 

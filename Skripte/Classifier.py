@@ -14,6 +14,7 @@ from copy import deepcopy
 from imblearn.over_sampling import ADASYN, SMOTE
 from typing import Tuple
 from sklearn.metrics import confusion_matrix
+from DeepLearning import FeedforwardNetWork
 
 
 class Classifier():

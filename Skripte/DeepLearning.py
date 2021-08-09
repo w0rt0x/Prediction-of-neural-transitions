@@ -11,7 +11,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from Plotter import Plotter, get_all_pop
+#from Plotter import Plotter, get_all_pop
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -116,7 +116,16 @@ class FeedforwardNetWork():
         """
         y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
         return metrics.f1_score(self.y_test, y_pred,average='macro'), metrics.f1_score(self.y_test, y_pred,average='micro'), metrics.f1_score(self.y_test, y_pred,average='weighted')
-
+    
+    def set_data(self, X_train, X_test, y_train, y_test):
+        """
+        setter for data
+        """
+        self.X_train = X_train.tolist()
+        self.X_test = X_test.tolist()
+        self.y_train = y_train.tolist()
+        self.y_test = y_test.tolist()
+    
     def mapMeanWeights(self, layer=0):
         """
         Maps Wights to heatmap
@@ -158,8 +167,6 @@ class FeedforwardNetWork():
                     d[y_pred[i]].append(self.X_test[i])
                 else:
                     d[y_pred[i]] = [self.X_test[i]]
-        
-
         
         keys = ['0->0', '0->1', '1->0', '1->1']
         samples = []
@@ -203,7 +210,6 @@ class FeedforwardNetWork():
         plt.clf()
         plt.cla()
         plt.close()
-
 
 #populations = get_all_pop()
 #a = Plotter(populations, r'D:\Dataframes\most_active_neurons\40')
