@@ -10,6 +10,7 @@ from Classifier import Classifier
 from collections import Counter
 from copy import deepcopy
 import warnings
+from DeepLearning import FeedforwardNetWork
 warnings.filterwarnings('always')
 
 
@@ -546,7 +547,7 @@ class Plotter:
         """
         c = Classifier([pop], path)
         c.split_trial_wise()
-        c.use_SMOTE()
+        #c.use_SMOTE()
         c.do_SVM(kernel=self.kernel, c=self.c, gamma=self.gamma, degree=self.degree, class_weight='balanced')
         return c.get_cm()
 
@@ -641,7 +642,19 @@ class Plotter:
         plt.cla()
         plt.close()
 
+def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
+    """
+    returns all population-names
+    """
+    populations = set()
+    files = [f for f in os.listdir(path) if isfile(join(path, f))]
+    for i in files:
+        if "_class.mat" in i:
+            populations.add(i[:-10])
 
+        if "_lact.mat" in i:
+            populations.add(i[:-9])
+    return list(populations)
 
 #populations = get_all_pop()
 #a = Plotter(populations, r'D:\Dataframes\PCA\2')

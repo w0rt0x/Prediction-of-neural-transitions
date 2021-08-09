@@ -11,26 +11,13 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
+from Plotter import Plotter, get_all_pop
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from typing import Tuple
 
-def f1_weighted(true, pred): 
-    # Source for weightend f1:
-    # https://stackoverflow.com/questions/59963911/how-to-write-a-custom-f1-loss-function-with-weighted-average-for-keras
-    predLabels = K.argmax(pred, axis=-1)
-    pred = K.one_hot(predLabels, 4) 
-
-    ground_positives = K.sum(true, axis=0) + K.epsilon()       # = TP + FN
-    pred_positives = K.sum(pred, axis=0) + K.epsilon()         # = TP + FP
-    true_positives = K.sum(true * pred, axis=0) + K.epsilon()  # = TP
-        
-    precision = true_positives / pred_positives 
-    recall = true_positives / ground_positives
-
-    f1 = 2 * (precision * recall) / (precision + recall + K.epsilon())
-
-    weighted_f1 = f1 * ground_positives / K.sum(ground_positives) 
-    weighted_f1 = K.sum(weighted_f1)
-
-    return weighted_f1 
 
 class FeedforwardNetWork():
     
@@ -41,7 +28,6 @@ class FeedforwardNetWork():
         self.y_train = None
         self.y_test = None
         self.y_test_en = None
-
 
     def get_data(self, liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop01', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop04', 'bl693_no_white_Pop06'], path=r'D:\Dataframes\most_active_neurons\40', shuffle: bool=False, smote: bool=True):
         """
@@ -58,7 +44,6 @@ class FeedforwardNetWork():
         self.y_train = a.y_train.tolist()
         self.y_test = a.y_test.tolist()
 
-
     def makeModell(self, loss='categorical_crossentropy', optimizer='adam', metric='accuracy'):
         # Sequentiel model, layers are added one after another
         dim = len(self.X_train[0])
@@ -73,22 +58,6 @@ class FeedforwardNetWork():
         # Using accuracy-metric because of binary classification
         dl.compile(loss=loss, optimizer=optimizer, metrics=[metric])
         self.model = dl
-
-    def f1_m(true, pred):
-        # Source:
-        # https://www.kaggle.com/guglielmocamporese/macro-f1-score-keras
-        y_pred = K.round(pred)
-        tp = K.sum(K.cast(true*y_pred, 'float'), axis=0)
-        # tn = K.sum(K.cast((1-y_true)*(1-y_pred), 'float'), axis=0)
-        fp = K.sum(K.cast((1-true)*y_pred, 'float'), axis=0)
-        fn = K.sum(K.cast(true*(1-y_pred), 'float'), axis=0)
-
-        p = tp / (tp + fp + K.epsilon())
-        r = tp / (tp + fn + K.epsilon())
-
-        f1 = 2*p*r / (p+r+K.epsilon())
-        f1 = tf.where(tf.math.is_nan(f1), tf.zeros_like(f1), f1)
-        return K.mean(f1)
 
     def __encode_labels(self, y):
         """ Encodes string labels"""
@@ -123,27 +92,30 @@ class FeedforwardNetWork():
         # number of epochs is the number of complete passes through the training dataset
         self.model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batch_size)
 
-    def evaluateModel(self):
+    def evaluateModel(self, show_report: bool=True):
         """
         Prints Classification report
+        returns CM
         """
         _ , accuracy = self.model.evaluate(self.X_test, self.y_test_en)
-        print('Accuracy %.2f' % (accuracy*100))
+        if show_report:
+            print('Accuracy %.2f' % (accuracy*100))
 
-        print(' ')
+            print(' ')
         y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
-        print("F1-Score macro: ", metrics.f1_score(self.y_test, y_pred,average='macro'))
-        print("F1-Score micro: ", metrics.f1_score(self.y_test, y_pred,average='micro'))
-        print("F1-Score wighted: ", metrics.f1_score(self.y_test, y_pred,average='weighted'))
-        print(classification_report(self.y_test, y_pred))
+        if show_report:
+            print("F1-Score macro: ", metrics.f1_score(self.y_test, y_pred,average='macro'))
+            print("F1-Score micro: ", metrics.f1_score(self.y_test, y_pred,average='micro'))
+            print("F1-Score wighted: ", metrics.f1_score(self.y_test, y_pred,average='weighted'))
+            print(classification_report(self.y_test, y_pred))
+        return confusion_matrix(self.y_test, y_pred, labels=['0->0', '0->1', '1->0', '1->1'])
 
-        # Evaluation
-        # https://machinelearningmastery.com/evaluate-skill-deep-learning-models/
-        # Advanced Tut:
-        # https://machinelearningmastery.com/how-to-make-classification-and-regression-predictions-for-deep-learning-models-in-keras/
-        # Saved Model to file:
-        # https://machinelearningmastery.com/save-load-keras-deep-learning-models/
-
+    def get_f1_scores(self) -> Tuple[float, float, float]:
+        """
+        returnsmacro, micro and weighted f1 scores
+        """
+        y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
+        return metrics.f1_score(self.y_test, y_pred,average='macro'), metrics.f1_score(self.y_test, y_pred,average='micro'), metrics.f1_score(self.y_test, y_pred,average='weighted')
 
     def mapMeanWeights(self, layer=0):
         """
@@ -173,7 +145,7 @@ class FeedforwardNetWork():
         plt.title('First Layer Weights')
         plt.show()
 
-    def map_input(self, title: str):
+    def map_input(self, title: str, show: bool=True, save: str=None):
         weights = self.model.layers[0].get_weights()[0]
         weights = np.asarray(weights)
         y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
@@ -208,27 +180,58 @@ class FeedforwardNetWork():
         mini = np.min(matrices)
         maxi = np.max(matrices)
         
-        fig, axis = plt.subplots(nrows=1, ncols=4)
+        fig, axis = plt.subplots(nrows=1, ncols=5, gridspec_kw={'width_ratios': [4, 4, 4, 4, 1]})
+        
         for w in range(len(matrices)):
-
             im = axis[w].imshow(matrices[w], cmap='hot', interpolation='nearest', vmin=mini, vmax=maxi)
             axis[w].set_title(keys[w])
             axis[w].set_yticklabels([41, 40, 35, 30, 25, 20, 15, 10, 5])
 
         
         fig.suptitle(title)
-        fig.text(0.5, 0.04, 'First Hidden\n Layer', ha='center')
-        fig.text(0.04, 0.5, 'Input-Layer', va='center', rotation='vertical')
+        fig.supxlabel('First Hidden\n Layer')
+        fig.supylabel('Input-Layer')
+        
+        #fig.colorbar(im,  ax=axis.ravel().tolist(), location='top', shrink=0.5)
+        fig.colorbar(im, cax=axis[-1], shrink=0.5)
+        plt.tight_layout()
+        if show:
+            plt.show()
+        if save != None:
+            plt.savefig(save)
 
-        cb_ax = fig.add_axes([0.93, 0.1, 0.02, 0.8])
-        cbar = fig.colorbar(im, cax=cb_ax)
+        plt.clf()
+        plt.cla()
+        plt.close()
 
-        plt.show()
 
-a = FeedforwardNetWork()
-a.get_data(liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop01', 'bl693_no_white_Pop04', 'bl693_no_white_Pop06'], shuffle=True)
-a.encode_labels()
-a.makeModell()
-a.fitModel()
-a.evaluateModel()
-a.map_input("Population: bl693_no_white_Pop05/02/03/01/04/06 \n neurons-wise mean of all correct predicted trials per class\n mapped to the first Layer weights")
+#populations = get_all_pop()
+#a = Plotter(populations, r'D:\Dataframes\most_active_neurons\40')
+#ok, nt_ok = a.sort_out_populations(show=False)
+
+"""
+CM = np.zeros((4, 4))
+for pop in ok:
+    a = FeedforwardNetWork()
+    a.get_data(liste=[pop])
+    a.encode_labels()
+    a.makeModell()
+    a.fitModel()
+    CM = CM + a.evaluateModel(show_report=False)
+    
+CM_norm = np.zeros((4, 4))
+for row in range(len(CM)):
+    for col in range(len(CM[row])):
+        CM_norm[row][col] = round(CM[row][col] / np.sum(CM[row]), 3)
+CM = CM_norm
+
+df_cm = pd.DataFrame(CM_norm, index = [i for i in ['0->0', '0->1', '1->0', '1->1']],
+columns = [i for i in ['0->0', '0->1', '1->0', '1->1']])
+sns.heatmap(df_cm, annot=True, cmap='Blues', fmt='g')
+plt.title("Class-wise Normalized Confusion Matrix of all Populations with all 4 classes.\n Classification via Feedforward Network, SMOTE used on training-data")
+plt.xlabel("Predicted Label")
+plt.ylabel("True Label")
+plt.show()
+    #path = 'C:\\Users\\Sam\Desktop\\BachelorInfo\\Bachelor-Info\\Bachelor-ML\\Skripte\\Plots\\Feedforward Mappings\\' + pop
+    #a.map_input("Population: {} \n neurons-wise mean of all correct predicted trials per class\n mapped to the first Layer weights".format(pop), show=False, save=path)
+"""
