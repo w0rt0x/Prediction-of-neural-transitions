@@ -107,39 +107,6 @@ class Data:
         self.y_train = np.asarray(y_train)
         self.y_test = np.asarray(y_test)
 
-    def split_day_wise(self, day:int=3):
-        """
-        Splits each Populations into training/test data, while day x is only used for testing
-        :param day (int) - default is day3 that is used for testing
-        :param remove_day4 (bool) - True removes day 4 trials, default is True
-        :param shuffle (bool) - shuffles trials before splitting them, default is True
-        """
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = [] 
-        for df in self.dataframes:
-            header = set(df['label'].tolist())
-            for trial in header:
-                # geting rows with (day, Trail)-label
-                rows = df.loc[df['label'] == trial].to_numpy()
-                # getting response label
-                response = rows[0][-1]
-                # getting the actual data from the matrix
-                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-                for i in range(len(rows)):
-                    if eval(trial)[0] == day:
-                        X_test.append(rows[i])
-                        y_test.append(response)
-                    else:
-                        X_train.append(rows[i])
-                        y_train.append(response)
-
-        self.X_train = np.asarray(X_train)
-        self.X_test = np.asarray(X_test)
-        self.y_train = np.asarray(y_train)
-        self.y_test = np.asarray(y_test)  
-
     def split_trial_wise_with_concat_vectors(self, n_vec: int, split_ratio: float=0.2, remove_day4: bool=True, shuffle: bool=True):
         """
         Each Population has ~20 repetitions per trial. This function splits each of those repetitions so that 
@@ -252,6 +219,10 @@ class Data:
         """
         performs k-fold cross validation, 
         returns dict: {Population: {K-Fold: {X:.., y:..}}}
+        :param K (int, default=5) - Number of k folds
+        :param remove_day4 (bool) - True removes day 4 trials, default is True
+        :param smote (bool, default is True) - if True, Smote is used on training folds
+        :param shuffle (bool, default is False) - If True, shuffles labels for random benchmark
         """
         counter = 0
         results = {}
@@ -318,8 +289,12 @@ class Data:
         
     def k_fold_cross_validation(self, K: int=5, rem_day4:bool=True, smote: bool=True, shuffle: bool=False) -> dict:
         """
-        performs k-fold cross validation on dataset
-        uses all Populations at once
+        performs k-fold cross validation, but does not seperate between different populations 
+        returns dict: {K-Fold: {X:.., y:..}}
+        :param K (int, default=5) - Number of k folds
+        :param remove_day4 (bool) - True removes day 4 trials, default is True
+        :param smote (bool, default is True) - if True, Smote is used on training folds
+        :param shuffle (bool, default is False) - If True, shuffles labels for random benchmark
         """
         k_folds = {}
 
