@@ -79,9 +79,8 @@ class SVMclassifier():
         performs Support Vectors Machine on dataset
         :param return_f1s (bool, default is True) - If True returns micro, macro and weighted f1-Score
         """
-        self.pred = svm.predict(self.X_test)
+        self.pred = self.classifier.predict(self.X_test)
         self.report = classification_report(self.y_test, self.pred, output_dict=True)
-
         if return_f1s:
             return self.report['accuracy'], self.report['macro avg']['f1-score'], self.report['weighted avg']['f1-score']
 
@@ -135,13 +134,13 @@ class SVMclassifier():
         return confusion_matrix(self.y_test, self.pred, labels=order)
 
 
-svm = SVMclassifier()
-from data_holder import Data
-d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
-d.split_trial_wise()
-d.use_SMOTE()
-X, x, Y, y = d.get_data()
-svm.set_data(X, x, Y, y)
-svm.train()
-print(svm.predict())
-print(svm.plot_CM())
+#svm = SVMclassifier()
+#from data_holder import Data
+#d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
+#d.split_trial_wise()
+#d.use_SMOTE()
+#X, x, Y, y = d.get_data()
+#svm.set_data(X, x, Y, y)
+#svm.train()
+#print(svm.predict())
+#print(svm.plot_CM())
