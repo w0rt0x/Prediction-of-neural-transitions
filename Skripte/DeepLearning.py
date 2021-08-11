@@ -2,53 +2,48 @@ from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.metrics import classification_report
 from sklearn import metrics
-import warnings
-warnings.filterwarnings('ignore')
-from Classifier import Classifier
 from keras import backend as K
 import tensorflow as tf
-import random
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
-#from Plotter import Plotter, get_all_pop
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
 from typing import Tuple
 
 
 class FeedforwardNetWork():
     
-    def __init__(self):
-        self.model = None
-        self.X_train = None
-        self.X_test = None
-        self.y_train = None
-        self.y_test = None
-        self.y_test_en = None
+    def __init__(self, input_dim: int=40, hidden_dim: int=16, loss: str='categorical_crossentropy', optimizer: str='adam', metric: str='accuracy', epochs: int=50, batch_size: int=32):
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        self.loss = loss
+        self.optimizer = optimizer
+        self.metric = metric
+        self.epochs = epochs
+        self.batch_size = batch_size
 
-    def get_data(self, liste=['bl693_no_white_Pop05', 'bl693_no_white_Pop01', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop04', 'bl693_no_white_Pop06'], path=r'D:\Dataframes\most_active_neurons\40', shuffle: bool=False, smote: bool=True):
+    def set_data(self, X_train: np.array, X_test: np.array, y_train: np.array, y_test: np.array, fit: bool=True):
         """
-        sets training and tes data, takes in list with filenames from directory and path that that directory
+        Sets Training and test-data, must be numpy arrays
+        :param fit(bool) - fits model directly after setting data
         """
-        a = Classifier(liste, path)
-        a.split_trial_wise()
-        if shuffle:
-            a.shuffle_labels()
-        if smote:
-            a.use_SMOTE()
-        self.X_train = a.X_train.tolist()
-        self.X_test = a.X_test.tolist()
-        self.y_train = a.y_train.tolist()
-        self.y_test = a.y_test.tolist()
+        self.X_train = X_train.tolist()
+        self.X_test = X_test.tolist()
+        self.y_train = y_train.tolist()
+        self.y_test = y_test.tolist()
 
-    def makeModell(self, loss='categorical_crossentropy', optimizer='adam', metric='accuracy'):
+        self.y_train = self.__encode_labels(self.y_train)
+        self.y_test_en = self.__encode_labels(self.y_test)
+
+        if fit:
+            self.makeModell()
+            self.fitModel()
+
+    def makeModell(self):
         # Sequentiel model, layers are added one after another
-        dim = len(self.X_train[0])
         dl = Sequential()
-        dl.add(Dense(16, input_dim=len(self.X_train[0]), activation='sigmoid'))
+        dl.add(Dense(self.hidden_dim, input_dim=self.input_dim, activation='sigmoid'))
         dl.add(Dense(4,activation='softmax'))
 
         # Choosing the loss-function, more infos here:
@@ -56,7 +51,7 @@ class FeedforwardNetWork():
         # Also choosing optimizer (stochastic gradient descent algorithm 'adam'):
         # https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/
         # Using accuracy-metric because of binary classification
-        dl.compile(loss=loss, optimizer=optimizer, metrics=[metric])
+        dl.compile(loss=self.loss, optimizer=self.optimizer, metrics=[self.metric])
         self.model = dl
 
     def __encode_labels(self, y):
@@ -74,15 +69,8 @@ class FeedforwardNetWork():
         for i in range(len(y)):
             y_hot.append(table[y[i]])
         return y_hot
-    
-    def encode_labels(self):
-        """
-        encodes labels, One Hot Encoding
-        """
-        self.y_train = self.__encode_labels(self.y_train)
-        self.y_test_en = self.__encode_labels(self.y_test)
 
-    def fitModel(self, epochs=50, batch_size=32):
+    def fitModel(self,verbose: int=1):
         """
         Fits Model with given Epoch and Batch Size, default: epochs=50, batch_size=32
         """
@@ -90,61 +78,34 @@ class FeedforwardNetWork():
         # https://machinelearningmastery.com/difference-between-a-batch-and-an-epoch/
         # batch size is a number of samples processed before the model is updated
         # number of epochs is the number of complete passes through the training dataset
-        self.model.fit(self.X_train, self.y_train, epochs=epochs, batch_size=batch_size)
+        self.model.fit(self.X_train, self.y_train, epochs=self.epochs, batch_size=self.batch_size, verbose=verbose)
 
-    def evaluateModel(self, show_report: bool=True):
+    def predict(self, return_f1s: bool=True):
         """
-        Prints Classification report
-        returns CM
+        performs Prediction on dataset
+        :param return_f1s (bool, default is True) - If True: returns micro, macro and weighted f1-Score
         """
-        _ , accuracy = self.model.evaluate(self.X_test, self.y_test_en)
-        if show_report:
-            print('Accuracy %.2f' % (accuracy*100))
+        self.pred = self.__decode_labels(self.model.predict_classes(self.X_test))
+        self.report = classification_report(self.y_test, self.pred, output_dict=True)
 
-            print(' ')
-        y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
-        if show_report:
-            print("F1-Score macro: ", metrics.f1_score(self.y_test, y_pred,average='macro'))
-            print("F1-Score micro: ", metrics.f1_score(self.y_test, y_pred,average='micro'))
-            print("F1-Score wighted: ", metrics.f1_score(self.y_test, y_pred,average='weighted'))
-            print(classification_report(self.y_test, y_pred))
-        return confusion_matrix(self.y_test, y_pred, labels=['0->0', '0->1', '1->0', '1->1'])
+        if return_f1s:
+            return self.report['accuracy'], self.report['macro avg']['f1-score'], self.report['weighted avg']['f1-score']
 
-    def get_f1_scores(self) -> Tuple[float, float, float]:
+    def get_CM(self, order: list=['0->0', '0->1', '1->0', '1->1']) -> np.array:
         """
-        returnsmacro, micro and weighted f1 scores
+        returns confusion matrix
         """
-        y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
-        return metrics.f1_score(self.y_test, y_pred,average='macro'), metrics.f1_score(self.y_test, y_pred,average='micro'), metrics.f1_score(self.y_test, y_pred,average='weighted')
-    
-    def set_data(self, X_train, X_test, y_train, y_test):
-        """
-        setter for data
-        """
-        self.X_train = X_train.tolist()
-        self.X_test = X_test.tolist()
-        self.y_train = y_train.tolist()
-        self.y_test = y_test.tolist()
-    
-    def mapMeanWeights(self, layer=0):
-        """
-        Maps Wights to heatmap
-        """
-        weights = self.model.layers[0].get_weights()[0]
-        means = np.zeros(len(weights))
-        for i in range(len(weights)):
-            means[i] = np.mean(weights[i])
-        weights =  np.array(np.array_split(means, 5))
-        plt.imshow(weights, cmap='hot', interpolation='nearest')
-        plt.colorbar()
-        plt.ylabel('Trials')
-        plt.xlabel('Neuronen')
-        plt.title('Mean of first-layer weights')
-        plt.show()
+        return confusion_matrix(self.y_test, self.pred, labels=order)
 
-    def plotWeights(self, layer=0):
+    def get_report(self) -> dict:
         """
-        Plots Layer Weights
+        returns scikit classification report as dictionary
+        """
+        return self.report
+
+    def plotWeights(self):
+        """
+        Plots first Layer Weights as heatmap
         """
         weights = self.model.layers[0].get_weights()[0]
         plt.imshow(weights, cmap='hot', interpolation='nearest')
@@ -211,33 +172,13 @@ class FeedforwardNetWork():
         plt.cla()
         plt.close()
 
-#populations = get_all_pop()
-#a = Plotter(populations, r'D:\Dataframes\most_active_neurons\40')
-#ok, nt_ok = a.sort_out_populations(show=False)
-
-"""
-CM = np.zeros((4, 4))
-for pop in ok:
-    a = FeedforwardNetWork()
-    a.get_data(liste=[pop])
-    a.encode_labels()
-    a.makeModell()
-    a.fitModel()
-    CM = CM + a.evaluateModel(show_report=False)
-    
-CM_norm = np.zeros((4, 4))
-for row in range(len(CM)):
-    for col in range(len(CM[row])):
-        CM_norm[row][col] = round(CM[row][col] / np.sum(CM[row]), 3)
-CM = CM_norm
-
-df_cm = pd.DataFrame(CM_norm, index = [i for i in ['0->0', '0->1', '1->0', '1->1']],
-columns = [i for i in ['0->0', '0->1', '1->0', '1->1']])
-sns.heatmap(df_cm, annot=True, cmap='Blues', fmt='g')
-plt.title("Class-wise Normalized Confusion Matrix of all Populations with all 4 classes.\n Classification via Feedforward Network, SMOTE used on training-data")
-plt.xlabel("Predicted Label")
-plt.ylabel("True Label")
-plt.show()
-    #path = 'C:\\Users\\Sam\Desktop\\BachelorInfo\\Bachelor-Info\\Bachelor-ML\\Skripte\\Plots\\Feedforward Mappings\\' + pop
-    #a.map_input("Population: {} \n neurons-wise mean of all correct predicted trials per class\n mapped to the first Layer weights".format(pop), show=False, save=path)
-"""
+#ffn = FeedforwardNetWork()
+#from data_holder import Data
+#d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
+#d.split_trial_wise()
+#d.use_SMOTE()
+#X, x, Y, y = d.get_data()
+#ffn.set_data(X, x, Y, y)
+#print(ffn.predict())
+#ffn.plotWeights()
+#ffn.map_input("test")

@@ -1,274 +1,59 @@
-from re import X
 from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from sklearn import metrics
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
-import random
 import seaborn as sns
-from random import shuffle
-from copy import deepcopy
-from imblearn.over_sampling import ADASYN, SMOTE
-from typing import Tuple
 from sklearn.metrics import confusion_matrix
-from DeepLearning import FeedforwardNetWork
 
 
-class Classifier():
+class SVMclassifier():
 
-    def __init__(self, populations: list, direc: str):
+    def __init__(self,  kernel: str="rbf", degree: int=3, c: float=1.0, gamma: float=0.5, class_weight: str="balanced"):
         """
-        :param populations(list) - List with Population names
-        :param direc - path(str) to directory with data
+        Init for SVM Classifier
+        :param kernel (str) - can be "poly", "linear" or "rbf"(default)
+        :param degree (int) - only relevent for "poly" Kernel, default is 3
+        :param c (float) - default is 1.0
+        :param gamma (float) - only relevant for "rbf" Kernel, default is 0.5       
+        :param class_weight - default is balanced to to imbalanced data sets
         """
-        self.populations = populations
-        self.dataframes = []
-        for i in range(len(populations)):
-            self.dataframes.append(pd.read_csv(direc + '\\{}.csv'.format(populations[i])))
+        self.kernel = kernel
+        self.c = c
+        self.gamma = gamma
+        self.degree = degree
+        self.class_weight = class_weight
 
-    def random_split(self, split_ratio: float=0.2, randomState: int=None, remove_day4: bool=True):
+    def set_data(self, X_train: np.array, X_test: np.array, y_train: np.array, y_test: np.array):
         """
-        Taking random samples for training/Test with the train_test_split function by Scikit learn
-        for each population
-        :param Split-ratio (float) - Ratio of Training/Test Split
-        :param randomState (int) - Seed
-        :param remove_day4 (bool) - True removes day 4 trials, default is True
+        Sets Training and test-data, must be numpy arrays
         """
-        X = []
-        y = []
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
 
-        for df in self.dataframes:
-            for index, row in df.iterrows():
-                if remove_day4 and eval(row[1])[0] != 4:
-                    X.append(row[2:-1].tolist())
-                    y.append(row[-1])
-
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=split_ratio, random_state=randomState)
-        X, y = None, None
-
-    def split_population_wise(self, n:int, remove_day4: bool=True):
+    def grid_search(self, title: str, C: list, Y: list=[1], show: bool=True, dest_path: str = None):
         """
-        This splitter-function takes n random populations for testing and all remaining for training.
-        Those n populations are taken from the provided list at the beginning (init)
-        :param n (int) - number of populations used for training
-        :param remove_day4 (bool) - removes day4 trials, default is True
-        """
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = []      
-        
-        # Splitting
-        dfs = deepcopy(self.dataframes)
-        shuffle(dfs)
-        df_test = dfs[:n]
-        df_train = dfs[n:]
-
-        for df in df_train:
-            X, x, Y, y = self.__split_df(df, 0.0, remove_day4, False)
-            X_train = X_train + X
-            y_train = y_train + Y
-
-        for df in df_test:
-            X, x, Y, y = self.__split_df(df, 0.0, remove_day4, False)
-            X_test = X_test + X
-            y_test = y_test + Y
-
-        self.X_train = np.asarray(X_train)
-        self.X_test = np.asarray(X_test)
-        self.y_train = np.asarray(y_train)
-        self.y_test = np.asarray(y_test)
-
-    def print_shape(self):
-        """
-        Prints shape of training/test data
-        """
-        print("X_train: ", self.X_train.shape)
-        print("X_test: ", self.X_test.shape)
-        print("y_train: ", self.y_train.shape)
-        print("y_test: ", self.y_test.shape)
-
-    def split_trial_wise(self, split_ratio: float=0.2, remove_day4: bool=True, shuffle: bool=True):
-        """
-        Each Population has ~20 repetitions per trial. This function splits each of those repetitions so that 
-        training and test data have some repetitions (split_ratio)
-        :param Split-ratio (float) - Ratio of Training/Test Split, default is 0.2
-        :param remove_day4 (bool) - True removes day 4 trials, default is True
-        :param shuffle (bool) - shuffles trials before splitting them, default is True
-        """
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = [] 
-
-        for df in self.dataframes:
-            X, x, Y, y = self.__split_df(df, 1 - split_ratio, remove_day4, shuffle)
-            X_train = X_train + X
-            y_train = y_train + Y
-            X_test = X_test + x
-            y_test = y_test + y
-
-        self.X_train = np.asarray(X_train)
-        self.X_test = np.asarray(X_test)
-        self.y_train = np.asarray(y_train)
-        self.y_test = np.asarray(y_test)
-
-    def split_day_wise(self, day:int=3, remove_day4:bool=True, shuffle: bool=True):
-        """
-        Splits each Populations into training/test data, while day x is only used for testing
-        :param day (int) - default is day3 that is used for testing
-        :param remove_day4 (bool) - True removes day 4 trials, default is True
-        :param shuffle (bool) - shuffles trials before splitting them, default is True
-        """
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = [] 
-        for df in self.dataframes:
-            header = set(df['label'].tolist())
-            for trial in header:
-                # geting rows with (day, Trail)-label
-                rows = df.loc[df['label'] == trial].to_numpy()
-                # getting response label
-                response = rows[0][-1]
-                # getting the actual data from the matrix
-                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-                for i in range(len(rows)):
-                    if eval(trial)[0] == day:
-                        X_test.append(rows[i])
-                        y_test.append(response)
-                    else:
-                        X_train.append(rows[i])
-                        y_train.append(response)
-
-        self.X_train = np.asarray(X_train)
-        self.X_test = np.asarray(X_test)
-        self.y_train = np.asarray(y_train)
-        self.y_test = np.asarray(y_test)  
-
-    def split_trial_wise_with_concat_vectors(self, n_vec: int, split_ratio: float=0.2, remove_day4: bool=True, shuffle: bool=True):
-        """
-        Each Population has ~20 repetitions per trial. This function splits each of those repetitions so that 
-        training and test data have some repetitions (split_ratio).
-        variable number of repetitions will be concatinated.
-        :param n_vec (int) - number of repetiotions that are concatinated to one trial
-        :param Split-ratio (float) - Ratio of Training/Test Split, default is 0.2
-        :param remove_day4 (bool) - True removes day 4 trials, default is True
-        :param shuffle (bool) - shuffles trials before splitting them, default is True
-        """
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = [] 
-
-        for df in self.dataframes:
-            X, x, Y, y = self.__split_df(df, 1 - split_ratio, remove_day4, shuffle, n_vec=n_vec)
-            X_train = X_train + X
-            y_train = y_train + Y
-            X_test = X_test + x
-            y_test = y_test + y
-
-        self.X_train = np.asarray(X_train)
-        self.X_test = np.asarray(X_test)
-        self.y_train = np.asarray(y_train)
-        self.y_test = np.asarray(y_test)       
-
-    def __split_df(self, df:pd.DataFrame, ratio:float, rem_day4:bool, shuffle:bool, n_vec: int=1) -> Tuple[list, list, list, list]:
-        """
-        returns Training/Test data as lists
-        """
-        X_test = []
-        X_train = []   
-        y_test = []   
-        y_train = [] 
-
-        header = df['label'].tolist()
-        responses = df['response'].tolist()
-        # Removing Day 4
-        trails = set()
-        for i in range(len(header)):
-            if rem_day4 and responses[i] == "0":
-                pass
-            else:
-                trails.add(header[i])
-            
-        header = trails
-
-        # Getting all the matrices from the trials
-        for trial in header:
-            # geting rows with (day, Trail)-label
-            rows = df.loc[df['label'] == trial].to_numpy()
-            # getting response label
-            response = rows[0][-1]
-            # getting the actual data from the matrix
-            rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-            if shuffle:
-                # shuffle PC-Matrix
-                np.random.shuffle(rows)
-
-            if n_vec == 1:
-                pass
-            else:
-                new_rows = []
-                # taking samples
-                while len(rows) > n_vec:
-                    vecs = rows[:n_vec]
-                    # deleting vectors that are already taken
-                    rows = rows[n_vec:]
-                    # Concat vectors to one
-                    new_rows.append(np.concatenate(vecs))
-                rows = new_rows
-
-            # Splitting into Test and training
-            cut = int(ratio*len(rows))
-            for i in range(len(rows)):
-                if i < cut or ratio == 0.0:
-                    X_train.append(rows[i])
-                    y_train.append(response)
-                else:
-                    X_test.append(rows[i])
-                    y_test.append(response)
-
-        return X_train, X_test, y_train, y_test
-
-    def shuffle_labels(self):
-        """
-        shuffles labels to have a (random) Benchamrk
-        """
-        random.shuffle(self.y_train)
-        random.shuffle(self.y_test)
-
-    def use_SMOTE(self):
-        """performs SMOTE on training data"""
-        smote = SMOTE()
-        self.X_train, self.y_train = smote.fit_resample(self.X_train, self.y_train)
-
-    def use_ADASYN(self):
-        """performs ADASYN on training data"""
-        ada = ADASYN()
-        self.X_train, self.y_train = ada.fit_resample(self.X_train, self.y_train)
-
-    def grid_search(self, title, C, Y = [1], kernel='rbf', degree=3, class_weight='balanced', show: bool=True, dest_path: str = None):
-        """
-        Performs Grid-Search on given classifier
+        Performs Grid-Search on SVM
+        :param title (str) - Title of Plot
+        :param C (list) - list of c-values that should be tested
+        :param Y (list) - list of gamma-values that should be tested, default is [1]
+        :param show (bool, default True) - if True: shows Plot
+        :param dest_path (str, default is None) - if provided, plot will be saved to path. path must include name and format of plot
         """
         results = []
         for c in range(len(C)):
             print(C[c])
             results.append([])
-            for y in range(len(degree)):
-                #svm = SVC(kernel=kernel, C=C[c], degree=degree, gamma=Y[y], class_weight=class_weight).fit(self.X_train, self.y_train)
-                svm = SVC(kernel=kernel, C=C[c], degree=degree[y], class_weight=class_weight).fit(self.X_train, self.y_train)
+            for y in range(len(Y)):
+                svm = SVC(kernel=self.kernel, C=C[c], degree=self.degree, gamma=Y[y], class_weight=self.class_weight).fit(self.X_train, self.y_train)
                 self.classifier = svm
                 f1 = metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average="weighted")
                 results[c].append(round(f1,4))
-        #ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=Y, yticklabels=C, cbar_kws={'label': 'weighted f1-Score'})
-        ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=degree, yticklabels=C, cbar_kws={'label': 'weighted f1-Score'})
-        plt.xlabel('Degree')
+        
+        ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=Y, yticklabels=C, cbar_kws={'label': 'weighted f1-Score'})
+        plt.xlabel('Gamma')
         plt.ylabel('C')
         plt.title(title)
 
@@ -282,70 +67,27 @@ class Classifier():
         plt.cla()
         plt.close()   
 
-    def do_Logistic_Regression(self, penality='l2', c=1.0):
-        """
-        performs logistic regression 
-        """
-        # Sources:
-        # https://towardsdatascience.com/logistic-regression-using-python-sklearn-numpy-mnist-handwriting-recognition-matplotlib-a6b31e2b166a
-        # https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
-        LR = LogisticRegression(penalty=penality,  C=c).fit(
-            self.X_train, self.y_train)
-        self.accuracy = LR.score(self.X_test, self.y_test)
-        self.classifier = LR
-
-    def do_LR_CV(self, Cs=10, fit_intercept=True, cv=None, dual=False, penalty='l2', solver='lbfgs', class_weight=None):
-        """Logistic Regression CV (aka logit, MaxEnt) classifier.
-        Taken/Copied From official Doku:
-        https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/linear_model/_logistic.py#L1502
-        ---------------------------------------------------------
-        Cs: int or list of floats, default=10
-            describes the inverse of regularization strength
-
-        fit_intercept: Bool, default=True
-            Specifies if a constant (a.k.a. bias or intercept) 
-            should be added to the decision function.
-
-        cv : int or cross-validation generator, default=None
-            cross-validation generator used is Stratified K-Folds
-
-        dual: bool, default=False
-            Dual or primal formulation. Dual formulation is only implemented for
-            l2 penalty with liblinear solver. Prefer dual=False when
-            n_samples > n_features.
-
-        penalty: {'l1', 'l2', 'elasticnet'}, default='l2'
-            'elasticnet' is only supported by the 'saga' solver.
-
-        solver : {'newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'}, default='lbfgs'
-
-        class_weight : dict or 'balanced', default=None
-        """
-        LRCV = LogisticRegressionCV(Cs=Cs, fit_intercept=fit_intercept, cv=cv, penalty=penalty, solver=solver, class_weight=class_weight).fit(
-            self.X_train, self.y_train)
-        self.accuracy = LRCV.score(self.X_test, self.y_test)
-        self.classifier = LRCV
-
-    def do_SVM(self, kernel="linear", degree=3, c=1, gamma='scale', class_weight=None, print_report: bool=False):
+    def predict(self, return_f1s: bool=True):
         """
         performs Support Vectors Machine on dataset
+        :param return_f1s (bool, default is True) - If True returns micro, macro and weighted f1-Score
         """
-        svm = SVC(kernel=kernel, C=c, degree=degree, gamma=gamma, class_weight=class_weight, cache_size=2000).fit(self.X_train, self.y_train)
+        svm = SVC(kernel=self.kernel, C=self.c, degree=self.degree, gamma=self.gamma, class_weight=self.class_weight, cache_size=2000).fit(self.X_train, self.y_train)
         self.classifier = svm
         # Classification report as dictionary
         self.pred = svm.predict(self.X_test)
         self.report = classification_report(self.y_test, self.pred, output_dict=True)
-        
-        if print_report:
-            print(classification_report(self.y_test, svm.predict(self.X_test)))
 
-    def get_report(self):
+        if return_f1s:
+            return self.report['accuracy'], self.report['macro avg']['f1-score'], self.report['weighted avg']['f1-score']
+
+    def get_report(self) -> dict:
         """
         returns scikit classification report as dictionary
         """
-        return classification_report(self.y_test, self.pred, output_dict=True)
+        return self.report
 
-    def get_predictions(self):
+    def get_predictions(self)->np.array:
         """
         returns predicted labels
         """
@@ -382,151 +124,19 @@ class Classifier():
         else:
             plt.savefig(path_dir + '\\CM.png')
 
-    def get_data(self):
-        """
-        returns X_train, X_test, etc
-        """
-        return self.X_train, self.X_test, self.y_train, self.y_test
-
-    def get_cm(self) -> np.array:
+    def get_CM(self, order: list=['0->0', '0->1', '1->0', '1->1']) -> np.array:
         """
         returns confusion matrix
         """
-        return confusion_matrix(self.y_test, self.pred, labels=['0->0', '0->1', '1->0', '1->1'])
+        return confusion_matrix(self.y_test, self.pred, labels=order)
 
-    def k_fold_cross_validation_populationwise(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True, smote:bool=True, shuffle: bool=False) -> dict:
-        """
-        performs k-fold cross validation on SVM, 
-        returns mean of f1-scores population-wise as dictionary
-        """
-        counter = 0
-        results = {}
-        for df in self.dataframes:
-            k_folds = {}
-            micro = []
-            macro = []
-            weighted = []
 
-            header = set(df['label'].tolist())
-            # Removing Day 4
-            trails = set()
-            for i in header:
-                trail = eval(i)
-                if trail[0] != 4:
-                    trails.add(i)
-                else:
-                    if not(rem_day4):
-                        trails.add(i)
-
-            header = trails
-
-            # Getting all the matrices from the trials
-            for k in range(K):
-                k_folds[k] = {"X_train": [], "X_test": [], "y_test": [], "y_train": []}
-                for trial in header:
-                    # geting rows with (day, Trail)-label
-                    rows = df.loc[df['label'] == trial].to_numpy()
-                    # getting response label
-                    response = rows[0][-1]
-                    # getting the actual data from the matrix
-                    rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-
-                    chunks = np.array_split(rows, K)
-                    for chunk in chunks[k]:
-                        k_folds[k]["X_test"].append(chunk.astype(np.float))
-                        k_folds[k]["y_test"].append(response)
-
-                    train_chunks = np.delete(chunks, k, axis=0)
-                    for chunk in train_chunks:
-                        for ch in chunk:
-                            k_folds[k]["X_train"].append(ch.astype(np.float))
-                            k_folds[k]["y_train"].append(response)
-
-            for k in range(K):
-
-                self.X_test = np.asarray(k_folds[k]["X_test"])
-                self.y_test = np.asarray(k_folds[k]["y_test"])
-                self.X_train = np.asarray(k_folds[k]["X_train"])
-                self.y_train = np.asarray(k_folds[k]["y_train"])
-
-                if smote:
-                    self.use_SMOTE()
-
-                if shuffle:
-                    self.shuffle_labels()
-
-                self.do_SVM(kernel=kernel, degree=degree, c=c,gamma=gamma, class_weight=class_weight, print_report=print_report)
-                micro.append(self.get_f1(avg="micro"))
-                macro.append(self.get_f1(avg="macro"))
-                weighted.append(self.get_f1(avg="weighted"))
-            
-            results[self.populations[counter]] = {"MeanMicro": np.mean(np.array(micro)), "MeanMacro": np.mean(np.array(macro)), "MeanWeighted": np.mean(np.array(weighted))}
-            counter += 1
-
-        return results
-        
-    def k_fold_cross_validation(self, K: int=5, kernel: str="linear", degree:int =3, c: float=1, gamma: float=1.0, class_weight: str=None, print_report: bool=False, rem_day4:bool=True, smote: bool=True, shuffle: bool=True) -> dict:
-        """
-        performs k-fold cross validation on SVM, 
-        returns mean of f1-scores
-        uses all Populations at once
-        """
-        k_folds = {}
-        micro = []
-        macro = []
-        weighted = []
-
-        for k in range(K):
-            k_folds[k] = {"X_train": [], "X_test": [], "y_test": [], "y_train": []}
-            for df in self.dataframes:
-                header = set(df['label'].tolist())
-                # Removing Day 4
-                trails = set()
-                for i in header:
-                    trail = eval(i)
-                    if trail[0] != 4:
-                        trails.add(i)
-                    else:
-                        if not(rem_day4):
-                            trails.add(i)
-
-                header = trails
-
-                for trial in header:
-                    # geting rows with (day, Trail)-label
-                    rows = df.loc[df['label'] == trial].to_numpy()
-                    # getting response label
-                    response = rows[0][-1]
-                    # getting the actual data from the matrix
-                    rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-
-                    chunks = np.array_split(rows, K)
-                    for chunk in chunks[k]:
-                        k_folds[k]["X_test"].append(chunk.astype(np.float))
-                        k_folds[k]["y_test"].append(response)
-
-                    train_chunks = np.delete(chunks, k, axis=0)
-                    for chunk in train_chunks:
-                        for ch in chunk:
-                            k_folds[k]["X_train"].append(ch.astype(np.float))
-                            k_folds[k]["y_train"].append(response)
-
-        for k in range(K):
-
-            self.X_test = np.asarray(k_folds[k]["X_test"])
-            self.y_test = np.asarray(k_folds[k]["y_test"])
-            self.X_train = np.asarray(k_folds[k]["X_train"])
-            self.y_train = np.asarray(k_folds[k]["y_train"])
-
-            if smote:
-                    self.use_SMOTE()
-
-            if shuffle:
-                    self.shuffle_labels()
-
-            self.do_SVM(kernel=kernel, degree=degree, c=c,gamma=gamma, class_weight=class_weight, print_report=print_report)
-            micro.append(self.get_f1(avg="micro"))
-            macro.append(self.get_f1(avg="macro"))
-            weighted.append(self.get_f1(avg="weighted"))
-
-        return {"MeanMicro": np.mean(np.array(micro)), "MeanMacro": np.mean(np.array(macro)), "MeanWeighted": np.mean(np.array(weighted))}
+svm = SVMclassifier()
+from data_holder import Data
+d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
+d.split_trial_wise()
+d.use_SMOTE()
+X, x, Y, y = d.get_data()
+svm.set_data(X, x, Y, y)
+print(svm.predict())
+print(svm.plot_CM())
