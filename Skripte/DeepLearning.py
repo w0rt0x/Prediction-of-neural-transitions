@@ -1,15 +1,11 @@
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.metrics import classification_report
-from sklearn import metrics
-from keras import backend as K
-import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
-from typing import Tuple
 
 
 class FeedforwardNetWork():
@@ -70,9 +66,10 @@ class FeedforwardNetWork():
             y_hot.append(table[y[i]])
         return y_hot
 
-    def fitModel(self,verbose: int=1):
+    def fitModel(self, verbose: int=1):
         """
-        Fits Model with given Epoch and Batch Size, default: epochs=50, batch_size=32
+        Fits Model with given Epoch and Batch Size,
+        :param verbose(int=[1,2,3]) - displays fitting process, 0 is no display at all
         """
         # Fitting is done with Epochs, each epoch contains batches:
         # https://machinelearningmastery.com/difference-between-a-batch-and-an-epoch/
@@ -116,6 +113,10 @@ class FeedforwardNetWork():
         plt.show()
 
     def map_input(self, title: str, show: bool=True, save: str=None):
+        """
+        Maps mean of all correct predicted classes onto the first Layer weights,
+        showing 4 heatmaps (1 per class) in total
+        """
         weights = self.model.layers[0].get_weights()[0]
         weights = np.asarray(weights)
         y_pred = self.__decode_labels(self.model.predict_classes(self.X_test))
@@ -159,10 +160,9 @@ class FeedforwardNetWork():
         fig.suptitle(title)
         fig.supxlabel('First Hidden\n Layer')
         fig.supylabel('Input-Layer')
-        
-        #fig.colorbar(im,  ax=axis.ravel().tolist(), location='top', shrink=0.5)
         fig.colorbar(im, cax=axis[-1], shrink=0.5)
         plt.tight_layout()
+
         if show:
             plt.show()
         if save != None:
@@ -172,13 +172,13 @@ class FeedforwardNetWork():
         plt.cla()
         plt.close()
 
-#ffn = FeedforwardNetWork()
-#from data_holder import Data
-#d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
-#d.split_trial_wise()
-#d.use_SMOTE()
-#X, x, Y, y = d.get_data()
-#ffn.set_data(X, x, Y, y)
-#print(ffn.predict())
+ffn = FeedforwardNetWork()
+from data_holder import Data
+d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
+d.split_trial_wise()
+d.use_SMOTE()
+X, x, Y, y = d.get_data()
+ffn.set_data(X, x, Y, y)
+print(ffn.predict())
 #ffn.plotWeights()
-#ffn.map_input("test")
+ffn.map_input("test")
