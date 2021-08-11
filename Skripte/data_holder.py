@@ -242,7 +242,6 @@ class Data:
         ada = ADASYN()
         self.X_train, self.y_train = ada.fit_resample(self.X_train, self.y_train)
 
-
     def get_data(self):
         """
         returns X_train, X_test, etc
