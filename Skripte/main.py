@@ -1,8 +1,4 @@
-from math import gamma
-from Classifier import Classifier
-import os
-from os.path import isfile, join
-import random
+from Classifier import SVMclassifier
 from Plotter import Plotter, get_all_pop
 
 

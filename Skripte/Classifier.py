@@ -67,14 +67,18 @@ class SVMclassifier():
         plt.cla()
         plt.close()   
 
+    def train(self):
+        """
+        trains svm with given parameters
+        """
+        svm = SVC(kernel=self.kernel, C=self.c, degree=self.degree, gamma=self.gamma, class_weight=self.class_weight, cache_size=2000).fit(self.X_train, self.y_train)
+        self.classifier = svm
+
     def predict(self, return_f1s: bool=True):
         """
         performs Support Vectors Machine on dataset
         :param return_f1s (bool, default is True) - If True returns micro, macro and weighted f1-Score
         """
-        svm = SVC(kernel=self.kernel, C=self.c, degree=self.degree, gamma=self.gamma, class_weight=self.class_weight, cache_size=2000).fit(self.X_train, self.y_train)
-        self.classifier = svm
-        # Classification report as dictionary
         self.pred = svm.predict(self.X_test)
         self.report = classification_report(self.y_test, self.pred, output_dict=True)
 
@@ -138,5 +142,6 @@ d.split_trial_wise()
 d.use_SMOTE()
 X, x, Y, y = d.get_data()
 svm.set_data(X, x, Y, y)
+svm.train()
 print(svm.predict())
 print(svm.plot_CM())

@@ -675,3 +675,6 @@ b.boxplot_of_scores("Mean F1-Scores of 5-fold Cross-Validation using the 40 most
 #a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
 #b = Plotter(get_all_pop(), r'D:\Dataframes\tSNE\perp30')
 #b.plot_actual_vs_predicted("t-SNE", "t-SNE Component 1", "t-SNE Component 2", show=False, dest_path=r'D:\Dataframes\tSNE\2D_actual_vs_predicted')
+
+
+NEU MACHEN; AUSSORTIERER ZUERST (in init)

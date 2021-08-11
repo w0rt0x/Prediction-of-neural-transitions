@@ -19,10 +19,9 @@ class FeedforwardNetWork():
         self.epochs = epochs
         self.batch_size = batch_size
 
-    def set_data(self, X_train: np.array, X_test: np.array, y_train: np.array, y_test: np.array, fit: bool=True):
+    def set_data(self, X_train: np.array, X_test: np.array, y_train: np.array, y_test: np.array):
         """
         Sets Training and test-data, must be numpy arrays
-        :param fit(bool) - fits model directly after setting data
         """
         self.X_train = X_train.tolist()
         self.X_test = X_test.tolist()
@@ -32,9 +31,12 @@ class FeedforwardNetWork():
         self.y_train = self.__encode_labels(self.y_train)
         self.y_test_en = self.__encode_labels(self.y_test)
 
-        if fit:
-            self.makeModell()
-            self.fitModel()
+    def train(self):
+        """
+        Trains model
+        """
+        self.makeModell()
+        self.fitModel()
 
     def makeModell(self):
         # Sequentiel model, layers are added one after another
@@ -179,6 +181,5 @@ d.split_trial_wise()
 d.use_SMOTE()
 X, x, Y, y = d.get_data()
 ffn.set_data(X, x, Y, y)
+ffn.train()
 print(ffn.predict())
-#ffn.plotWeights()
-ffn.map_input("test")
