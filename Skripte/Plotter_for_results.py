@@ -61,9 +61,9 @@ class PerformancePlotter:
                     model.set_data(X, x, Y, y)
                     model.train()
                     mi, ma, weigth = model.predict()
-                    data.append([model_name + "\n shuffled labels", "micro f1-score", mi])
-                    data.append([model_name + "\n shuffled labels", "macro f1-score", ma])
-                    data.append([model_name + "\n shuffled labels", "weighted f1-score", weigth])
+                    data.append([model_name + "\nshuffled labels", "micro f1-score", mi])
+                    data.append([model_name + "\nshuffled labels", "macro f1-score", ma])
+                    data.append([model_name + "\nshuffled labels", "weighted f1-score", weigth])
 
         df = pd.DataFrame(data, columns = ['model', "f1-score", "value"])
 
@@ -133,7 +133,6 @@ class PerformancePlotter:
         """
         data = []
         for pop in self.populations:
-            print(pop)
             d = Data([pop], self.path)
             d.split_trial_wise()
             d.use_SMOTE()
@@ -174,17 +173,19 @@ class PerformancePlotter:
         plt.cla()
         plt.close()
 
-svm = SVMclassifier()
+svm1 = SVMclassifier()
+svm2 = SVMclassifier(kernel="linear")
+svm3 = SVMclassifier(kernel="poly")
 #ffn = FeedforwardNetWork()
 
-#models = [(ffn, "FFN"), (svm, "SVM")]
+models = [(svm1, "SVM\n(rbf-kernel)"), (svm2, "SVM\n(lin-kernel)"), (svm3, "SVM\n(poly-kernel)")]
 ok, not_ok = sort_out_populations()
 path = r'D:\Dataframes\most_active_neurons\40'
-#title = "5-Fold Cross Validation results of Support Vector Machine (SVM) and Feedforward Network (FFN): \n population-wise (100 Populations in total) training/testing with 40 most active neurons\n and SMOTE used on training folds"
+title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n population-wise (100 Populations in total) training/testing with 40 most active neurons\n and SMOTE used on training folds"
 p = PerformancePlotter(ok, path)
-title="5-Fold Cross Validation with 40 most active neurons as input and SMOTE used on training folds\n, but with Transitions to next day and over 2 days.\n Prediction via SVM(rbf-Kernel, C=1.0, gamma=0.5, balanced class-weights)"
-p.compare_transitions(svm, title)
-#p.compare_models_populationwise(models, title)
+#title="5-Fold Cross Validation with 40 most active neurons as input and SMOTE used on training folds\n, but with Transitions to next day and over 2 days.\n Prediction via SVM(rbf-Kernel, C=1.0, gamma=0.5, balanced class-weights)"
+#p.compare_transitions(svm, title)
+p.compare_models_populationwise(models, title)
 
 
 
