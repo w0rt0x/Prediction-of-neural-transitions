@@ -173,19 +173,73 @@ class PerformancePlotter:
         plt.cla()
         plt.close()
 
-svm1 = SVMclassifier()
-svm2 = SVMclassifier(kernel="linear")
-svm3 = SVMclassifier(kernel="poly")
-#ffn = FeedforwardNetWork()
+    def compare_models_across_populations(self, models: list,  title:str, show:bool=True, dest_path:str=None, showfliers: bool=False):
+        """
+        BoxPlots of all given models with their macro, micro and weighted f1-scores
+        but shared across populations
+        """
+        da = Data(self.populations, self.path)
+        k_folds = da.k_fold_cross_validation()
+        k_folds_r = da.k_fold_cross_validation(shuffle=True)
 
-models = [(svm1, "SVM\n(rbf-kernel)"), (svm2, "SVM\n(lin-kernel)"), (svm3, "SVM\n(poly-kernel)")]
+        
+        data = []
+        for m in models:
+            model = m[0]
+            model_name = m[1]
+
+            for k in k_folds.keys():
+                X = k_folds[k]["X_train"] 
+                x = k_folds[k]["X_test"]
+                Y = k_folds[k]["y_train"] 
+                y = k_folds[k]["y_test"]
+                model.set_data(X, x, Y, y)
+                model.train()
+                mi, ma, weigth = model.predict()
+                data.append([model_name, "micro f1-score", mi])
+                data.append([model_name, "macro f1-score", ma])
+                data.append([model_name, "weighted f1-score", weigth])
+
+                X = k_folds_r[k]["X_train"] 
+                x = k_folds_r[k]["X_test"]
+                Y = k_folds_r[k]["y_train"] 
+                y = k_folds_r[k]["y_test"]
+                model.set_data(X, x, Y, y)
+                model.train()
+                mi, ma, weigth = model.predict()
+                data.append([model_name + "\nshuffled labels", "micro f1-score", mi])
+                data.append([model_name + "\nshuffled labels", "macro f1-score", ma])
+                data.append([model_name + "\nshuffled labels", "weighted f1-score", weigth])
+
+        df = pd.DataFrame(data, columns = ['model', "f1-score", "value"])
+
+        sns.set_theme(palette="pastel")
+        sns.boxplot(x="model", y="value",
+                    hue="f1-score", 
+                    data=df, showfliers=showfliers)
+        plt.title(title)
+
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format(title))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+svm = SVMclassifier()
+ffn = FeedforwardNetWork()
+
+models = [(ffn, "FFN"),(svm, "SVM")]
 ok, not_ok = sort_out_populations()
 path = r'D:\Dataframes\most_active_neurons\40'
-title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n population-wise (100 Populations in total) training/testing with 40 most active neurons\n and SMOTE used on training folds"
+title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n across all Populations (100 in total), training/testing with 40 most active neurons\n and SMOTE used on training folds"
 p = PerformancePlotter(ok, path)
-#title="5-Fold Cross Validation with 40 most active neurons as input and SMOTE used on training folds\n, but with Transitions to next day and over 2 days.\n Prediction via SVM(rbf-Kernel, C=1.0, gamma=0.5, balanced class-weights)"
+p.compare_models_across_populations(models, title)
 #p.compare_transitions(svm, title)
-p.compare_models_populationwise(models, title)
+#p.compare_models_populationwise(models, title)
 
 
 
