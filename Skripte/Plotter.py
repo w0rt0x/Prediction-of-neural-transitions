@@ -220,7 +220,7 @@ class Plotter:
         :param dest_path (str) - default is None, if its not none the plot will be saved to that directory
         """
         for pop in self.populations:
-            d = Data(self.populations, self.path)
+            d = Data([pop], self.path)
             d.split_trial_wise()
             d.use_SMOTE()
             X, x, Y, y = d.get_data()
@@ -414,6 +414,8 @@ class Plotter:
         plt.cla()
         plt.close()
 
-#ok, not_ok  = sort_out_populations()
-#p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
+ok, not_ok  = sort_out_populations()
+p = Plotter(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\most_active_neurons\2')
+svm = SVMclassifier()
+p.plot_actual_vs_predicted(svm, "2 most active")
 #p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
