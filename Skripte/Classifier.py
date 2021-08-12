@@ -133,6 +133,13 @@ class SVMclassifier():
         """
         return confusion_matrix(self.y_test, self.pred, labels=order)
 
+    def get_info(self):
+        if self.kernel == "linear":
+            return "SVM({} Kernel, C={}, class_weights={})".format(self.kernel, self.c, self.class_weight)
+        if self.kernel == "rbf":
+            return "SVM({} Kernel, C={}, gamma={},class_weights={})".format(self.kernel, self.c, self.gamma, self.class_weight)
+        if self.kernel == "poly":
+            return "SVM({} Kernel, C={}, degree={},class_weights={})".format(self.kernel, self.c, self.degree, self.class_weight)
 
 #svm = SVMclassifier()
 #from data_holder import Data

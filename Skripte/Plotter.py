@@ -4,18 +4,20 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import matplotlib.patches as mpatches
-import os
-from os.path import isfile, join
-from Classifier import Classifier
+from Classifier import SVMclassifier
 from collections import Counter
 from copy import deepcopy
+from data_holder import Data
 import warnings
 warnings.filterwarnings('always')
+from getter_for_populations import sort_out_populations
 
 
 
 class Plotter:
-
+    """
+    Plotter for general visualisation
+    """
     def __init__(self, populations: list, path:str):
         """
         Needs List of populations and directory with dataframes
@@ -58,7 +60,7 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'magenta'
+                    label[i] = 'yellow'
 
             # Plotting
             plt.scatter(x, y, c=label, alpha=0.3)
@@ -115,7 +117,7 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'magenta'
+                    label[i] = 'yellow'
 
             # Plotting
             ax = plt.axes(projection ="3d")
@@ -140,10 +142,11 @@ class Plotter:
             plt.cla()
             plt.close()
 
-    def compare_n_neurons(self, title: str, neurons:list=list(range(5, 101, 5)), kernel:str='rbf', degree:int=3, c:float=1.0, gamma:float=1.0):
+    def compare_n_neurons(self, title: str, model: SVMclassifier, neurons:list=list(range(5, 101, 5))):
         """
         Compares performance of n most active neurons
         :param title (str) - Title of plot
+        :param model (SVM) - Model that gets tested
         :param neurons (list) - List of integers that are directory names of path in init function
         """
         macro = []
@@ -154,28 +157,32 @@ class Plotter:
         weighted_r = []
 
         for n in neurons:
-            # Regular run
-            a = Classifier(self.populations, self.path + str(n))
-            a.split_trial_wise()
-            a.use_SMOTE()
-            a.do_SVM(kernel=kernel, c=c, gamma=gamma, degree=degree, class_weight='balanced')
-            report = a.get_report()
-            macro.append(report['macro avg']['f1-score'])
-            micro.append(report['accuracy'])
-            weighted.append(report['weighted avg']['f1-score'])
+
+            # normal labels
+            d = Data(self.populations, self.path + str(n))
+            d.split_trial_wise()
+            d.use_SMOTE()
+            X, x, Y, y = d.get_data()
+            model.set_data(X, x, Y, y)
+            model.train()
+            mi, ma, weigth = model.predict()
+            macro.append(ma)
+            micro.append(mi)
+            weighted.append(weigth)
             
             # Randomized labels
-            r = Classifier(self.populations, self.path + str(n))
-            r.split_trial_wise()
-            r.use_SMOTE()
-            r.shuffle_labels()
-            r.do_SVM(kernel=kernel, c=c, gamma=gamma, degree=degree, class_weight='balanced')
-            report = r.get_report()
-            macro_r.append(report['macro avg']['f1-score'])
-            micro_r.append(report['accuracy'])
-            weighted_r.append(report['weighted avg']['f1-score'])
+            d = Data(self.populations, self.path + str(n))
+            d.split_trial_wise()
+            d.shuffle_labels()
+            d.use_SMOTE()
+            X, x, Y, y = d.get_data()
+            model.set_data(X, x, Y, y)
+            model.train()
+            mi, ma, weigth = model.predict()
+            macro_r.append(ma)
+            micro_r.append(mi)
+            weighted_r.append(weigth)
 
-        
         plt.plot(neurons,macro, marker = 'o', color='#f70d1a', label="Macro F1")
         plt.plot(neurons,micro, marker = 'x', color='#08088A', label="Micro F1")
         plt.plot(neurons,weighted, marker = '+', color='#FFBF00', label="weighted F1")
@@ -189,57 +196,6 @@ class Plotter:
         plt.legend(loc="upper left")
         plt.title(title)
         plt.show()
-        
-    def plot_actual_vs_predicted(self, method: str, x_axis: str, y_axis: str, show: bool=True, dest_path: str=None):
-        """
-        Plots 2 Plots: Predicted(SVM) vs Actual data
-        :param methods (str) - Can be PCA, n most active neurons, t-SNE
-        :param x_axis (str) - name of x-axis
-        :param y_axis (str) - name of y-axis
-        :param show (bool) - dafault is true, shows plot when done
-        :param dest_path (str) - default is None, if its not none the plot will be saved to that directory
-        """
-        for pop in self.populations:
-            c = Classifier([pop], self.path)
-            c.split_trial_wise()
-            c.use_SMOTE()
-            c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-            X, x, Y, y = c.get_data()
-            x = x.T
-
-            y = self.__multiclass_to_color(y.tolist())
-            pred = self.__multiclass_to_color(c.get_predictions().tolist())
-
-                # Plotting the Data
-            figure, axis = plt.subplots(1, 2, figsize=(13,7))
-            axis[0].scatter(x[0], x[1], c=y, alpha=0.5)
-            axis[0].set_title("Actual Data")
-            axis[0].set_xlabel(x_axis)
-            axis[0].set_ylabel(y_axis)
-                
-            # For Cosine Function
-            axis[1].scatter(x[0], x[1], c=pred, alpha=0.5)
-            axis[1].set_title("Prediction")
-            axis[1].set_xlabel(x_axis)
-            axis[1].set_ylabel(y_axis)
-
-            yellow = mpatches.Patch(color='yellow', label='1->1')
-            red = mpatches.Patch(color='red', label='1->0')
-            green = mpatches.Patch(color='green', label='0->1')
-            cyan = mpatches.Patch(color='cyan', label='0->0')
-            figure.legend(handles=[yellow, red, green, cyan])
-
-            figure.suptitle("{} - Test-Data of {},\n SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')\n\n".format(method, pop))
-            
-
-            if show:
-                plt.show() 
-            if dest_path !=None:
-                plt.savefig(dest_path + '\\{}.png'.format(self.populations[0]))
-
-            plt.clf()
-            plt.cla()
-            plt.close()
 
     def __multiclass_to_color(self, label):
         for i in range(len(label)):
@@ -253,72 +209,65 @@ class Plotter:
                     label[i] = 'magenta'
         return label
 
-    def compare_models(self, pops: list, paths:list, x_axis:str, title:str, width: float=0.2, show:bool=True, dest_path:str=None, names = None):
+    def plot_actual_vs_predicted(self, model: SVMclassifier, method: str, show: bool=True, dest_path: str=None):
         """
-        Compares multiple models
-        :param pops (list of lists with str (population names))
-        :param paths (list of paths)
-        :param x_axis (str) Label
-        :param Title (str) title
+        Plots 2 Plots: Predicted(SVM) vs Actual data
+        :param model (SVM) - Model that gets tested
+        :param methods (str) - Can be PCA, n most active neurons, t-SNE
+        :param x_axis (str) - name of x-axis
+        :param y_axis (str) - name of y-axis
+        :param show (bool) - dafault is true, shows plot when done
+        :param dest_path (str) - default is None, if its not none the plot will be saved to that directory
         """
-        micro = []
-        macro = []
-        weighted = []
-        pops.append(self.populations)
-        paths.append(self.path)
-        if names == None:
-            names = []
-            for i in range(len(pops)):
-                names.append('\n'.join(pops[i]))
-                names.append('\n'.join(pops[i]) + '\n(random labels)')
-        
-        for i in range(len(pops)):
-            # möglicher Fehler?
-            c = Classifier([pops[i]], paths[i])
-            c.split_trial_wise()
-            c.use_SMOTE()
-            c.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-            report = c.get_report()
-            macro.append(report['macro avg']['f1-score'])
-            micro.append(report['accuracy'])
-            weighted.append(report['weighted avg']['f1-score'])
+        for pop in self.populations:
+            d = Data(self.populations, self.path)
+            d.split_trial_wise()
+            d.use_SMOTE()
+            X, x, Y, y = d.get_data()
+            model.set_data(X, x, Y, y)
+            model.train()
+            model.predict()
+            x = x.T
+            y = self.__multiclass_to_color(y.tolist())
+            pred = self.__multiclass_to_color(model.get_predictions().tolist())
+
+            # Plotting the Data
+            figure, axis = plt.subplots(1, 2, figsize=(13,7))
+            axis[0].scatter(x[0], x[1], c=y, alpha=0.5)
+            axis[0].set_title("Actual Data")
+            axis[0].set_xlabel("first {} component".format(method))
+            axis[0].set_ylabel("second {} component".format(method))
                 
-            # Randomized labels
-            r = Classifier(self.populations, self.path)
-            r.split_trial_wise()
-            r.use_SMOTE()
-            r.shuffle_labels()
-            r.do_SVM(kernel='rbf', c=1, gamma=0.5, class_weight='balanced')
-            report = r.get_report()
-            macro.append(report['macro avg']['f1-score'])
-            micro.append(report['accuracy'])
-            weighted.append(report['weighted avg']['f1-score'])
+            # For Cosine Function
+            axis[1].scatter(x[0], x[1], c=pred, alpha=0.5)
+            axis[1].set_title("Prediction")
+            axis[1].set_xlabel("first {} component".format(method))
+            axis[1].set_ylabel("second {} component".format(method))
 
-        x = np.arange(0, len(names))
-        plt.bar(x, micro, width=width, color='yellow', label="Micro F1-Score")
-        plt.bar(x + width, macro, width=width, color='blue', label="Macro F1-Score")
-        plt.bar(x + 2*width, weighted, width=width, color='green', label="Weighted F1-Score")
-        plt.xticks(x, names)
-        plt.ylabel("Scores")
-        plt.xlabel(x_axis)
-        plt.ylim(0, 1)
-        plt.grid(axis='y')
-        plt.legend()
-        plt.title(title)
-        if show:
-            plt.show()
-        if dest_path !=None:
-            plt.savefig(dest_path + '\\{}.png'.format(title))
+            yellow = mpatches.Patch(color='magenta', label='1->1')
+            red = mpatches.Patch(color='red', label='1->0')
+            green = mpatches.Patch(color='green', label='0->1')
+            cyan = mpatches.Patch(color='cyan', label='0->0')
+            figure.legend(handles=[yellow, red, green, cyan])
 
-        plt.clf()
-        plt.cla()
-        plt.close()
+            figure.suptitle("{} - Test-Data of {},\n {}\n\n".format(method, pop, model.get_info()))
+            
 
-    def boxplots_of_classes(self, y_axis:str, title:str, show:bool=True, dest_path:str=None, show_outliers: bool=False):
+            if show:
+                plt.show() 
+            if dest_path !=None:
+                plt.savefig(dest_path + '\\{}.png'.format(self.populations[0]))
+
+            plt.clf()
+            plt.cla()
+            plt.close()
+
+    def boxplots_of_classes(self, title:str, y_axis: str="mean activity over all neurons", second_path: str=r'D:\Dataframes\double_skip_mean', show:bool=True, dest_path:str=None, show_outliers: bool=False):
         """
         makes 4 Box-plots that show the first component of the dataframe (mean, median, etc) of the 4 classes
         """
-        d = {}
+        data = []
+        counter = 0
         for pop in self.populations:
             df = pd.read_csv(self.path + '\\{}.csv'.format(pop))
             trials = df['label'].tolist()
@@ -326,25 +275,31 @@ class Plotter:
             response = df['response'].tolist()
             
             for i in range(len(response)):
-                if response[i] in d:
-                    d[response[i]].add(values[i])
-                else:
-                    # Removing day 4 trials
-                    if eval(trials[i])[0] != 4:
-                        d[response[i]] = set()
-                        d[response[i]].add(values[i])
+                # Removing day 4 trials
+                if eval(trials[i])[0] != 4:
+                    data.append([response[i], values[i], "Transition over 1 day"])
 
-        data = []
-        
-        labels = ['0->0', '0->1', '1->1', '1->0']
-        for key in labels:
-            data.append(list(d[key]))
-        
-        plt.boxplot(data, labels=labels, showfliers=show_outliers) 
-        plt.xlabel('class')
-        plt.ylabel(y_axis)
+            df = pd.read_csv(second_path + '\\{}.csv'.format(pop))
+            trials = df['label'].tolist()
+            values = df['Component 1'].tolist()
+            response = df['response'].tolist()
+            
+            for i in range(len(response)):
+                # Removing day 3 and 4 trials
+                if eval(trials[i])[0] != 4 and eval(trials[i])[0] != 3:
+                    data.append([response[i], values[i], "Transition over 2 days"])
+
+        df = pd.DataFrame(data, columns = ['Labels', y_axis, "Transition"])
+
+        self.__box_plot(df, "Labels", y_axis, "Transition", title, show=show, dest_path=dest_path, showfliers=show_outliers, order = ["0->0", "0->1", "1->0", "1->1"])
+
+    def __box_plot(self, df: pd.DataFrame, x:str, y:str, hue:str, title:str, show: bool=True, dest_path: str=None, showfliers = False, order: list=None):
+
+        sns.set_theme(palette="pastel")
+        sns.boxplot(x=x, y=y,
+                    hue=hue, order=order, 
+                    data=df, showfliers=showfliers)
         plt.title(title)
-        plt.grid(axis='y')
 
         if show:
             plt.show()
@@ -356,71 +311,14 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def sort_out_populations(self, percent:float=0.0, num_class:int=4, show:bool=True, dest_path:str=None):
-        """
-        Checks and plots the number of Populations hat have n classes and a specific percentage of each class
-        """
-        ok = []
-        not_ok = []
-
-        for pop in self.populations:
-            df = pd.read_csv(self.path + '\\{}.csv'.format(pop))
-            liste = df['response'].tolist()
-
-            response = list(set(liste))
-            response.remove('0')
-
-            if len(response) != num_class:
-                not_ok.append(pop)
-            else:
-                if percent == 0.0:
-                    ok.append(pop)
-                else:
-                    occurences = Counter(liste)
-                    # remove day 4
-                    del occurences["0"]
-                    keys = occurences.keys()
-                    s = 0
-                    for key in keys:
-                        s = s + occurences[key]
-                    for key in keys:
-                        occurences[key] = occurences[key] / s
-                    
-                    add = True
-                    for key in keys:
-                        if occurences[key] < percent:
-                            add = False
-                    if add:
-                         ok.append(pop)
-                    else:
-                        not_ok.append(pop)
-            
-
-        classes = ["All {} classes present\n ({} in total)".format(num_class, len(ok)), "not all classes present\n ({} in total)".format(len(not_ok))]
-        plt.pie([len(ok),(len(not_ok))], startangle=90, colors=['#5DADE2', '#515A5A'], labels=classes, autopct='%.1f%%')
-        if percent == 0.0:
-            plt.title("Valid Populations that have all {} classes".format(num_class))
-        else:
-            plt.title("Valid Populations that have all {} classes and \n each class has #class_i/#total >= {}".format(num_class, percent))
-        if show:
-            plt.show()
-
-        if dest_path !=None:
-            plt.savefig(dest_path + '\\{}.png'.format("Valid Populations"))
-
-        plt.clf()
-        plt.cla()
-        plt.close()
-
-        return ok, not_ok
-
-    def histogram_single_values(self, x_axis:str, title:str, max_bins:int=1, show:bool=True, dest_path:str=None):
+    def histogram_single_values(self, x_axis:str, title:str, max_bins:int=.1, density: bool=False, show:bool=True, dest_path:str=None):
         """
         Plots the Distribution of means or sums (users choice) as a histogram
         Compares multiple models
         :param x_axis (str) Label
         :param Title (str) title
         :param max_bins(bool) - is max number of bins
+        :param density (bool, default is False) - plots seaborn density plot
         :param show (bool) - Optional, shows plot of true (default is true)
         :param dest_path (str) - saves plot to that directory if provided
         """
@@ -450,11 +348,14 @@ class Plotter:
         bins = np.linspace(0, max_bins, 500)
         colors = self.__multiclass_to_color(deepcopy(labels))
         for i in range(len(labels)):
-            plt.hist(d[labels[i]], bins, alpha=0.5, label=labels[i], color=colors[i], histtype='step', density=True)
+            plt.hist(d[labels[i]], bins, alpha=0.5, label=labels[i], color=colors[i], histtype='step', density=density)
             plt.axvline(np.array(list(d[labels[i]])).mean(), ls='--', color=colors[i], linewidth=1, label="{} mean".format(labels[i]))
         plt.title(title)
         plt.xlabel(x_axis)
-        plt.ylabel("Occurences")
+        if density:
+            plt.ylabel("density")
+        else:
+            plt.ylabel("Occurences")
         plt.legend(loc='upper right')
 
         if show:
@@ -467,143 +368,15 @@ class Plotter:
         plt.cla()
         plt.close()
 
-    def __get_f1s(self, K, random:bool=False) -> Tuple[list, list, list]:
-        micro = []
-        macro = []
-        weighted = []
-        a = Classifier(self.populations, self.path)
-        data = a.k_fold_cross_validation_populationwise(K=K, kernel=self.kernel, c=self.c, gamma=self.gamma, shuffle=random)
-        for pop in data:
-            micro.append(data[pop]['MeanMicro'])
-            macro.append(data[pop]['MeanMacro'])
-            weighted.append(data[pop]['MeanWeighted'])
-
-        return micro, macro, weighted
-
-    def histogram_of_scores(self, title:str, random:bool=False, show:bool=True, dest_path:str=None):
-        """
-        Plots weighted, macro and micro f1 Scores of provided populations as a Histogram
-        :param Title (str) title
-        :param random (bool) - default is false, if true: labels get shuffled
-        :param show (bool) - Optional, shows plot of true (default is true)
-        :param dest_path (str) - saves plot to that directory if provided
-        """
-        micro, macro, weighted = self.__get_f1s(self.populations, self.path, random=random)
-        
-        bins = np.linspace(0, 1, 200)
-
-        plt.hist(micro, bins, alpha=0.5, label="Micro F1-Score", color="red")
-        plt.hist(macro, bins, alpha=0.5, label="Macro F1-Score", color="blue")
-        plt.hist(weighted, bins, alpha=0.5, label="weighted F1-Score", color="gold")
-        plt.title(title)
-        plt.xlim(0, 1)
-        plt.grid()
-        plt.xlabel("Scores")
-        plt.ylabel("Occurences")
-        plt.legend(loc='upper right')
-        if show:
-            plt.show()
-
-        if dest_path !=None:
-            plt.savefig(dest_path + '\\{}.png'.format(title))
-
-        plt.clf()
-        plt.cla()
-        plt.close()
-
-    def boxplot_of_scores(self, title:str, show:bool=True, dest_path:str=None, K: int=5):
-        """
-        Shows f1 scores (with and without shuffled labels) as boxplots
-        :param Title (str) title
-        :param show (bool) - Optional, shows plot of true (default is true)
-        :param dest_path (str) - saves plot to that directory if provided
-        :param K (int) - K for k-Fold Cross Validation
-        """
-        labels = ["Micro F1", "Micro F1\n shuffled labels", "Macro F1", "Macro F1\n shuffled labels", "Weighted F1", "Weighted F1\n shuffled labels"]
-        micro, macro, weighted = self.__get_f1s(K)
-        micro_r, macro_r, weighted_r = self.__get_f1s(K, random=True)
-        data = [micro, micro_r, macro, macro_r, weighted, weighted_r]
-        plt.boxplot(data, labels=labels) 
-        plt.xlabel('Type of F1-Score')
-        plt.ylabel("Score")
-        plt.title(title)
-        plt.grid(axis='y')
-        plt.ylim(0, 1)
-
-        if show:
-            plt.show()
-
-        if dest_path !=None:
-            plt.savefig(dest_path + '\\{}.png'.format(title))
-
-        plt.clf()
-        plt.cla()
-        plt.close()
-
-    def __get_cm(self, pop:str, path:str) -> np.array:
-        """
-        returns CM of classification
-        """
-        c = Classifier([pop], path)
-        c.split_trial_wise()
-        #c.use_SMOTE()
-        c.do_SVM(kernel=self.kernel, c=self.c, gamma=self.gamma, degree=self.degree, class_weight='balanced')
-        return c.get_cm()
-
-    def set_svm_parameter(self, kernel: str='rbf', c:float=1.0, gamma:float=1.0, degree:int=3):
-        """
-        sets SVM Parameters
-        """
-        self.kernel = kernel
-        self.c = c
-        self.gamma = gamma
-        self.degree = degree
-
-    def CM_for_all_pop(self, title:str, norm: bool=True, show:bool=True, dest_path:str=None):
-        """
-        :param Title (str) title
-        :param show (bool) - Optional, shows plot of true (default is true)
-        :param dest_path (str) - saves plot to that directory if provided
-        """
-        CM = np.zeros((4, 4))
-        for pop in self.populations:
-            print(self.populations.index(pop), pop)
-            CM = CM + self.__get_cm(pop, self.path)
-
-        if norm:
-            CM_norm = np.zeros((4, 4))
-            for row in range(len(CM)):
-                for col in range(len(CM[row])):
-                    CM_norm[row][col] = round(CM[row][col] / np.sum(CM[row]), 3)
-            CM = CM_norm
-
-
-        df_cm = pd.DataFrame(CM_norm, index = [i for i in ['0->0', '0->1', '1->0', '1->1']],
-                  columns = [i for i in ['0->0', '0->1', '1->0', '1->1']])
-        #plt.figure(figsize = (10,7))
-        sns.heatmap(df_cm, annot=True, cmap='Blues', fmt='g')
-        plt.title(title)
-        plt.xlabel("Predicted Label")
-        plt.ylabel("True Label")
-
-        if show:
-            plt.show()
-
-        if dest_path !=None:
-            plt.savefig(dest_path)
-
-        plt.clf()
-        plt.cla()
-        plt.close()
-
-    def plot_mean_of_each_class(self, title:str, show:bool=True, dest_path:str=None, std=True):
+    def plot_mean_of_each_neuron(self, title:str, show:bool=True, dest_path:str=None, std=True):
         """
         Line Plot that shows neuron-wise mean, with or without standard deviation
         """
-        a = Classifier(self.populations, self.path)
-        a.split_trial_wise()
-        X = np.concatenate((a.X_train, a.X_test))
-        Y = np.concatenate((a.y_train, a.y_test))
+        d = Data(self.populations, self.path)
+        d.split_trial_wise()
+        X, x, Y, y = d.get_data()
+        X = np.concatenate((X, x))
+        Y = np.concatenate((Y, y))
 
         d = {}
         for i in range(len(Y)):
@@ -641,40 +414,6 @@ class Plotter:
         plt.cla()
         plt.close()
 
-def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'):
-    """
-    returns all population-names
-    """
-    populations = set()
-    files = [f for f in os.listdir(path) if isfile(join(path, f))]
-    for i in files:
-        if "_class.mat" in i:
-            populations.add(i[:-10])
-
-        if "_lact.mat" in i:
-            populations.add(i[:-9])
-    return list(populations)
-
-populations = get_all_pop()
-a = Plotter(populations, r'D:\Dataframes\PCA\2')
-ok, nt_ok = a.sort_out_populations(show=False)
-b = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
-#b = Plotter(ok, r'D:\Dataframes\most_active_neurons\100')
-#b.set_svm_parameter(gamma=0.5)
-b.boxplot_of_scores("Mean F1-Scores of 5-fold Cross-Validation using the 40 most active neurons \n Classification via Feedforward Network, SMOTE used on Training-Data")
-#b.plot_mean_of_each_class("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
-#b.histogram_single_values("All trials with their mean over all neurons", "Histogram of all populations with all four classes", max_bins=0.1)
-
-#b.boxplot_of_scores("F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data")
-#b.histogram_of_scores("Distribution of F1-Scores with 40 most active neurons\n and SVM('rbf'-Kernel, balanced class weights) and SMOTE on Training-Data", random=True)
-#b.histogram_single_values("sum over all neurons", "Histogram of all Populations with all 4 Classes \n and a relative frequency of at least 0.05", max_bins=20)
-#b = Plotter(ok, r'D:\Dataframes\single_values\mean_over_all')
-#b.boxplots_of_classes("Mean activity over all neurons", "All 100 Populations with 4 Classes")
-#a.compare_models([['bl693_no_white_Pop02', 'bl693_no_white_Pop03', 'bl693_no_white_Pop05']], [r'D:\Dataframes\tSNE\3D_perp30'], "Input Populations", "Prediction of Multiclass Labels with \n SVM(rbf Kernel, balanced class weights)\n and t-SNE 3D Data")
-#a.plot_2D("t-SNE", "t-SNE Component 1", "t-SNE Component 2")
-#a.plot_actual_vs_predicted("t-SNE", "Component 1", "Component 2")
-#b = Plotter(get_all_pop(), r'D:\Dataframes\tSNE\perp30')
-#b.plot_actual_vs_predicted("t-SNE", "t-SNE Component 1", "t-SNE Component 2", show=False, dest_path=r'D:\Dataframes\tSNE\2D_actual_vs_predicted')
-
-
-NEU MACHEN; AUSSORTIERER ZUERST (in init)
+ok, not_ok  = sort_out_populations()
+p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
+p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")

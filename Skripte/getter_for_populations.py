@@ -20,10 +20,13 @@ def get_all_pop(path: str=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Date
     return list(populations)
 
 
-def sort_out_populations(populations: list, path: str=r'D:\Dataframes\PCA\2', percent:float=0.0, num_class:int=4) ->Tuple[list, list]:
+def sort_out_populations(populations: list=None, path: str=r'D:\Dataframes\PCA\2', percent:float=0.0, num_class:int=4) ->Tuple[list, list]:
     """
     returns 2 lists (ok and not_ok), where all populations that are in the ok-list have all 4 classes
     """
+    if populations == None:
+        populations = get_all_pop()
+
     ok = []
     not_ok = []
 
