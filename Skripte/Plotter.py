@@ -414,6 +414,6 @@ class Plotter:
         plt.cla()
         plt.close()
 
-ok, not_ok  = sort_out_populations()
-p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
-p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
+#ok, not_ok  = sort_out_populations()
+#p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
+#p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")

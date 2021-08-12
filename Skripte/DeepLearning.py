@@ -174,12 +174,12 @@ class FeedforwardNetWork():
         plt.cla()
         plt.close()
 
-ffn = FeedforwardNetWork()
-from data_holder import Data
-d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
-d.split_trial_wise()
-d.use_SMOTE()
-X, x, Y, y = d.get_data()
-ffn.set_data(X, x, Y, y)
-ffn.train()
-print(ffn.predict())
+#ffn = FeedforwardNetWork()
+#from data_holder import Data
+#d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
+#d.split_trial_wise()
+#d.use_SMOTE()
+#X, x, Y, y = d.get_data()
+#ffn.set_data(X, x, Y, y)
+#ffn.train()
+#print(ffn.predict())
