@@ -221,6 +221,7 @@ class Plotter:
         
         for pop in self.populations:
             # Getting Data
+            print(pop)
             d = Data([pop], self.path)
             d.split_trial_wise()
             d.use_SMOTE()
@@ -436,9 +437,20 @@ class Plotter:
         plt.cla()
         plt.close()
 
+
+import os
+from os.path import isfile, join
+path = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE'
+files = [f for f in os.listdir(path) if isfile(join(path, f))]
+for i in range(len(files)):
+    files[i] = files[i][:-4]
+files = set(files)
+
 ok, not_ok  = sort_out_populations()
+ok = list(set(ok) - files)
+print(len(ok))
 p = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
-dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE'
+dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE'
 p.plot_actual_vs_predicted("2 tSNE","first tSNE Component", "second tSNE Component", show=False, dest_path=dest)
 #p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
 #D:\Dataframes\tSNE\perp30

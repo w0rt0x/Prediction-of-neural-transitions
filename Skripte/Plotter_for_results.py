@@ -42,6 +42,7 @@ class PerformancePlotter:
             model_name = m[1]
 
             for pop in k_folds.keys():
+                print(pop)
                 for k in k_folds[pop].keys():
                     X = k_folds[pop][k]["X_train"] 
                     x = k_folds[pop][k]["X_test"]
@@ -229,17 +230,19 @@ class PerformancePlotter:
         plt.cla()
         plt.close()
 
-svm = SVMclassifier()
-ffn = FeedforwardNetWork()
+svm1 = SVMclassifier()
+svm2 = SVMclassifier(kernel="linear")
+svm3 = SVMclassifier(kernel="poly")
+#ffn = FeedforwardNetWork()
 
-models = [(ffn, "FFN"),(svm, "SVM")]
+models = [(svm1, "SVM\n(rbf-Kernel)"),(svm2, "SVM\n(lin-Kernel)"),(svm3, "SVM\n(poly-Kernel)")]
 ok, not_ok = sort_out_populations()
-path = r'D:\Dataframes\most_active_neurons\40'
-title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n across all Populations (100 in total), training/testing with 40 most active neurons\n and SMOTE used on training folds"
+path = r'D:\Dataframes\PCA\20'
+title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n across all Populations (100 in total), training/testing with 20 PCA Components\n and SMOTE used on training folds"
 p = PerformancePlotter(ok, path)
-p.compare_models_across_populations(models, title)
+#p.compare_models_across_populations(models, title)
 #p.compare_transitions(svm, title)
-#p.compare_models_populationwise(models, title)
+p.compare_models_populationwise(models, title)
 
 
 

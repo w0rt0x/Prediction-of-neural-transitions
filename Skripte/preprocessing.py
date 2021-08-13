@@ -309,12 +309,12 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.get_most_active_neurons(n=2)
+        a.get_most_active_neurons(n=dim)
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
-prepare_data(destination=r"D:\Dataframes\most_active_neurons\2")
+
 
 
 
