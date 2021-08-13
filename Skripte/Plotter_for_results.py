@@ -243,7 +243,7 @@ svm3 = SVMclassifier(kernel="poly")
 
 #models = [(svm1, "SVM\n(rbf-Kernel)"),(svm2, "SVM\n(lin-Kernel)"),(svm3, "SVM\n(poly-Kernel)")]
 ok, not_ok = sort_out_populations()
-path = r'D:\Dataframes\tSNE\perp30'
+path = r'D:\Dataframes\most_active_neurons\40'
 title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n across all Populations (100 in total), training/testing with 2 tSNE Components (preprocessed)\n and SMOTE used on training folds"
 p = PerformancePlotter(ok, path)
 #p.compare_models_across_populations(models, title)
