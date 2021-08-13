@@ -286,7 +286,7 @@ class Data:
             counter +=1
 
         return results
-        
+
     def k_fold_cross_validation(self, K: int=5, rem_day4:bool=True, smote: bool=True, shuffle: bool=False) -> dict:
         """
         performs k-fold cross validation, but does not seperate between different populations 

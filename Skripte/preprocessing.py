@@ -66,7 +66,7 @@ class Preprocessor():
                 if self.all_labels[i][j]>0:
                     data[i][j] = 1
 
-        ax = sns.heatmap(data , cmap = 'Greys' , linewidths=1, linecolor='black', xticklabels=['Day ' + str(x) for x in range(1,5)], yticklabels=['stim  ' + str(x) for x in range(1,35)])
+        ax = sns.heatmap(data , cmap = 'Greys' , linewidths=1, linecolor='grey', xticklabels=['Day ' + str(x) for x in range(1,5)], yticklabels=['stim  ' + str(x) for x in range(1,35)])
         plt.title("Transitions of {}".format(self.population))
         colorbar = ax.collections[0].colorbar
         colorbar.set_ticks([0.25,0.75])
@@ -313,7 +313,6 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
-
 
 
 
