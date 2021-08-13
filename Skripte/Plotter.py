@@ -209,54 +209,76 @@ class Plotter:
                     label[i] = 'magenta'
         return label
 
-    def plot_actual_vs_predicted(self, model: SVMclassifier, method: str, show: bool=True, dest_path: str=None):
+    def plot_actual_vs_predicted(self, method: str, x_axis: str, y_axis:str, show: bool=True, dest_path: str=None):
         """
         Plots 2 Plots: Predicted(SVM) vs Actual data
-        :param model (SVM) - Model that gets tested
-        :param methods (str) - Can be PCA, n most active neurons, t-SNE
+        :param model (SVM, ffn) - Models that gets tested in format [(model, "name of model"), ...]
         :param x_axis (str) - name of x-axis
         :param y_axis (str) - name of y-axis
         :param show (bool) - dafault is true, shows plot when done
         :param dest_path (str) - default is None, if its not none the plot will be saved to that directory
         """
+        
         for pop in self.populations:
+            # Getting Data
             d = Data([pop], self.path)
             d.split_trial_wise()
             d.use_SMOTE()
             X, x, Y, y = d.get_data()
-            model.set_data(X, x, Y, y)
-            model.train()
-            model.predict()
-            x = x.T
-            y = self.__multiclass_to_color(y.tolist())
-            pred = self.__multiclass_to_color(model.get_predictions().tolist())
+            x_t = x.T
+            # Actual Data
 
-            # Plotting the Data
-            figure, axis = plt.subplots(1, 2, figsize=(13,7))
-            axis[0].scatter(x[0], x[1], c=y, alpha=0.5)
-            axis[0].set_title("Actual Data")
-            axis[0].set_xlabel("first {} component".format(method))
-            axis[0].set_ylabel("second {} component".format(method))
-                
-            # For Cosine Function
-            axis[1].scatter(x[0], x[1], c=pred, alpha=0.5)
-            axis[1].set_title("Prediction")
-            axis[1].set_xlabel("first {} component".format(method))
-            axis[1].set_ylabel("second {} component".format(method))
+            figure, axis = plt.subplots(2, 2, figsize=(13,7))
+            y_col = self.__multiclass_to_color(y.tolist())
+            axis[0][0].scatter(x_t[0], x_t[1], c=y_col, alpha=0.5)
+            axis[0][0].set_title("Actual Data")
+            axis[0][0].set_xlabel(x_axis)
+            axis[0][0].set_ylabel(y_axis)
+            
+            svm = SVMclassifier()
+            svm.set_data(X, x, Y, y)
+            svm.train()
+            svm.predict()
+            pred = self.__multiclass_to_color(svm.get_predictions().tolist())
+            axis[0][1].scatter(x_t[0], x_t[1], c=pred, alpha=0.5)
+            axis[0][1].set_title("{} Prediction".format(svm.get_info()))
+            axis[0][1].set_xlabel(x_axis)
+            axis[0][1].set_ylabel(y_axis)
+
+            svm = SVMclassifier(kernel="linear")
+            svm.set_data(X, x, Y, y)
+            svm.train()
+            svm.predict()
+            pred = self.__multiclass_to_color(svm.get_predictions().tolist())
+            axis[1][0].scatter(x_t[0], x_t[1], c=pred, alpha=0.5)
+            axis[1][0].set_title("{} Prediction".format(svm.get_info()))
+            axis[1][0].set_xlabel(x_axis)
+            axis[1][0].set_ylabel(y_axis)
+
+            #svm = SVMclassifier(kernel="poly")
+            #svm.set_data(X, x, Y, y)
+            #svm.train()
+            #svm.predict()
+            #pred = self.__multiclass_to_color(svm.get_predictions().tolist())
+            #axis[1][1].scatter(x_t[0], x_t[1], c=pred, alpha=0.3)
+            #axis[1][1].set_title("{} Prediction".format(svm.get_info()))
+            #axis[1][1].set_xlabel(x_axis)
+            #axis[1][1].set_ylabel(y_axis)
 
             yellow = mpatches.Patch(color='magenta', label='1->1')
             red = mpatches.Patch(color='red', label='1->0')
             green = mpatches.Patch(color='green', label='0->1')
             cyan = mpatches.Patch(color='cyan', label='0->0')
-            figure.legend(handles=[yellow, red, green, cyan])
+            figure.legend(handles=[yellow, red, green, cyan], bbox_to_anchor=(0.49, 0.90))
 
-            figure.suptitle("{} - Test-Data of {},\n {}\n\n".format(method, pop, model.get_info()))
-            
+            figure.delaxes(axis[1][1])
+            figure.suptitle("Actual and Predicted Data ({}) of {}".format(method, pop))
+            figure.tight_layout()
 
             if show:
                 plt.show() 
             if dest_path !=None:
-                plt.savefig(dest_path + '\\{}.png'.format(self.populations[0]))
+                plt.savefig(dest_path + '\\{}.png'.format(pop))
 
             plt.clf()
             plt.cla()
@@ -415,7 +437,8 @@ class Plotter:
         plt.close()
 
 ok, not_ok  = sort_out_populations()
-p = Plotter(['bl693_no_white_Pop05', 'bl693_no_white_Pop02', 'bl693_no_white_Pop03'], r'D:\Dataframes\most_active_neurons\2')
-svm = SVMclassifier()
-p.plot_actual_vs_predicted(svm, "2 most active")
+p = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
+dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE'
+p.plot_actual_vs_predicted("2 tSNE","first tSNE Component", "second tSNE Component", show=False, dest_path=dest)
 #p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
+#D:\Dataframes\tSNE\perp30
