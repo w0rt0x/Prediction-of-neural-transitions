@@ -10,7 +10,7 @@ from copy import deepcopy
 from data_holder import Data
 import warnings
 warnings.filterwarnings('always')
-from getter_for_populations import sort_out_populations
+from getter_for_populations import get_all_pop, sort_out_populations
 
 
 class Plotter:
@@ -59,14 +59,14 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'yellow'
+                    label[i] = 'magenta'
 
             # Plotting
             plt.scatter(x, y, c=label, alpha=0.3)
             name = self.populations[self.full_paths.index(pop)]
             plt.title('{} of {}'.format(method, name))
             
-            yellow = mpatches.Patch(color='yellow', label='1->1')
+            yellow = mpatches.Patch(color='magenta', label='1->1')
             red = mpatches.Patch(color='red', label='1->0')
             green = mpatches.Patch(color='green', label='0->1')
             cyan = mpatches.Patch(color='cyan', label='0->0')
@@ -116,7 +116,7 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'yellow'
+                    label[i] = 'magenta'
 
             # Plotting
             ax = plt.axes(projection ="3d")
@@ -124,7 +124,7 @@ class Plotter:
             name = self.populations[self.full_paths.index(pop)]
             ax.set_title('{} of {}'.format(method, name))
             
-            yellow = mpatches.Patch(color='yellow', label='1->1')
+            yellow = mpatches.Patch(color='magenta', label='1->1')
             red = mpatches.Patch(color='red', label='1->0')
             green = mpatches.Patch(color='green', label='0->1')
             cyan = mpatches.Patch(color='cyan', label='0->0')
@@ -441,11 +441,8 @@ class Plotter:
         plt.cla()
         plt.close()
 
-
-
-
-ok, not_ok  = sort_out_populations()
-p = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
-dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
-p.plot_actual_vs_predicted("2 tSNE Components (preprocessed)","first tSNE Component", "second tSNE Component", show=False, dest_path=dest, preprocess=True)
+#ok, not_ok  = sort_out_populations()
+#p = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
+#dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
+#p.plot_actual_vs_predicted("2 tSNE Components (preprocessed)","first tSNE Component", "second tSNE Component", show=False, dest_path=dest, preprocess=True)
 #p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
