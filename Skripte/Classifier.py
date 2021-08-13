@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
+from sklearn import preprocessing
+
 
 
 class SVMclassifier():
@@ -141,13 +143,21 @@ class SVMclassifier():
         if self.kernel == "poly":
             return "SVM({} Kernel, C={}, degree={},class_weights={})".format(self.kernel, self.c, self.degree, self.class_weight)
 
-#svm = SVMclassifier()
-#from data_holder import Data
-#d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
-#d.split_trial_wise()
-#d.use_SMOTE()
-#X, x, Y, y = d.get_data()
-#svm.set_data(X, x, Y, y)
-#svm.train()
-#print(svm.predict())
+    def preprocess(self):
+        """
+        uses scikit preprocess on data
+        """
+        self.X_train = preprocessing.scale(self.X_train) 
+        self.X_test = preprocessing.scale(self.X_test) 
+
+svm = SVMclassifier(kernel="poly")
+from data_holder import Data
+d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\tSNE\perp30')
+d.split_trial_wise()
+d.use_SMOTE()
+X, x, Y, y = d.get_data()
+svm.set_data(X, x, Y, y)
+svm.preprocess()
+svm.train()
+print(svm.predict())
 #print(svm.plot_CM())

@@ -1,0 +1,2 @@
+tSNE generates a largely sparse dataset,
+therefore scikits standard-scaling has been used because scikits SVM with poly or linear kernel are not optimized for sparse datasets.

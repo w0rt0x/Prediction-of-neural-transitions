@@ -13,7 +13,6 @@ warnings.filterwarnings('always')
 from getter_for_populations import sort_out_populations
 
 
-
 class Plotter:
     """
     Plotter for general visualisation
@@ -209,19 +208,19 @@ class Plotter:
                     label[i] = 'magenta'
         return label
 
-    def plot_actual_vs_predicted(self, method: str, x_axis: str, y_axis:str, show: bool=True, dest_path: str=None):
+    def plot_actual_vs_predicted(self, method: str, x_axis: str, y_axis:str, preprocess: bool=False, show: bool=True, dest_path: str=None):
         """
         Plots 2 Plots: Predicted(SVM) vs Actual data
         :param model (SVM, ffn) - Models that gets tested in format [(model, "name of model"), ...]
         :param x_axis (str) - name of x-axis
         :param y_axis (str) - name of y-axis
+        :param preprocess (bool) - preprocesses data before using SVM (only recommended for tSNE)
         :param show (bool) - dafault is true, shows plot when done
         :param dest_path (str) - default is None, if its not none the plot will be saved to that directory
         """
         
         for pop in self.populations:
             # Getting Data
-            print(pop)
             d = Data([pop], self.path)
             d.split_trial_wise()
             d.use_SMOTE()
@@ -238,6 +237,8 @@ class Plotter:
             
             svm = SVMclassifier()
             svm.set_data(X, x, Y, y)
+            if preprocess:
+                svm.preprocess()
             svm.train()
             svm.predict()
             pred = self.__multiclass_to_color(svm.get_predictions().tolist())
@@ -248,6 +249,8 @@ class Plotter:
 
             svm = SVMclassifier(kernel="linear")
             svm.set_data(X, x, Y, y)
+            if preprocess:
+                svm.preprocess()
             svm.train()
             svm.predict()
             pred = self.__multiclass_to_color(svm.get_predictions().tolist())
@@ -256,15 +259,17 @@ class Plotter:
             axis[1][0].set_xlabel(x_axis)
             axis[1][0].set_ylabel(y_axis)
 
-            #svm = SVMclassifier(kernel="poly")
-            #svm.set_data(X, x, Y, y)
-            #svm.train()
-            #svm.predict()
-            #pred = self.__multiclass_to_color(svm.get_predictions().tolist())
-            #axis[1][1].scatter(x_t[0], x_t[1], c=pred, alpha=0.3)
-            #axis[1][1].set_title("{} Prediction".format(svm.get_info()))
-            #axis[1][1].set_xlabel(x_axis)
-            #axis[1][1].set_ylabel(y_axis)
+            svm = SVMclassifier(kernel="poly")
+            svm.set_data(X, x, Y, y)
+            if preprocess:
+                svm.preprocess()
+            svm.train()
+            svm.predict()
+            pred = self.__multiclass_to_color(svm.get_predictions().tolist())
+            axis[1][1].scatter(x_t[0], x_t[1], c=pred, alpha=0.3)
+            axis[1][1].set_title("{} Prediction".format(svm.get_info()))
+            axis[1][1].set_xlabel(x_axis)
+            axis[1][1].set_ylabel(y_axis)
 
             yellow = mpatches.Patch(color='magenta', label='1->1')
             red = mpatches.Patch(color='red', label='1->0')
@@ -272,7 +277,6 @@ class Plotter:
             cyan = mpatches.Patch(color='cyan', label='0->0')
             figure.legend(handles=[yellow, red, green, cyan], bbox_to_anchor=(0.49, 0.90))
 
-            figure.delaxes(axis[1][1])
             figure.suptitle("Actual and Predicted Data ({}) of {}".format(method, pop))
             figure.tight_layout()
 
@@ -438,19 +442,10 @@ class Plotter:
         plt.close()
 
 
-import os
-from os.path import isfile, join
-path = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE'
-files = [f for f in os.listdir(path) if isfile(join(path, f))]
-for i in range(len(files)):
-    files[i] = files[i][:-4]
-files = set(files)
+
 
 ok, not_ok  = sort_out_populations()
-ok = list(set(ok) - files)
-print(len(ok))
 p = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
-dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE'
-p.plot_actual_vs_predicted("2 tSNE","first tSNE Component", "second tSNE Component", show=False, dest_path=dest)
+dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
+p.plot_actual_vs_predicted("2 tSNE Components (preprocessed)","first tSNE Component", "second tSNE Component", show=False, dest_path=dest, preprocess=True)
 #p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
-#D:\Dataframes\tSNE\perp30

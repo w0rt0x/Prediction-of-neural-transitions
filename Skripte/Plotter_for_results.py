@@ -27,7 +27,7 @@ class PerformancePlotter:
         self.populations = populations
         self.path = path
 
-    def compare_models_populationwise(self, models: list,  title:str, show:bool=True, dest_path:str=None, showfliers: bool=False):
+    def compare_models_populationwise(self, models: list,  title:str, preprocess: bool=False, show:bool=True, dest_path:str=None, showfliers: bool=False):
         """
         BoxPlots of all given models with their macro, micro and weighted f1-scores
         """
@@ -49,6 +49,8 @@ class PerformancePlotter:
                     Y = k_folds[pop][k]["y_train"] 
                     y = k_folds[pop][k]["y_test"]
                     model.set_data(X, x, Y, y)
+                    if preprocess:
+                        model.preprocess()
                     model.train()
                     mi, ma, weigth = model.predict()
                     data.append([model_name, "micro f1-score", mi])
@@ -60,6 +62,8 @@ class PerformancePlotter:
                     Y = k_folds_r[pop][k]["y_train"] 
                     y = k_folds_r[pop][k]["y_test"]
                     model.set_data(X, x, Y, y)
+                    if preprocess:
+                        model.preprocess()
                     model.train()
                     mi, ma, weigth = model.predict()
                     data.append([model_name + "\nshuffled labels", "micro f1-score", mi])
@@ -84,7 +88,7 @@ class PerformancePlotter:
         plt.cla()
         plt.close()
 
-    def CM_for_all_pop(self, model, title:str, norm: bool=True, show:bool=True, dest_path:str=None):
+    def CM_for_all_pop(self, model, title:str, norm: bool=True, show:bool=True, dest_path:str=None, preprocess: bool=False):
         """
         :param model - FFN or SVM
         :param Title (str) title
@@ -98,6 +102,8 @@ class PerformancePlotter:
             d.use_SMOTE()
             X, x, Y, y = d.get_data()
             model.set_data(X, x, Y, y)
+            if preprocess:
+                model.preprocess()
             model.train()
             model.predict()
             CM = CM + model.get_CM()
@@ -230,19 +236,25 @@ class PerformancePlotter:
         plt.cla()
         plt.close()
 
-svm1 = SVMclassifier()
+svm1 = SVMclassifier(gamma=1.0)
 svm2 = SVMclassifier(kernel="linear")
 svm3 = SVMclassifier(kernel="poly")
 #ffn = FeedforwardNetWork()
 
-models = [(svm1, "SVM\n(rbf-Kernel)"),(svm2, "SVM\n(lin-Kernel)"),(svm3, "SVM\n(poly-Kernel)")]
+#models = [(svm1, "SVM\n(rbf-Kernel)"),(svm2, "SVM\n(lin-Kernel)"),(svm3, "SVM\n(poly-Kernel)")]
 ok, not_ok = sort_out_populations()
-path = r'D:\Dataframes\PCA\20'
-title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n across all Populations (100 in total), training/testing with 20 PCA Components\n and SMOTE used on training folds"
+path = r'D:\Dataframes\tSNE\perp30'
+title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n across all Populations (100 in total), training/testing with 2 tSNE Components (preprocessed)\n and SMOTE used on training folds"
 p = PerformancePlotter(ok, path)
 #p.compare_models_across_populations(models, title)
 #p.compare_transitions(svm, title)
-p.compare_models_populationwise(models, title)
+#p.compare_models_populationwise(models, title, preprocess=True)
+titel = "Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components (preprocessed) with all 4 classes.\n Classification via SVM(rbf-kernel, c=1, gamma=1, balanced class weights)\n SMOTE on Training-Data"
+p.CM_for_all_pop(svm1, titel, preprocess=True)
+titel = "Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components (preprocessed) with all 4 classes.\n Classification via SVM(lin-kernel, c=1, balanced class weights)\n SMOTE on Training-Data"
+p.CM_for_all_pop(svm2, titel, preprocess=True)
+titel = "Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components (preprocessed) with all 4 classes.\n Classification via SVM(poly-kernel, c=1, degree=3, balanced class weights)\n SMOTE on Training-Data"
+p.CM_for_all_pop(svm3, titel, preprocess=True)
 
 
 
