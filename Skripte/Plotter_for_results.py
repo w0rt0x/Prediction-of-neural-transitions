@@ -236,25 +236,17 @@ class PerformancePlotter:
         plt.cla()
         plt.close()
 
-svm1 = SVMclassifier(gamma=1.0)
-svm2 = SVMclassifier(kernel="linear")
-svm3 = SVMclassifier(kernel="poly")
-#ffn = FeedforwardNetWork()
 
-#models = [(svm1, "SVM\n(rbf-Kernel)"),(svm2, "SVM\n(lin-Kernel)"),(svm3, "SVM\n(poly-Kernel)")]
+ffn = FeedforwardNetWork()
+models = [(ffn, "FFN")]
 ok, not_ok = sort_out_populations()
 path = r'D:\Dataframes\most_active_neurons\40'
-title = "5-Fold Cross Validation results of Support Vector Machine (SVM) with different kernels: \n across all Populations (100 in total), training/testing with 2 tSNE Components (preprocessed)\n and SMOTE used on training folds"
+title = "5-Fold Cross Validation results of a FFN: \n across all Populations (100 in total), training/testing with 40 most active neurons\n and SMOTE used on training folds"
 p = PerformancePlotter(ok, path)
-#p.compare_models_across_populations(models, title)
+p.compare_models_across_populations(models, title)
 #p.compare_transitions(svm, title)
 #p.compare_models_populationwise(models, title, preprocess=True)
-titel = "Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components (preprocessed) with all 4 classes.\n Classification via SVM(rbf-kernel, c=1, gamma=1, balanced class weights)\n SMOTE on Training-Data"
-p.CM_for_all_pop(svm1, titel, preprocess=True)
-titel = "Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components (preprocessed) with all 4 classes.\n Classification via SVM(lin-kernel, c=1, balanced class weights)\n SMOTE on Training-Data"
-p.CM_for_all_pop(svm2, titel, preprocess=True)
-titel = "Class-wise Normalized Confusion Matrix of all\n Populations (2 tSNE Components (preprocessed) with all 4 classes.\n Classification via SVM(poly-kernel, c=1, degree=3, balanced class weights)\n SMOTE on Training-Data"
-p.CM_for_all_pop(svm3, titel, preprocess=True)
+
 
 
 
