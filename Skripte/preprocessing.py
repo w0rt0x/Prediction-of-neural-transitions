@@ -6,9 +6,7 @@ from scipy.io import loadmat
 import math
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
-from sklearn.manifold import Isomap
 from sklearn.manifold import TSNE
-import umap
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -18,6 +16,7 @@ class Preprocessor():
     def __init__(self, pop, NaN_replacement=0):
         """
         Takes in Path to directory and population name of file (.csv)
+        :param pop (str) - Population name, e.g.: bl693_no_white_Pop06
         """
         self.population = pop
         path_class = r"C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten\{}_class.mat".format(pop)
@@ -60,6 +59,9 @@ class Preprocessor():
         self.label = np.asarray(label)
 
     def plot_label(self):
+        """
+        Plots Label Matrix to see transitions
+        """
         data = np.zeros((34,4))
         for i in range(len(self.all_labels)):
             for j in range((len(self.all_labels[i]))):
@@ -73,12 +75,10 @@ class Preprocessor():
         colorbar.set_ticklabels(['0', '1'])
         plt.show()
 
-    def do_PCA(self, dim):
+    def do_PCA(self, dim: int=20):
         """
-        Applyies Scikit PCA on data,
-        also saves PCA Loadings as self.loading_matrix
-        and the variance as self.PCA_var
-        and the PCA components as self.reduced_data
+        Applyies Scikit PCA on data, also prints out variance 
+        :param dim (int, default is 20)
         """
         pca = PCA(n_components=dim)
         pca.fit(self.data)
@@ -87,26 +87,18 @@ class Preprocessor():
         self.loading_matrix = pca.components_.T * np.sqrt(pca.explained_variance_)
         self.PCA_var = sum(pca.explained_variance_ratio_)
         self.reduced_data = pca.components_.T
-        
-    def do_ISOMAP(self, dim):
-        """
-        does isomap on given data-set,
-        saves manifold data to self.reduced_data
-        """
-        # Source: https://benalexkeen.com/isomap-for-dimensionality-reduction-in-python/
-        # https://towardsdatascience.com/what-is-isomap-6e4c1d706b54
-        # https://scikit-learn.org/stable/modules/generated/sklearn.manifold.Isomap.html
-        iso = Isomap(n_components=dim)
-        iso.fit(self.data.T)
-        self.reduced_data = iso.transform(self.data.T)
+        print("PCA Variance: {}".format(self.PCA_var))
 
-    def do_TSNE(self, dim, seed=1, perplexity=30):
+    def do_TSNE(self, dim: int, seed: int=1, perplexity: float=30.0):
+        """
+        Applies tSNE
+        :param dim (int)
+        :param seed (int, default=1) - seed for reproducable results
+        :param perplexity (float, default is 30) - perplexity for tSNE
+        """
+        # Source:
         # https://towardsdatascience.com/t-sne-clearly-explained-d84c537f53a 
         self.reduced_data = TSNE(n_components=dim, random_state=seed, perplexity=perplexity).fit_transform(self.data.T)
-
-    def do_umap(self, dim, seed=1):
-        reducer = umap.UMAP(n_components=dim, random_state=seed)
-        self.reduced_data = reducer.fit_transform(self.data.T)
 
     def create_binary_transition_labels(self):
         """
@@ -175,7 +167,11 @@ class Preprocessor():
             
         self.label = np.asarray(transistions)
 
-    def get_most_active_neurons(self, n=30):
+    def get_most_active_neurons(self, n: int=30):
+        """
+        sorts neurons to n most active over all trials
+        :param n (int, default is 30) - number of neurons
+        """
         matrix = self.data
         sums = []
         neurons = []
@@ -193,6 +189,7 @@ class Preprocessor():
     def df_to_file(self, path):
         """
         Saves csv pandas dataframe and saves it to given path to directory
+        :param path(str), path to directory to save csv-file
         """
         matrix = []
         for i in range(len(self.header)):
@@ -226,9 +223,11 @@ class Preprocessor():
     def plot_data(self, title):
         """
         Does a scatter plot for the 2D reduced Data,
-        Source:
-        https://pythonspot.com/matplotlib-scatterplot/
+        :param title(str) - Title for plot
         """
+        # Source:
+        # https://pythonspot.com/matplotlib-scatterplot/
+
         cols = {"0->0" : "cyan", "0->1" : "lime", "1->0" : "red", "1->1" : "yellow"}
 
         # Create plot
