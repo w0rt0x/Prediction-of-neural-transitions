@@ -292,6 +292,12 @@ class Plotter:
     def boxplots_of_classes(self, title:str, y_axis: str="mean activity over all neurons", second_path: str=r'D:\Dataframes\double_skip_mean', show:bool=True, dest_path:str=None, show_outliers: bool=False):
         """
         makes 4 Box-plots that show the first component of the dataframe (mean, median, etc) of the 4 classes
+        :param title (str) - Title of plot
+        :param y_axis (str) - label of y_axis
+        :param second_path (str) - different directory with mean or summed neural data
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        :param show_outliers (bool, default is False) - if True: shows outliers of Boxplot (1.5 times outside Inter-Quartile range)
         """
         data = []
         counter = 0
@@ -321,7 +327,6 @@ class Plotter:
         self.__box_plot(df, "Labels", y_axis, "Transition", title, show=show, dest_path=dest_path, showfliers=show_outliers, order = ["0->0", "0->1", "1->0", "1->1"])
 
     def __box_plot(self, df: pd.DataFrame, x:str, y:str, hue:str, title:str, show: bool=True, dest_path: str=None, showfliers = False, order: list=None):
-
         sns.set_theme(palette="pastel")
         sns.boxplot(x=x, y=y,
                     hue=hue, order=order, 
@@ -398,6 +403,9 @@ class Plotter:
     def plot_mean_of_each_neuron(self, title:str, show:bool=True, dest_path:str=None, std=True):
         """
         Line Plot that shows neuron-wise mean, with or without standard deviation
+        :param title (str) - Title of plot
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
         """
         d = Data(self.populations, self.path)
         d.split_trial_wise()

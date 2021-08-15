@@ -6,6 +6,7 @@ from copy import deepcopy
 from random import shuffle
 import random
 from typing import Tuple
+from sklearn.model_selection import KFold
 
 class Data:
 
@@ -295,6 +296,67 @@ class Data:
         :param remove_day4 (bool) - True removes day 4 trials, default is True
         :param smote (bool, default is True) - if True, Smote is used on training folds
         :param shuffle (bool, default is False) - If True, shuffles labels for random benchmark
+        """
+        k_folds = {}
+
+        for k in range(K):
+            k_folds[k] = {"X_train": [], "X_test": [], "y_test": [], "y_train": []}
+            for df in self.dataframes:
+                header = set(df['label'].tolist())
+                # Removing Day 4
+                trails = set()
+                for i in header:
+                    trail = eval(i)
+                    if trail[0] != 4:
+                        trails.add(i)
+                    else:
+                        if not(rem_day4):
+                            trails.add(i)
+
+                header = trails
+
+                for trial in header:
+                    # geting rows with (day, Trail)-label
+                    rows = df.loc[df['label'] == trial].to_numpy()
+                    # getting response label
+                    response = rows[0][-1]
+                    # getting the actual data from the matrix
+                    rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+
+                    chunks = np.array_split(rows, K)
+                    for chunk in chunks[k]:
+                        k_folds[k]["X_test"].append(chunk.astype(np.float))
+                        k_folds[k]["y_test"].append(response)
+
+                    train_chunks = np.delete(chunks, k, axis=0)
+                    for chunk in train_chunks:
+                        for ch in chunk:
+                            k_folds[k]["X_train"].append(ch.astype(np.float))
+                            k_folds[k]["y_train"].append(response)
+
+
+        for k in range(K):
+
+            self.X_test = np.asarray(k_folds[k]["X_test"])
+            self.y_test = np.asarray(k_folds[k]["y_test"])
+            self.X_train = np.asarray(k_folds[k]["X_train"])
+            self.y_train = np.asarray(k_folds[k]["y_train"])
+
+            if smote:
+                    self.use_SMOTE()
+
+            if shuffle:
+                    self.shuffle_labels()
+
+            k_folds[k]["X_test"] = self.X_test
+            k_folds[k]["X_train"] = self.X_train
+            k_folds[k]["y_test"] = self.y_test
+            k_folds[k]["y_train"] = self.y_train
+
+        return k_folds
+
+        """
+        Applies k-fold cross Validation
         """
         k_folds = {}
 
