@@ -30,6 +30,12 @@ class PerformancePlotter:
     def compare_models_populationwise(self, models: list,  title:str, preprocess: bool=False, show:bool=True, dest_path:str=None, showfliers: bool=False):
         """
         BoxPlots of all given models with their macro, micro and weighted f1-scores
+        :param models (list) - list of models in form of [(model, "Title of model"), ...]
+        :param title (str) - title of plot
+        :param preprocess (bool, default False) - if True, uses standard-scaling on data before training model, recommended for tSNE data
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        :param show_outliers (bool, default is False) - if True: shows outliers of Boxplot (1.5 times outside Inter-Quartile range) 
         """
         da = Data(self.populations, self.path)
         k_folds = da.k_fold_cross_validation_populationwise()
@@ -94,6 +100,7 @@ class PerformancePlotter:
         :param Title (str) title
         :param show (bool) - Optional, shows plot of true (default is true)
         :param dest_path (str) - saves plot to that directory if provided
+        :param preprocess (bool, default False) - if True, uses standard-scaling on data before training model, recommended for tSNE data
         """
         CM = np.zeros((4, 4))
         for pop in self.populations:
@@ -137,6 +144,12 @@ class PerformancePlotter:
     def compare_transitions(self, model, title:str, day2_transitions: str=r'D:\Dataframes\double_skip', show:bool=True, dest_path:str=None, showfliers: bool=False):
         """
         Compares prediction quality of a model regarding the transitions between 1 day and 2 days
+        :param models (list) - list of models in form of [(model, "Title of model"), ...]
+        :param title (str) - title of plot
+        :param second_path (str) - different directory with mean or summed neural data
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        :param showfliers (bool, default is False) - if True: shows outliers of Boxplot (1.5 times outside Inter-Quartile range) 
         """
         data = []
         for pop in self.populations:
@@ -184,6 +197,11 @@ class PerformancePlotter:
         """
         BoxPlots of all given models with their macro, micro and weighted f1-scores
         but shared across populations
+        :param models (list) - list of models in form of [(model, "Title of model"), ...]
+        :param title (str) - title of plot
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        :param showfliers (bool, default is False) - if True: shows outliers of Boxplot (1.5 times outside Inter-Quartile range) 
         """
         da = Data(self.populations, self.path)
         k_folds = da.k_fold_cross_validation()
@@ -237,13 +255,13 @@ class PerformancePlotter:
         plt.close()
 
 
-ffn = FeedforwardNetWork()
-models = [(ffn, "FFN")]
-ok, not_ok = sort_out_populations()
-path = r'D:\Dataframes\most_active_neurons\40'
-title = "5-Fold Cross Validation results of a FFN: \n across all Populations (100 in total), training/testing with 40 most active neurons\n and SMOTE used on training folds"
-p = PerformancePlotter(ok, path)
-p.compare_models_across_populations(models, title)
+#ffn = FeedforwardNetWork()
+#models = [(ffn, "FFN")]
+#ok, not_ok = sort_out_populations()
+#path = r'D:\Dataframes\most_active_neurons\40'
+#title = "5-Fold Cross Validation results of a FFN: \n across all Populations (100 in total), training/testing with 40 most active neurons\n and SMOTE used on training folds"
+#p = PerformancePlotter(ok, path)
+#p.compare_models_across_populations(models, title)
 #p.compare_transitions(svm, title)
 #p.compare_models_populationwise(models, title, preprocess=True)
 
