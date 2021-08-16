@@ -130,6 +130,7 @@ class PerformancePlotter:
         plt.title(title)
         plt.xlabel("Predicted Label")
         plt.ylabel("True Label")
+        plt.tight_layout()
 
         if show:
             plt.show()
@@ -255,12 +256,15 @@ class PerformancePlotter:
         plt.close()
 
 
-#ffn = FeedforwardNetWork()
+ffn = FeedforwardNetWork()
 #models = [(ffn, "FFN")]
-#ok, not_ok = sort_out_populations()
-#path = r'D:\Dataframes\most_active_neurons\40'
-#title = "5-Fold Cross Validation results of a FFN: \n across all Populations (100 in total), training/testing with 40 most active neurons\n and SMOTE used on training folds"
-#p = PerformancePlotter(ok, path)
+svm = SVMclassifier()
+ok, not_ok = sort_out_populations()
+path = r'D:\Dataframes\most_active_neurons\40'
+title = "Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Classification via SVM(rbf-Kernel, c=1, gamma=0.5, balanced class-weights)\n SMOTE used on training-data"
+title = "Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Classification via FFN, SMOTE used on training-data"
+p = PerformancePlotter(ok, path)
+p.CM_for_all_pop(ffn, title)
 #p.compare_models_across_populations(models, title)
 #p.compare_transitions(svm, title)
 #p.compare_models_populationwise(models, title, preprocess=True)
