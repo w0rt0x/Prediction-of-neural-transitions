@@ -59,14 +59,16 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'magenta'
+                    label[i] = 'yellow'
 
             # Plotting
+            ax = plt.axes()
+            ax.set_facecolor("#c2c2c2")
             plt.scatter(x, y, c=label, alpha=0.3)
             name = self.populations[self.full_paths.index(pop)]
             plt.title('{} of {}'.format(method, name))
             
-            yellow = mpatches.Patch(color='magenta', label='1->1')
+            yellow = mpatches.Patch(color='yellow', label='1->1')
             red = mpatches.Patch(color='red', label='1->0')
             green = mpatches.Patch(color='green', label='0->1')
             cyan = mpatches.Patch(color='cyan', label='0->0')
@@ -116,7 +118,7 @@ class Plotter:
                 if label[i] == '0->1':
                     label[i] = 'green'
                 if label[i] == '1->1':
-                    label[i] = 'magenta'
+                    label[i] = 'yellow'
 
             # Plotting
             ax = plt.axes(projection ="3d")
@@ -124,7 +126,7 @@ class Plotter:
             name = self.populations[self.full_paths.index(pop)]
             ax.set_title('{} of {}'.format(method, name))
             
-            yellow = mpatches.Patch(color='magenta', label='1->1')
+            yellow = mpatches.Patch(color='yellow', label='1->1')
             red = mpatches.Patch(color='red', label='1->0')
             green = mpatches.Patch(color='green', label='0->1')
             cyan = mpatches.Patch(color='cyan', label='0->0')
@@ -454,3 +456,6 @@ class Plotter:
 #dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
 #p.plot_actual_vs_predicted("2 tSNE Components (preprocessed)","first tSNE Component", "second tSNE Component", show=False, dest_path=dest, preprocess=True)
 #p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
+#p = Plotter(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\perp30')
+#p.plot_2D("tSNE","first tSNE Component", "second tSNE Component")
+#p.plot_3D("3 most active neurons","most active neuron", "second most active neuron", "third most active neuron")
