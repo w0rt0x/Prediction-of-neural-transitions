@@ -167,7 +167,7 @@ class Preprocessor():
             
         self.label = np.asarray(transistions)
 
-    def get_most_active_neurons(self, n: int=30):
+    def get_most_active_neurons(self, n: int=30, normalize:bool=False):
         """
         sorts neurons to n most active over all trials
         :param n (int, default is 30) - number of neurons
@@ -185,6 +185,16 @@ class Preprocessor():
             neurons.append(matrix[i])
 
         self.reduced_data = np.array(neurons).T
+        
+        if normalize:
+            means = []
+            stds = []
+            matrix = self.data.T
+            for row in matrix:
+                means.append(np.mean(row))
+                stds.append(np.std(row))
+            for i in range(len(self.reduced_data)):
+                self.reduced_data[i] = (self.reduced_data[i] - means[i])/stds[i]
 
     def df_to_file(self, path):
         """
@@ -308,11 +318,11 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.get_most_active_neurons(n=dim)
+        a.get_most_active_neurons(n=dim, normalize=True)
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
 
-
+prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_norm', dim=40)
 

@@ -150,14 +150,14 @@ class SVMclassifier():
         self.X_train = preprocessing.scale(self.X_train) 
         self.X_test = preprocessing.scale(self.X_test) 
 
-#svm = SVMclassifier(kernel="poly")
+#svm = SVMclassifier()
 #from data_holder import Data
-#d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\tSNE\perp30')
+#d = Data(['bl693_no_white_Pop05'], r'D:\Dataframes\most_active_neurons\40_norm')
 #d.split_trial_wise()
 #d.use_SMOTE()
 #X, x, Y, y = d.get_data()
 #svm.set_data(X, x, Y, y)
-#svm.preprocess()
+##svm.preprocess()
 #svm.train()
 #print(svm.predict())
-#print(svm.plot_CM())
+#svm.plot_CM()

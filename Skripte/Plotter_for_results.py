@@ -257,14 +257,16 @@ class PerformancePlotter:
 
 
 ffn = FeedforwardNetWork()
-#models = [(ffn, "FFN")]
 svm = SVMclassifier()
+models = [(svm, "SVM")]
 ok, not_ok = sort_out_populations()
-path = r'D:\Dataframes\most_active_neurons\40'
-title = "Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Classification via SVM(rbf-Kernel, c=1, gamma=0.5, balanced class-weights)\n SMOTE used on training-data"
-title = "Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Classification via FFN, SMOTE used on training-data"
+path = r'D:\Dataframes\most_active_neurons\40_norm'
+title2 = "Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Classification via SVM(rbf-Kernel, c=1, gamma=0.5, balanced class-weights)\n SMOTE used on training-data, but all neuron activity is normalized"
+#title = "Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Classification via FFN, SMOTE used on training-data"
 p = PerformancePlotter(ok, path)
-p.CM_for_all_pop(ffn, title)
+title = "5-Fold Cross Validation results of SVM(rbf-Kernel, c=1, gamma=0.5, balanced class-weights):\n population-wise (100 in total) training/testing with 40 most active neurons\n and SMOTE used on training folds, but all neuron activity is normalized"
+p.compare_models_populationwise(models, title)
+p.CM_for_all_pop(svm, title2)
 #p.compare_models_across_populations(models, title)
 #p.compare_transitions(svm, title)
 #p.compare_models_populationwise(models, title, preprocess=True)
