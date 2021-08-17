@@ -324,5 +324,5 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
 
-prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_norm', dim=40)
+prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_sub_mean', dim=40)
 

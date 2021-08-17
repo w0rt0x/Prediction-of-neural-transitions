@@ -494,6 +494,7 @@ class Plotter:
         plt.clf()
         plt.cla()
         plt.close()
+
 ok, not_ok  = sort_out_populations()
 p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
 #dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
