@@ -451,11 +451,54 @@ class Plotter:
         plt.cla()
         plt.close()
 
-#ok, not_ok  = sort_out_populations()
-#p = Plotter(ok, r'D:\Dataframes\tSNE\perp30')
+    def plot_std_mean_of_each_neuron(self, title:str, show:bool=True, dest_path:str=None):
+        """
+        Line Plot that shows neuron-wise mean, with or without standard deviation
+        :param title (str) - Title of plot
+        :param show (bool) - Optional, shows plot of true (default is true)
+        :param dest_path (str) - saves plot to that directory if provided
+        """
+        d = Data(self.populations, self.path)
+        d.split_trial_wise()
+        X, x, Y, y = d.get_data()
+        X = np.concatenate((X, x))
+        Y = np.concatenate((Y, y))
+
+        d = {}
+        for i in range(len(Y)):
+            if Y[i] in d:
+                d[Y[i]].append(X[i])
+            else:
+                d[Y[i]] = [X[i]]
+
+        for key in d.keys():
+            d[key] = np.asarray(d[key], dtype=float)
+            d[key] = np.std(d[key], axis=0)[::-1]
+
+        c = {"1->1": "magenta", "0->0": "cyan", "1->0":"red", "0->1": "green"}
+        fig, ax = plt.subplots()
+        for key in d.keys():
+            ax.plot(range(1, len(X[0]) + 1), d[key], color=c[key], label="std of {}".format(key))
+        
+        plt.xlabel('{} most active Neurons'.format(len(X[0])))
+        plt.ylabel("Neuron-wise standard-deviation per class")
+        plt.title(title)
+        plt.legend()
+
+        if show:
+            plt.show()
+
+        if dest_path !=None:
+            plt.savefig(dest_path + '\\{}.png'.format(title))
+
+        plt.clf()
+        plt.cla()
+        plt.close()
+ok, not_ok  = sort_out_populations()
+p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
 #dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
 #p.plot_actual_vs_predicted("2 tSNE Components (preprocessed)","first tSNE Component", "second tSNE Component", show=False, dest_path=dest, preprocess=True)
-#p.plot_mean_of_each_neuron("Neuron-wise mean and standard-deviation of the 40 Most active neurons,\n seperated into the four classes")
+p.plot_std_mean_of_each_neuron("Neuron-wise standard-deviations of the 40 Most active neurons,\n seperated into the four classes")
 #p = Plotter(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\perp30')
 #p.plot_2D("tSNE","first tSNE Component", "second tSNE Component")
 #p.plot_3D("3 most active neurons","most active neuron", "second most active neuron", "third most active neuron")
