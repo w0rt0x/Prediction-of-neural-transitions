@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from getter_for_populations import sort_out_populations
 
 class Preprocessor():
 
@@ -303,6 +303,58 @@ class Preprocessor():
 
         self.reduced_data = np.asarray(s)
 
+    def get_correlation_per_class(self, full: bool=False):
+        
+        data = self.data.T
+        d = {}
+        for day in range(1, 4):
+            for stim in range(1, 35):
+                key = (day, stim)
+                d[key] = []
+
+        for i in range(len(data)):
+            key = self.header[i]
+            if key[0] != 4:
+                d[key].append(data[i])
+
+        header = sorted(set(self.header), key=self.header.index)
+        for i in range(len(header)-1, -1, -1):
+            if header[i][0] == 4:
+                del header[i]
+
+        matrix = np.zeros(shape=(len(header), len(header)))
+        for i in range(len(header)):
+            for j in range(len(header)):
+                if i != j:
+                    if full:
+                        coefs = []
+                        m1 = np.asarray(d[header[i]])
+                        m2 = np.asarray(d[header[j]])
+                        for row1 in m1:
+                            for row2 in m2:
+                                coefs.append(np.corrcoef(row1, row2)[0][1])
+                        matrix[i][j] = np.average(np.array(coefs))
+                else:
+                    coefs = []
+                    m = np.asarray(d[header[i]])
+                    for r1 in range(len(m)):
+                        for r2 in range(len(m)):
+                            if r1 != r2:
+                                coefs.append(np.corrcoef(m[r1], m[r2])[0][1])
+                    matrix[i][j] = np.average(np.array(coefs))
+
+        matrix = np.asarray(matrix)
+        labels = []
+        for i in range(len(header)):
+            labels.append(self.label[self.header.index(header[i])])
+        data = []
+        for i in range(len(labels)):
+            data.append([labels[i], matrix[i][i]])
+
+        return pd.DataFrame(data, columns = ['Labels', "average correlation"])
+        
+        
+
 def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
     populations = set()
@@ -323,6 +375,25 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
 
+def boxplots_of_correlations():
+    ok, not_ok = sort_out_populations()
+    dfs = []
+    for pop in ok:
+        print(pop)
+        p = Preprocessor(pop)
+        p.create_multiclass_transition_labels()
+        df = p.get_correlation_per_class()
+        dfs.append(df)
 
-prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_sub_mean', dim=40)
+    df = pd.concat(dfs)
+    sns.set_theme(palette="pastel")
+    graph = sns.boxplot(x="Labels", y="average correlation", order=["0->0", "0->1", "1->0", "1->1"], data=df)
+    plt.title("average correlation over all possible heterogeneous trial-pairs of a stimulus\n of all populations, seperated into the four classes")
+    graph.axhline(0.4, ls='--', linewidth=1, color='red')
+    plt.show()
+
+boxplots_of_correlations()
+#prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_sub_mean', dim=40)
+
+
 
