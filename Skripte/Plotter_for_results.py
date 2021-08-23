@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import matplotlib.patches as mpatches
-import os
 from os.path import isfile, join
 from collections import Counter
 from copy import deepcopy
@@ -27,15 +26,14 @@ class PerformancePlotter:
         self.populations = populations
         self.path = path
 
-    def compare_models_populationwise(self, models: list,  title:str, preprocess: bool=False, show:bool=True, dest_path:str=None, showfliers: bool=False):
+    def compare_models_populationwise(self, models: list, data_type: str, preprocess: bool=False):
         """
         BoxPlots of all given models with their macro, micro and weighted f1-scores
         :param models (list) - list of models in form of [(model, "Title of model"), ...]
         :param title (str) - title of plot
+        :param data_type (str) - Name of input
         :param preprocess (bool, default False) - if True, uses standard-scaling on data before training model, recommended for tSNE data
-        :param show (bool) - Optional, shows plot of true (default is true)
-        :param dest_path (str) - saves plot to that directory if provided
-        :param show_outliers (bool, default is False) - if True: shows outliers of Boxplot (1.5 times outside Inter-Quartile range) 
+        returns pandas dataframe
         """
         da = Data(self.populations, self.path)
         k_folds = da.k_fold_cross_validation_populationwise()
@@ -46,7 +44,7 @@ class PerformancePlotter:
         for m in models:
             model = m[0]
             model_name = m[1]
-
+            print(model_name)
             for pop in k_folds.keys():
                 print(pop)
                 for k in k_folds[pop].keys():
@@ -59,9 +57,9 @@ class PerformancePlotter:
                         model.preprocess()
                     model.train()
                     mi, ma, weigth = model.predict()
-                    data.append([model_name, "micro f1-score", mi])
-                    data.append([model_name, "macro f1-score", ma])
-                    data.append([model_name, "weighted f1-score", weigth])
+                    #data.append([model_name, "micro f1-score", mi])
+                    data.append([model_name, data_type, ma])
+                    #data.append([model_name, "weighted f1-score", weigth])
 
                     X = k_folds_r[pop][k]["X_train"] 
                     x = k_folds_r[pop][k]["X_test"]
@@ -72,15 +70,21 @@ class PerformancePlotter:
                         model.preprocess()
                     model.train()
                     mi, ma, weigth = model.predict()
-                    data.append([model_name + "\nshuffled labels", "micro f1-score", mi])
-                    data.append([model_name + "\nshuffled labels", "macro f1-score", ma])
-                    data.append([model_name + "\nshuffled labels", "weighted f1-score", weigth])
+                    #data.append([model_name + "\nshuffled labels", "micro f1-score", mi])
+                    data.append([model_name + "\nshuffled labels", data_type, ma])
+                    #data.append([model_name + "\nshuffled labels", "weighted f1-score", weigth])
 
-        df = pd.DataFrame(data, columns = ['model', "f1-score", "value"])
+        df = pd.DataFrame(data, columns = ['model', "input", "macro F1 score"])
+        return df
 
+
+    def boxplot_from_df(self, df, title: str, showfliers: bool=False, show:bool=True, dest_path:str=None):
+        """
+        
+        """
         sns.set_theme(palette="pastel")
-        sns.boxplot(x="model", y="value",
-                    hue="f1-score", 
+        sns.boxplot(x="model", y="macro F1 score",
+                    hue="input", 
                     data=df, showfliers=showfliers)
         plt.title(title)
 
@@ -194,15 +198,13 @@ class PerformancePlotter:
         plt.cla()
         plt.close()
 
-    def compare_models_across_populations(self, models: list,  title:str, show:bool=True, dest_path:str=None, showfliers: bool=False):
+    def compare_models_across_populations(self, models: list, data_type: str):
         """
         BoxPlots of all given models with their macro, micro and weighted f1-scores
         but shared across populations
         :param models (list) - list of models in form of [(model, "Title of model"), ...]
         :param title (str) - title of plot
-        :param show (bool) - Optional, shows plot of true (default is true)
-        :param dest_path (str) - saves plot to that directory if provided
-        :param showfliers (bool, default is False) - if True: shows outliers of Boxplot (1.5 times outside Inter-Quartile range) 
+        :param data_type (str) - Name of input
         """
         da = Data(self.populations, self.path)
         k_folds = da.k_fold_cross_validation()
@@ -222,9 +224,9 @@ class PerformancePlotter:
                 model.set_data(X, x, Y, y)
                 model.train()
                 mi, ma, weigth = model.predict()
-                data.append([model_name, "micro f1-score", mi])
-                data.append([model_name, "macro f1-score", ma])
-                data.append([model_name, "weighted f1-score", weigth])
+                #data.append([model_name, "micro f1-score", mi])
+                data.append([model_name, data_type, ma])
+                #data.append([model_name, "weighted f1-score", weigth])
 
                 X = k_folds_r[k]["X_train"] 
                 x = k_folds_r[k]["X_test"]
@@ -233,43 +235,30 @@ class PerformancePlotter:
                 model.set_data(X, x, Y, y)
                 model.train()
                 mi, ma, weigth = model.predict()
-                data.append([model_name + "\nshuffled labels", "micro f1-score", mi])
-                data.append([model_name + "\nshuffled labels", "macro f1-score", ma])
-                data.append([model_name + "\nshuffled labels", "weighted f1-score", weigth])
+                #data.append([model_name + "\nshuffled labels", "micro f1-score", mi])
+                data.append([model_name + "\nshuffled labels", data_type, ma])
+                #data.append([model_name + "\nshuffled labels", "weighted f1-score", weigth])
 
-        df = pd.DataFrame(data, columns = ['model', "f1-score", "value"])
+        df = pd.DataFrame(data, columns = ['model', "input", "macro F1 score"])
+        return df
 
-        sns.set_theme(palette="pastel")
-        sns.boxplot(x="model", y="value",
-                    hue="f1-score", 
-                    data=df, showfliers=showfliers)
-        plt.title(title)
+#ffn = FeedforwardNetWork()
+#models = [(ffn, "FFN\nk-fold across populations")]
+#ok, not_ok = sort_out_populations()
+#path = r'D:\Dataframes\most_active_neurons\40'
+#p = PerformancePlotter(ok, path)
+#df = p.compare_models_across_populations(models, "40 most active neurons")
+#df.to_csv(r'C:\Users\Sam\Desktop\FFN_across-pop')
+# TAG3 MIT SHUFFLED LABELS!!!
 
-        if show:
-            plt.show()
+#ffn = FeedforwardNetWork()
+#models = [(ffn, "FFN\npopulation-wise k-Fold")]
+#ok, not_ok = sort_out_populations()
+#path = r'D:\Dataframes\most_active_neurons\40'
+#p = PerformancePlotter(ok, path)
+#df = p.compare_models_populationwise(models, "40 most active neurons")
+#df.to_csv(r'C:\Users\Sam\Desktop\FFN_pop-wise.csv')
 
-        if dest_path !=None:
-            plt.savefig(dest_path + '\\{}.png'.format(title))
-
-        plt.clf()
-        plt.cla()
-        plt.close()
-
-
-ffn = FeedforwardNetWork()
-svm = SVMclassifier()
-models = [(svm, "SVM")]
-ok, not_ok = sort_out_populations()
-path = r'D:\Dataframes\most_active_neurons\40_norm'
-title2 = "Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Classification via SVM(rbf-Kernel, c=1, gamma=0.5, balanced class-weights)\n SMOTE used on training-data, but all neuron activity is normalized"
-#title = "Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Classification via FFN, SMOTE used on training-data"
-p = PerformancePlotter(ok, path)
-title = "5-Fold Cross Validation results of SVM(rbf-Kernel, c=1, gamma=0.5, balanced class-weights):\n population-wise (100 in total) training/testing with 40 most active neurons\n and SMOTE used on training folds, but all neuron activity is normalized"
-p.compare_models_populationwise(models, title)
-p.CM_for_all_pop(svm, title2)
-#p.compare_models_across_populations(models, title)
-#p.compare_transitions(svm, title)
-#p.compare_models_populationwise(models, title, preprocess=True)
 
 
 

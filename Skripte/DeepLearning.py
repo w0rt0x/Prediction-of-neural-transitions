@@ -1,3 +1,4 @@
+from getter_for_populations import sort_out_populations
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.metrics import classification_report
@@ -176,10 +177,11 @@ class FeedforwardNetWork():
 
 #ffn = FeedforwardNetWork()
 #from data_holder import Data
-#d = Data(['bl693_no_white_Pop06'], r'D:\Dataframes\most_active_neurons\40')
-#d.split_trial_wise()
+#ok, not_ok = sort_out_populations()
+#d = Data(ok, r'D:\Dataframes\most_active_neurons\40')
+#d.split_day_wise()
 #d.use_SMOTE()
 #X, x, Y, y = d.get_data()
 #ffn.set_data(X, x, Y, y)
 #ffn.train()
-#print(ffn.predict())
+#mi, ma, weight = ffn.predict()

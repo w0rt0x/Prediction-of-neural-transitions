@@ -355,63 +355,38 @@ class Data:
 
         return k_folds
 
+    def split_day_wise(self, day:int=3, remove_day4:bool=True):
         """
-        Applies k-fold cross Validation
+        Splits each Populations into training/test data, while day x is only used for testing
+        :param day (int) - default is day3 that is used for testing
+        :param remove_day4 (bool) - True removes day 4 trials, default is True
+        :param shuffle (bool) - shuffles trials before splitting them, default is True
         """
-        k_folds = {}
-
-        for k in range(K):
-            k_folds[k] = {"X_train": [], "X_test": [], "y_test": [], "y_train": []}
-            for df in self.dataframes:
-                header = set(df['label'].tolist())
-                # Removing Day 4
-                trails = set()
-                for i in header:
-                    trail = eval(i)
-                    if trail[0] != 4:
-                        trails.add(i)
+        X_test = []
+        X_train = []   
+        y_test = []   
+        y_train = [] 
+        for df in self.dataframes:
+            header = set(df['label'].tolist())
+            for trial in header:
+                # geting rows with (day, Trail)-label
+                rows = df.loc[df['label'] == trial].to_numpy()
+                # getting response label
+                response = rows[0][-1]
+                # getting the actual data from the matrix
+                rows = np.delete(rows, np.s_[0,1,-1], axis=1)
+                for i in range(len(rows)):
+                    if eval(trial)[0] == day:
+                        X_test.append(rows[i])
+                        y_test.append(response)
                     else:
-                        if not(rem_day4):
-                            trails.add(i)
+                        if remove_day4 and eval(trial)[0] == 4:
+                            pass
+                        else:
+                            X_train.append(rows[i])
+                            y_train.append(response)
 
-                header = trails
-
-                for trial in header:
-                    # geting rows with (day, Trail)-label
-                    rows = df.loc[df['label'] == trial].to_numpy()
-                    # getting response label
-                    response = rows[0][-1]
-                    # getting the actual data from the matrix
-                    rows = np.delete(rows, np.s_[0,1,-1], axis=1)
-
-                    chunks = np.array_split(rows, K)
-                    for chunk in chunks[k]:
-                        k_folds[k]["X_test"].append(chunk.astype(np.float))
-                        k_folds[k]["y_test"].append(response)
-
-                    train_chunks = np.delete(chunks, k, axis=0)
-                    for chunk in train_chunks:
-                        for ch in chunk:
-                            k_folds[k]["X_train"].append(ch.astype(np.float))
-                            k_folds[k]["y_train"].append(response)
-
-
-        for k in range(K):
-
-            self.X_test = np.asarray(k_folds[k]["X_test"])
-            self.y_test = np.asarray(k_folds[k]["y_test"])
-            self.X_train = np.asarray(k_folds[k]["X_train"])
-            self.y_train = np.asarray(k_folds[k]["y_train"])
-
-            if smote:
-                    self.use_SMOTE()
-
-            if shuffle:
-                    self.shuffle_labels()
-
-            k_folds[k]["X_test"] = self.X_test
-            k_folds[k]["X_train"] = self.X_train
-            k_folds[k]["y_test"] = self.y_test
-            k_folds[k]["y_train"] = self.y_train
-
-        return k_folds
+        self.X_train = np.asarray(X_train)
+        self.X_test = np.asarray(X_test)
+        self.y_train = np.asarray(y_train)
+        self.y_test = np.asarray(y_test)  

@@ -387,7 +387,7 @@ def boxplots_of_correlations():
 
     df = pd.concat(dfs)
     sns.set_theme(palette="pastel")
-    graph = sns.boxplot(x="Labels", y="average correlation", order=["0->0", "0->1", "1->0", "1->1"], data=df)
+    graph = sns.violinplot(x="Labels", y="average correlation", order=["0->0", "0->1", "1->0", "1->1"], data=df)
     plt.title("average correlation over all possible heterogeneous trial-pairs of a stimulus\n of all populations, seperated into the four classes")
     graph.axhline(0.4, ls='--', linewidth=1, color='red')
     plt.show()
