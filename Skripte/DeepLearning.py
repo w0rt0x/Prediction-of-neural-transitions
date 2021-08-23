@@ -175,13 +175,32 @@ class FeedforwardNetWork():
         plt.cla()
         plt.close()
 
-#ffn = FeedforwardNetWork()
-#from data_holder import Data
-#ok, not_ok = sort_out_populations()
-#d = Data(ok, r'D:\Dataframes\most_active_neurons\40')
-#d.split_day_wise()
-#d.use_SMOTE()
-#X, x, Y, y = d.get_data()
-#ffn.set_data(X, x, Y, y)
-#ffn.train()
-#mi, ma, weight = ffn.predict()
+ffn = FeedforwardNetWork()
+from data_holder import Data
+ok, not_ok = sort_out_populations()
+d = Data(ok, r'D:\Dataframes\most_active_neurons\40')
+d.split_day_wise()
+d.use_SMOTE()
+X, x, Y, y = d.get_data()
+ffn.set_data(X, x, Y, y)
+ffn.train()
+mi, ma, weight = ffn.predict()
+
+ffn = FeedforwardNetWork()
+from data_holder import Data
+ok, not_ok = sort_out_populations()
+d = Data(ok, r'D:\Dataframes\most_active_neurons\40')
+d.split_day_wise()
+d.use_SMOTE()
+d.shuffle_labels()
+X, x, Y, y = d.get_data()
+ffn.set_data(X, x, Y, y)
+ffn.train()
+mi, ma2, weight = ffn.predict()
+
+data = []
+data.append(["FFN\nacross all populations\nday 3 as test", "40 most active neurons", ma])
+data.append(["FFN\nacross all populations\nday 3 as test\nshuffled labels", "40 most active neurons", ma2])
+import pandas as pd
+df = pd.DataFrame(data, columns = ['model', "input", "macro F1 score"])
+df.to_csv(r'C:\Users\Sam\Desktop\FFN_day3.csv')
