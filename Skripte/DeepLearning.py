@@ -181,6 +181,8 @@ ok, not_ok = sort_out_populations()
 d = Data(ok, r'D:\Dataframes\most_active_neurons\40')
 k_folds = d.k_fold_cross_validation()
 keys = k_folds.keys()
+import pandas as pd
+import seaborn as sns
 for k in keys:
 
     X = k_folds[k]["X_train"] 
@@ -190,5 +192,20 @@ for k in keys:
     ffn.set_data(X, x, Y, y)
     ffn.train()
     mi, ma, weight = ffn.predict()
-    title = "Prediction across populations with the FFN (20% of each trial repetitions used training, rest used for testing):\n neuron-wise mean of all correct predicted trials per class mapped to the fist layer weights"
-    ffn.map_input(title)
+    CM=ffn.get_CM()
+  
+    CM_norm = np.zeros((4, 4))
+    for row in range(len(CM)):
+        for col in range(len(CM[row])):
+            CM_norm[row][col] = round(CM[row][col] / np.sum(CM[row]), 3)
+    CM = CM_norm
+
+    df_cm = pd.DataFrame(CM_norm, index = [i for i in ['0->0', '0->1', '1->0', '1->1']],
+                    columns = [i for i in ['0->0', '0->1', '1->0', '1->1']])
+            #plt.figure(figsize = (10,7))
+    sns.heatmap(df_cm, annot=True, cmap='Blues', fmt='g')
+    plt.title("Class-wise Normalized Confusion Matrix of all Populations with 4 classes.\n Prediction across Populations via FFN, SMOOTE used on training-data")
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.tight_layout()
+    plt.show()

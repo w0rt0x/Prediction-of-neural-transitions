@@ -51,13 +51,14 @@ class SVMclassifier():
             for y in range(len(Y)):
                 svm = SVC(kernel=self.kernel, C=C[c], degree=self.degree, gamma=Y[y], class_weight=self.class_weight).fit(self.X_train, self.y_train)
                 self.classifier = svm
-                f1 = metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average="weighted")
+                f1 = metrics.f1_score(self.y_test, self.classifier.predict(self.X_test), average="macro")
                 results[c].append(round(f1,4))
         
-        ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=Y, yticklabels=C, cbar_kws={'label': 'weighted f1-Score'})
-        plt.xlabel('Gamma')
+        ax = sns.heatmap(results, annot=True, vmin=0, vmax=1, xticklabels=Y, yticklabels=C, cbar_kws={'label': 'macro F1 score'})
+        plt.xlabel('gamma')
         plt.ylabel('C')
         plt.title(title)
+        plt.tight_layout()
 
         if show:
             plt.show()
@@ -150,14 +151,18 @@ class SVMclassifier():
         self.X_train = preprocessing.scale(self.X_train) 
         self.X_test = preprocessing.scale(self.X_test) 
 
-#svm = SVMclassifier()
+#svm = SVMclassifier(kernel="linear")
 #from data_holder import Data
-#d = Data(['bl693_no_white_Pop05'], r'D:\Dataframes\most_active_neurons\40_norm')
+#path = r'D:\Dataframes\most_active_neurons\40' # D:\Dataframes\PCA\20
+#d = Data(['bl709_one_white_Pop09'], path)
 #d.split_trial_wise()
 #d.use_SMOTE()
 #X, x, Y, y = d.get_data()
 #svm.set_data(X, x, Y, y)
-##svm.preprocess()
+#title = "bl709_one_white_Pop09 (40 most active neurons) on SVM \n(linear-kernel, balanced class-weights) and SMOTE on training-data"
+#C = [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]
+#svm.grid_search(title, C, Y=["-"])
+#svm.preprocess()
 #svm.train()
 #print(svm.predict())
 #svm.plot_CM()
