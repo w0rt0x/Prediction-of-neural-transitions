@@ -303,53 +303,47 @@ class Preprocessor():
 
         self.reduced_data = np.asarray(s)
 
+    def __get_avg_correlation(self, matrix: np.array) -> float:
+        correlations = []
+        for row_1 in matrix:
+            for row_2 in matrix:
+                if (row_1 == row_2).all():
+                    pass
+                else:
+                    cor_matrix = np.corrcoef(row_1, row_2)
+                    correlations.append(cor_matrix[0][1])
+        correlations = np.array(correlations)
+        return np.mean(correlations)
+
+
     def get_correlation_per_class(self, full: bool=False):
         
+        trial_to_label={}
+        trial_to_data={}
         data = self.data.T
-        d = {}
-        for day in range(1, 4):
-            for stim in range(1, 35):
-                key = (day, stim)
-                d[key] = []
-
-        for i in range(len(data)):
-            key = self.header[i]
-            if key[0] != 4:
-                d[key].append(data[i])
-
-        header = sorted(set(self.header), key=self.header.index)
-        for i in range(len(header)-1, -1, -1):
-            if header[i][0] == 4:
-                del header[i]
-
-        matrix = np.zeros(shape=(len(header), len(header)))
-        for i in range(len(header)):
-            for j in range(len(header)):
-                if i != j:
-                    if full:
-                        coefs = []
-                        m1 = np.asarray(d[header[i]])
-                        m2 = np.asarray(d[header[j]])
-                        for row1 in m1:
-                            for row2 in m2:
-                                coefs.append(np.corrcoef(row1, row2)[0][1])
-                        matrix[i][j] = np.average(np.array(coefs))
+        for i in range(len(self.header)):
+            if self.header[i][0] != 4:
+                # Assigning trials to labels
+                if self.header[i] in trial_to_label:
+                    pass
                 else:
-                    coefs = []
-                    m = np.asarray(d[header[i]])
-                    for r1 in range(len(m)):
-                        for r2 in range(len(m)):
-                            if r1 != r2:
-                                coefs.append(np.corrcoef(m[r1], m[r2])[0][1])
-                    matrix[i][j] = np.average(np.array(coefs))
+                    trial_to_label[self.header[i]] = self.label[i]
 
-        matrix = np.asarray(matrix)
-        labels = []
-        for i in range(len(header)):
-            labels.append(self.label[self.header.index(header[i])])
+                # Assigning trials to neuron data
+                if self.header[i] in trial_to_data:
+                    pass
+                else:
+                    trial_to_data[self.header[i]] = []
+                    pos = [index for index, value in enumerate(self.header) if value == self.header[i]]
+                    for p in pos:
+                        trial_to_data[self.header[i]].append(data[p])
+                    trial_to_data[self.header[i]] = np.asarray(trial_to_data[self.header[i]])
+
+        for key in trial_to_data.keys():
+            trial_to_data[key] = self.__get_avg_correlation(trial_to_data[key])
         data = []
-        for i in range(len(labels)):
-            data.append([labels[i], matrix[i][i]])
+        for key in trial_to_label.keys():
+            data.append([trial_to_label[key], trial_to_data[key]])
 
         return pd.DataFrame(data, columns = ['Labels', "average correlation"])
         
@@ -378,6 +372,7 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
 def boxplots_of_correlations():
     ok, not_ok = sort_out_populations()
     dfs = []
+    ok = ["bl693_no_white_Pop06"]
     for pop in ok:
         print(pop)
         p = Preprocessor(pop)
@@ -390,6 +385,7 @@ def boxplots_of_correlations():
     graph = sns.violinplot(x="Labels", y="average correlation", order=["0->0", "0->1", "1->0", "1->1"], data=df)
     plt.title("average correlation over all possible heterogeneous trial-pairs of a stimulus\n of all populations, seperated into the four classes")
     graph.axhline(0.4, ls='--', linewidth=1, color='red')
+    plt.tight_layout()
     plt.show()
 
 boxplots_of_correlations()
