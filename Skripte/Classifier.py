@@ -30,6 +30,10 @@ class SVMclassifier():
         """
         Sets Training and test-data, must be numpy arrays
         """
+        #for t in range(len(X_train)):
+        #    X_train[t] = X_train[t] - np.mean(X_train[t])
+        #for t in range(len(X_test)):
+        #    X_test[t] = X_test[t] - np.mean(X_test[t])
         self.X_train = X_train
         self.X_test = X_test
         self.y_train = y_train
@@ -153,8 +157,8 @@ class SVMclassifier():
 
 #svm = SVMclassifier(kernel="linear")
 #from data_holder import Data
-#path = r'D:\Dataframes\most_active_neurons\40' # D:\Dataframes\PCA\20
-#d = Data(['bl709_one_white_Pop09'], path)
+#path = r'D:\Dataframes\single_values\mean_over_all' # D:\Dataframes\PCA\20
+#d = Data(['bl709_one_white_Pop05'], path)
 #d.split_trial_wise()
 #d.use_SMOTE()
 #X, x, Y, y = d.get_data()

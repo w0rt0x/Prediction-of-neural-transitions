@@ -312,19 +312,15 @@ class Plotter:
             for i in range(len(response)):
                 # Removing day 4 trials
                 if eval(trials[i])[0] != 4:
-                    data.append([response[i], values[i], "Transition over 1 day"])
+                    data.append([response[i], values[i]])
 
-            df = pd.read_csv(second_path + '\\{}.csv'.format(pop))
-            trials = df['label'].tolist()
-            values = df['Component 1'].tolist()
-            response = df['response'].tolist()
-            
-            for i in range(len(response)):
-                # Removing day 3 and 4 trials
-                if eval(trials[i])[0] != 4 and eval(trials[i])[0] != 3:
-                    data.append([response[i], values[i], "Transition over 2 days"])
+        df = pd.DataFrame(data, columns = ['Labels', "standard deviation"])
 
-        df = pd.DataFrame(data, columns = ['Labels', y_axis, "Transition"])
+        sns.set_theme(palette="pastel")
+        sns.violinplot(x='Labels', y="standard deviation", order=["0->0", "0->1", "1->0", "1->1"], 
+                    data=df)
+        plt.title(title)
+        plt.show()
 
         self.__box_plot(df, "Labels", y_axis, "Transition", title, show=show, dest_path=dest_path, showfliers=show_outliers, order = ["0->0", "0->1", "1->0", "1->1"])
 
@@ -496,10 +492,11 @@ class Plotter:
         plt.close()
 
 ok, not_ok  = sort_out_populations()
-p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
+p = Plotter(ok, r'D:\Dataframes\single_values\std')
+p.boxplots_of_classes("standard deviations of trials grouped into the four classes")
 #dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
 #p.plot_actual_vs_predicted("2 tSNE Components (preprocessed)","first tSNE Component", "second tSNE Component", show=False, dest_path=dest, preprocess=True)
-p.plot_std_mean_of_each_neuron("Neuron-wise standard-deviations of the 40 Most active neurons,\n seperated into the four classes")
+#p.plot_std_mean_of_each_neuron("Neuron-wise standard-deviations of the 40 Most active neurons,\n seperated into the four classes")
 #p = Plotter(['bl693_no_white_Pop05'], r'D:\Dataframes\tSNE\perp30')
 #p.plot_2D("tSNE","first tSNE Component", "second tSNE Component")
 #p.plot_3D("3 most active neurons","most active neuron", "second most active neuron", "third most active neuron")

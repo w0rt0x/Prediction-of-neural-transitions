@@ -167,7 +167,7 @@ class Preprocessor():
             
         self.label = np.asarray(transistions)
 
-    def get_most_active_neurons(self, n: int=30, normalize:bool=False):
+    def get_most_active_neurons(self, n: int=40, minus_mean:bool=False, row:bool=True, div_by_std:bool=False):
         """
         sorts neurons to n most active over all trials
         :param n (int, default is 30) - number of neurons
@@ -186,15 +186,28 @@ class Preprocessor():
 
         self.reduced_data = np.array(neurons).T
         
-        if normalize:
-            means = []
-            stds = []
-            matrix = self.data.T
-            for row in matrix:
-                means.append(np.mean(row))
-                stds.append(np.std(row))
-            for i in range(len(self.reduced_data)):
-                self.reduced_data[i] = (self.reduced_data[i] - means[i])/stds[i]
+        if minus_mean:
+            if row:
+                means = []
+                stds = []
+                matrix = self.data.T
+                for row in matrix:
+                    means.append(np.mean(row))
+                    stds.append(np.std(row))
+                for i in range(len(self.reduced_data)):
+                    if div_by_std:
+                        self.reduced_data[i] = (self.reduced_data[i] - means[i])/stds[i]
+                    else:
+                        self.reduced_data[i] = (self.reduced_data[i] - means[i])
+            
+            else:
+                reduced_data = self.reduced_data.T
+                for n in range(len(reduced_data)):
+                    if div_by_std:
+                        reduced_data[n] = (reduced_data[n] - np.mean(reduced_data[n])) / np.std(reduced_data[n])
+                    else:
+                        reduced_data[n] = reduced_data[n] - np.mean(reduced_data[n])
+                self.reduced_data = reduced_data.T
 
     def df_to_file(self, path):
         """
@@ -270,6 +283,25 @@ class Preprocessor():
 
         self.reduced_data = np.asarray(means)
 
+    def get_std(self):
+        """
+        Calculates mean of each row
+        """
+        stds = []
+        data = self.data.T
+        for i in range(len(data)):
+            stds.append([np.std(data[i])])
+
+        self.reduced_data = np.asarray(stds)
+
+    def get_std_and_mean(self):
+        stds = []
+        data = self.data.T
+        for i in range(len(data)):
+            stds.append([np.mean(data[i]), np.std(data[i])])
+
+        self.reduced_data = np.asarray(stds)
+    
     def get_mean_over_reduced_data(self):
         """
         Calculates mean of each row that has already been reduced (nmost active, PCA, etc)
@@ -315,8 +347,7 @@ class Preprocessor():
         correlations = np.array(correlations)
         return np.mean(correlations)
 
-
-    def get_correlation_per_class(self, full: bool=False):
+    def get_correlation_per_class(self):
         
         trial_to_label={}
         trial_to_data={}
@@ -347,9 +378,10 @@ class Preprocessor():
 
         return pd.DataFrame(data, columns = ['Labels', "average correlation"])
         
+
         
 
-def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
+def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 40):
     path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Daten'
     populations = set()
     files = [f for f in os.listdir(path) if isfile(join(path, f))]
@@ -364,7 +396,8 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.get_most_active_neurons(n=dim, normalize=True)
+        a.get_std_and_mean()
+        #a.get_most_active_neurons(n=dim, minus_mean=True, row=False)
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
@@ -372,24 +405,23 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 20):
 def boxplots_of_correlations():
     ok, not_ok = sort_out_populations()
     dfs = []
-    ok = ["bl693_no_white_Pop06"]
     for pop in ok:
         print(pop)
         p = Preprocessor(pop)
-        p.create_multiclass_transition_labels()
+        p.create_multiclass_transition_labels(skip=2)
         df = p.get_correlation_per_class()
         dfs.append(df)
 
     df = pd.concat(dfs)
     sns.set_theme(palette="pastel")
     graph = sns.violinplot(x="Labels", y="average correlation", order=["0->0", "0->1", "1->0", "1->1"], data=df)
-    plt.title("average correlation over all possible heterogeneous trial-pairs of a stimulus\n of all populations, seperated into the four classes")
+    plt.title("average correlation over all possible heterogeneous trial-pairs of a stimulus\n of all populations, seperated into the four classes (Transitions over two days)")
     graph.axhline(0.4, ls='--', linewidth=1, color='red')
     plt.tight_layout()
     plt.show()
 
-boxplots_of_correlations()
-#prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_sub_mean', dim=40)
+#boxplots_of_correlations()
+prepare_data(destination=r'D:\Dataframes\single_values\std and mean', dim=40)
 
 
 

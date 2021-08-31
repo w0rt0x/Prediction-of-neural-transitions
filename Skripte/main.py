@@ -5,14 +5,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-df1 = pd.read_csv(r'C:\Users\Sam\Desktop\FFN_pop-wise.csv')
-df2 = pd.read_csv(r'C:\Users\Sam\Desktop\FFN_across-pop.csv')
-df3 = pd.read_csv(r'C:\Users\Sam\Desktop\FFN_day3.csv')
-
-df = pd.concat([df1, df2, df3])
+df = pd.read_csv(r'C:\Users\Sam\Desktop\std_and_mean_comparison.csv')
 sns.set_theme(palette="pastel")
-sns.boxplot(x="model", y="macro F1 score", hue="input", data=df)
-plt.title("Prediction results using the FFN and the 40 most active neurons")
+sns.boxplot(x="model", y="macro F1 score", data=df)
+plt.title("Population-wise 5-fold Cross Validation with the SVM (linear Kernel, C=1, balanced class weights)\nwith SMOTE used on training-data: Using mean, standard-deviation (std) and both as input")
 plt.show()
 
 

@@ -26,7 +26,7 @@ class PerformancePlotter:
         self.populations = populations
         self.path = path
 
-    def compare_models_populationwise(self, models: list, data_type: str, preprocess: bool=False):
+    def compare_models_populationwise(self, models: list, preprocess: bool=False):
         """
         BoxPlots of all given models with their macro, micro and weighted f1-scores
         :param models (list) - list of models in form of [(model, "Title of model"), ...]
@@ -35,16 +35,16 @@ class PerformancePlotter:
         :param preprocess (bool, default False) - if True, uses standard-scaling on data before training model, recommended for tSNE data
         returns pandas dataframe
         """
-        da = Data(self.populations, self.path)
-        k_folds = da.k_fold_cross_validation_populationwise()
-        k_folds_r = da.k_fold_cross_validation_populationwise(shuffle=True)
 
-        
         data = []
         for m in models:
             model = m[0]
             model_name = m[1]
-            print(model_name)
+            path = m[2]
+            da = Data(self.populations, path)
+            k_folds = da.k_fold_cross_validation_populationwise()
+            k_folds_r = da.k_fold_cross_validation_populationwise(shuffle=True)
+            
             for pop in k_folds.keys():
                 print(pop)
                 for k in k_folds[pop].keys():
@@ -58,7 +58,7 @@ class PerformancePlotter:
                     model.train()
                     mi, ma, weigth = model.predict()
                     #data.append([model_name, "micro f1-score", mi])
-                    data.append([model_name, data_type, ma])
+                    data.append([model_name, ma])
                     #data.append([model_name, "weighted f1-score", weigth])
 
                     X = k_folds_r[pop][k]["X_train"] 
@@ -71,12 +71,11 @@ class PerformancePlotter:
                     model.train()
                     mi, ma, weigth = model.predict()
                     #data.append([model_name + "\nshuffled labels", "micro f1-score", mi])
-                    data.append([model_name + "\nshuffled labels", data_type, ma])
+                    data.append([model_name + "\n with shuffled labels", ma])
                     #data.append([model_name + "\nshuffled labels", "weighted f1-score", weigth])
 
-        df = pd.DataFrame(data, columns = ['model', "input", "macro F1 score"])
+        df = pd.DataFrame(data, columns = ['model', "macro F1 score"])
         return df
-
 
     def boxplot_from_df(self, df, title: str, showfliers: bool=False, show:bool=True, dest_path:str=None):
         """
@@ -206,15 +205,15 @@ class PerformancePlotter:
         :param title (str) - title of plot
         :param data_type (str) - Name of input
         """
-        da = Data(self.populations, self.path)
-        k_folds = da.k_fold_cross_validation()
-        k_folds_r = da.k_fold_cross_validation(shuffle=True)
-
         
         data = []
         for m in models:
             model = m[0]
             model_name = m[1]
+            path = m[2]
+            da = Data(self.populations, path)
+            k_folds = da.k_fold_cross_validation()
+            k_folds_r = da.k_fold_cross_validation(shuffle=True)
 
             for k in k_folds.keys():
                 X = k_folds[k]["X_train"] 
@@ -252,12 +251,15 @@ class PerformancePlotter:
 # TAG3 MIT SHUFFLED LABELS!!!
 
 #ffn = FeedforwardNetWork()
-#models = [(ffn, "FFN\npopulation-wise k-Fold")]
-#ok, not_ok = sort_out_populations()
-#path = r'D:\Dataframes\most_active_neurons\40'
-#p = PerformancePlotter(ok, path)
-#df = p.compare_models_populationwise(models, "40 most active neurons")
-#df.to_csv(r'C:\Users\Sam\Desktop\FFN_pop-wise.csv')
+svm1 = SVMclassifier(kernel="linear")
+svm2 = SVMclassifier(kernel="linear")
+svm3 = SVMclassifier(kernel="linear")
+models = [(svm1, "Using mean\n and std as input", r'D:\Dataframes\single_values\std and mean'), (svm2, "Using mean as input", r'D:\Dataframes\single_values\mean_over_all'), (svm3, "Using std as input", r'D:\Dataframes\single_values\std')]
+ok, not_ok = sort_out_populations()
+path = r'D:\Dataframes\single_values\std and mean'
+p = PerformancePlotter(ok, path)
+df = p.compare_models_populationwise(models, "std over trials")
+df.to_csv(r'C:\Users\Sam\Desktop\std_and_mean_comparison.csv')
 
 
 
