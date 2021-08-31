@@ -134,6 +134,7 @@ class Plotter:
             ax.set_xlabel(x_axis)
             ax.set_ylabel(y_axis)
             ax.set_zlabel(z_axis)
+            ax.view_init(18, 46)
             if show:
                 plt.show()
             if dest_path != None:
@@ -312,15 +313,19 @@ class Plotter:
             for i in range(len(response)):
                 # Removing day 4 trials
                 if eval(trials[i])[0] != 4:
-                    data.append([response[i], values[i]])
+                    data.append([response[i], values[i], "Transition over 1 day"])
 
-        df = pd.DataFrame(data, columns = ['Labels', "standard deviation"])
+            df = pd.read_csv(second_path + '\\{}.csv'.format(pop))
+            trials = df['label'].tolist()
+            values = df['Component 1'].tolist()
+            response = df['response'].tolist()
+            
+            for i in range(len(response)):
+                # Removing day 3 and 4 trials
+                if eval(trials[i])[0] != 4 and eval(trials[i])[0] != 3:
+                    data.append([response[i], values[i], "Transition over 2 days"])
 
-        sns.set_theme(palette="pastel")
-        sns.violinplot(x='Labels', y="standard deviation", order=["0->0", "0->1", "1->0", "1->1"], 
-                    data=df)
-        plt.title(title)
-        plt.show()
+        df = pd.DataFrame(data, columns = ['Labels', y_axis, "Transition"])
 
         self.__box_plot(df, "Labels", y_axis, "Transition", title, show=show, dest_path=dest_path, showfliers=show_outliers, order = ["0->0", "0->1", "1->0", "1->1"])
 
@@ -491,9 +496,11 @@ class Plotter:
         plt.cla()
         plt.close()
 
-ok, not_ok  = sort_out_populations()
-p = Plotter(ok, r'D:\Dataframes\single_values\std')
-p.boxplots_of_classes("standard deviations of trials grouped into the four classes")
+pops = get_all_pop()
+p = Plotter(pops, r'D:\Dataframes\most_active_neurons\3')
+p.plot_3D("3 most active neurons", "third most active neuron", "second most active neuron", "most active neuron", show=False, dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\generel visualisation\3 most active neurons')
+#ok, not_ok  = sort_out_populations()
+#p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
 #dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
 #p.plot_actual_vs_predicted("2 tSNE Components (preprocessed)","first tSNE Component", "second tSNE Component", show=False, dest_path=dest, preprocess=True)
 #p.plot_std_mean_of_each_neuron("Neuron-wise standard-deviations of the 40 Most active neurons,\n seperated into the four classes")
