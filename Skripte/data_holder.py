@@ -235,7 +235,7 @@ class Data:
             trails = set()
             for i in header:
                 trail = eval(i)
-                if trail[0] != 4:
+                if trail[0] != 4 and trail[0] != 3:
                     trails.add(i)
                 else:
                     if not(rem_day4):

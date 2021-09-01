@@ -251,15 +251,15 @@ class PerformancePlotter:
 # TAG3 MIT SHUFFLED LABELS!!!
 
 #ffn = FeedforwardNetWork()
-svm1 = SVMclassifier(kernel="linear")
-svm2 = SVMclassifier(kernel="linear")
-svm3 = SVMclassifier(kernel="linear")
-models = [(svm1, "Using mean\n and std as input", r'D:\Dataframes\single_values\std and mean'), (svm2, "Using mean as input", r'D:\Dataframes\single_values\mean_over_all'), (svm3, "Using std as input", r'D:\Dataframes\single_values\std')]
+svm1 = SVMclassifier()
+svm2 = SVMclassifier()
+#, (svm2, "SVM with prediction\n of transition to the \n day after the next day", r'D:\Dataframes\double_skip')
+models = [(svm2, "SVM with prediction\n of transition to the \n the next day", r'D:\Dataframes\most_active_neurons\40')]
 ok, not_ok = sort_out_populations()
-path = r'D:\Dataframes\single_values\std and mean'
+path = r'D:\Dataframes\most_active_neurons\40'
 p = PerformancePlotter(ok, path)
-df = p.compare_models_populationwise(models, "std over trials")
-df.to_csv(r'C:\Users\Sam\Desktop\std_and_mean_comparison.csv')
+df = p.compare_models_populationwise(models)
+df.to_csv(r'C:\Users\Sam\Desktop\1days.csv')
 
 
 
