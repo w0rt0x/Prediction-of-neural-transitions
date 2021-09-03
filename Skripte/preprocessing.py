@@ -283,12 +283,15 @@ class Preprocessor():
 
         self.reduced_data = np.asarray(means)
 
-    def get_std(self):
+    def get_std(self, reduced=False):
         """
         Calculates mean of each row
         """
         stds = []
-        data = self.data.T
+        if reduced:
+            data = self.reduced_data
+        else:
+            data = self.data.T
         for i in range(len(data)):
             stds.append([np.std(data[i])])
 
@@ -396,8 +399,8 @@ def prepare_data(destination=r'D:\Dataframes\30_mostActive_Neurons', dim = 40):
     populations = list(populations)
     for pop in populations:
         a = Preprocessor(pop)
-        a.get_std_and_mean()
-        #a.get_most_active_neurons(n=dim, minus_mean=True, row=False)
+        a.get_most_active_neurons(n=dim)
+        a.get_std(reduced=True)
         a.create_multiclass_transition_labels()
         a.df_to_file(destination)
         print("{} of {} done".format(populations.index(pop) + 1, len(populations)))
@@ -421,7 +424,7 @@ def boxplots_of_correlations():
     plt.show()
 
 #boxplots_of_correlations()
-prepare_data(destination=r'D:\Dataframes\single_values\std and mean', dim=40)
+prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_std', dim=40)
 
 
 

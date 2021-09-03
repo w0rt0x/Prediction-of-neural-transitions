@@ -3,14 +3,24 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from getter_for_populations import sort_out_populations
 
 
-df1 = pd.read_csv(r'C:\Users\Sam\Desktop\2days.csv')
-df2 = pd.read_csv(r'C:\Users\Sam\Desktop\1days.csv')
-df = pd.concat([df1, df2])
+#df1 = pd.read_csv(r'C:\Users\Sam\Desktop\2days.csv')
+#df2 = pd.read_csv(r'C:\Users\Sam\Desktop\1days.csv')
+ok, not_ok = sort_out_populations()
+dfs = []
+for pop in ok:
+    path = r'D:\Dataframes\single_values\mean_over_all\{}.csv'.format(pop)
+    dfs.append(pd.read_csv(path))
+df = pd.concat(dfs)
+df = df[df.response != "0"]
 sns.set_theme(palette="pastel")
-sns.boxplot(x="model", y="macro F1 score", data=df)
-plt.title("Population-wise 5-fold Cross Validation with the SVM (rbf-Kernel, C=1, gamma=0.5, balanced class weights)\nwith SMOTE used on training-data: Using the 40 most active neurons as input")
+sns.boxplot(x="response", y="Component 1", data=df, showfliers = False, order=["0->0", "0->1", "1->0", "1->1"]).set(
+    xlabel='Labels', 
+    ylabel='mean neural activity'
+)
+plt.title("mean neural activity of trials (without outliers)")
 plt.show()
 
 

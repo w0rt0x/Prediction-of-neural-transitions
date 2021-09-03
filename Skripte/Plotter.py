@@ -496,9 +496,10 @@ class Plotter:
         plt.cla()
         plt.close()
 
-pops = get_all_pop()
-p = Plotter(pops, r'D:\Dataframes\most_active_neurons\3')
-p.plot_3D("3 most active neurons", "third most active neuron", "second most active neuron", "most active neuron", show=False, dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\generel visualisation\3 most active neurons')
+ok, not_ok = sort_out_populations()
+p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
+p.plot_mean_of_each_neuron("neuron-wise mean and standard deviation (std) of the 40 most active neurons, separated into the four classes")
+#p.plot_3D("3 most active neurons", "third most active neuron", "second most active neuron", "most active neuron", show=False, dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\generel visualisation\3 most active neurons')
 #ok, not_ok  = sort_out_populations()
 #p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
 #dest = r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\Prediction results, Grid Searches and parameter estimation\Prediction of next Day\Actual data vs predicted\tSNE(preprocessed)'
