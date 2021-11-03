@@ -417,14 +417,15 @@ def boxplots_of_correlations():
 
     df = pd.concat(dfs)
     sns.set_theme(palette="pastel")
+    sns.set(font_scale=1.8)
     graph = sns.violinplot(x="Labels", y="average correlation", order=["0->0", "0->1", "1->0", "1->1"], data=df)
-    plt.title("average correlation over all possible heterogeneous trial-pairs of a stimulus\n of all populations, seperated into the four classes (Transitions over two days)")
+    plt.title("average correlation over all possible heterogeneous trial-pairs of a stimulus\n of all populations (Transitions over two days)")
     graph.axhline(0.4, ls='--', linewidth=1, color='red')
     plt.tight_layout()
     plt.show()
 
-#boxplots_of_correlations()
-prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_std', dim=40)
+boxplots_of_correlations()
+#prepare_data(destination=r'D:\Dataframes\most_active_neurons\40_std', dim=40)
 
 
 

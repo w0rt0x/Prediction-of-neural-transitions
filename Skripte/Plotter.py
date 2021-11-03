@@ -315,27 +315,16 @@ class Plotter:
                 if eval(trials[i])[0] != 4:
                     data.append([response[i], values[i], "Transition over 1 day"])
 
-            df = pd.read_csv(second_path + '\\{}.csv'.format(pop))
-            trials = df['label'].tolist()
-            values = df['Component 1'].tolist()
-            response = df['response'].tolist()
-            
-            for i in range(len(response)):
-                # Removing day 3 and 4 trials
-                if eval(trials[i])[0] != 4 and eval(trials[i])[0] != 3:
-                    data.append([response[i], values[i], "Transition over 2 days"])
-
         df = pd.DataFrame(data, columns = ['Labels', y_axis, "Transition"])
 
         self.__box_plot(df, "Labels", y_axis, "Transition", title, show=show, dest_path=dest_path, showfliers=show_outliers, order = ["0->0", "0->1", "1->0", "1->1"])
 
     def __box_plot(self, df: pd.DataFrame, x:str, y:str, hue:str, title:str, show: bool=True, dest_path: str=None, showfliers = False, order: list=None):
         sns.set_theme(palette="pastel")
-        sns.boxplot(x=x, y=y,
-                    hue=hue, order=order, 
+        sns.set(font_scale=1.7)
+        sns.boxplot(x=x, y=y, order=order, 
                     data=df, showfliers=showfliers)
         plt.title(title)
-
         if show:
             plt.show()
 
@@ -433,14 +422,17 @@ class Plotter:
         c = {"1->1": "magenta", "0->0": "cyan", "1->0":"red", "0->1": "green"}
         fig, ax = plt.subplots()
         for key in d.keys():
-            ax.plot(range(1, len(X[0]) + 1), d[key], color=c[key], label="mean of {}".format(key))
+            ax.plot(range(1, len(X[0]) + 1), d[key], color=c[key], label=key)
             if std:
-                ax.fill_between(range(1, len(X[0]) + 1), d[key] + stds[key], alpha=0.1, color=c[key], label="std of {}".format(key))
+                ax.fill_between(range(1, len(X[0]) + 1), d[key] + stds[key], alpha=0.1, color=c[key])
         
-        plt.xlabel('{} most active Neurons'.format(len(X[0])))
-        plt.ylabel("Neuron-wise mean per class")
+        plt.rcParams.update({'font.size': 13})
+        plt.yticks(fontsize=13)
+        plt.xticks(fontsize=13)
+        plt.xlabel('{} most active Neurons'.format(len(X[0])), fontsize=15)
+        plt.ylabel("Neuron-wise mean per class", fontsize=15)
         plt.title(title)
-        plt.legend()
+        plt.legend(fontsize=13)
 
         if show:
             plt.show()
@@ -479,8 +471,9 @@ class Plotter:
         c = {"1->1": "magenta", "0->0": "cyan", "1->0":"red", "0->1": "green"}
         fig, ax = plt.subplots()
         for key in d.keys():
-            ax.plot(range(1, len(X[0]) + 1), d[key], color=c[key], label="std of {}".format(key))
+            ax.plot(range(1, len(X[0]) + 1), d[key], color=c[key])
         
+        plt.rcParams.update({'font.size': 30})
         plt.xlabel('{} most active Neurons'.format(len(X[0])))
         plt.ylabel("Neuron-wise standard-deviation per class")
         plt.title(title)
@@ -498,7 +491,8 @@ class Plotter:
 
 ok, not_ok = sort_out_populations()
 p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
-p.plot_mean_of_each_neuron("neuron-wise mean and standard deviation (std) of the 40 most active neurons, separated into the four classes")
+#p.boxplots_of_classes("standard deviation of trials (without outliers)", y_axis="standard deviation")
+p.plot_mean_of_each_neuron("neuron-wise mean and standard deviation (std) of the \n40 most active neurons, separated into the four classes")
 #p.plot_3D("3 most active neurons", "third most active neuron", "second most active neuron", "most active neuron", show=False, dest_path=r'C:\Users\Sam\Desktop\BachelorInfo\Bachelor-Info\Bachelor-ML\Skripte\Plots\generel visualisation\3 most active neurons')
 #ok, not_ok  = sort_out_populations()
 #p = Plotter(ok, r'D:\Dataframes\most_active_neurons\40')
